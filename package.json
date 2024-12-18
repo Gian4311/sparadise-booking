@@ -10,6 +10,7 @@
     "@types/node": "^16.7.13",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^18.0.0",
+    "firebase": "^11.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-scripts": "5.0.1",
