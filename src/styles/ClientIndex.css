@@ -51,8 +51,9 @@ body {
 .clientIndex-link {
   text-decoration: none;
   color: white;
-  font-size: 1em;
+  font-size: 1.5em;
   transition: color 0.3s ease;
+  margin: 40px;
 }
 
 .clientIndex-linkActive,
