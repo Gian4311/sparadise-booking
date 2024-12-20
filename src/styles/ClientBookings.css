@@ -46,6 +46,8 @@ body {
     transition: background-color 0.3s;
     color: black;
     width: 15%;
+    text-decoration: none;
+    text-align: center;
   }
   
   .create-booking-btn:hover {
