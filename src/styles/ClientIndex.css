@@ -11,7 +11,7 @@
   src: url(Product\ Sans\ Regular.ttf);
 }
 
-body {
+clientIndexody {
   background: url('../images/indexbackground.jpg') no-repeat center center/cover;
   height: 100vh;
   display: flex;
@@ -51,8 +51,9 @@ body {
 .clientIndex-link {
   text-decoration: none;
   color: white;
-  font-size: 1em;
+  font-size: 1.5em;
   transition: color 0.3s ease;
+  margin: 40px;
 }
 
 .clientIndex-linkActive,
@@ -142,14 +143,14 @@ body {
 .clientIndex-services {
   padding: 40px;
   background-color: #F8E0E1;
-  color: #333;
+  color: black;
   text-align: center;
 }
 
 .clientIndex-servicesHeading {
   font-size: 4rem;
   margin-bottom: 30px;
-  color: #333;
+  color: black;
 }
 
 .clientIndex-servicesContainer {
@@ -165,7 +166,7 @@ body {
 }
 
 .clientIndex-servicesContainer::-webkit-scrollbar-thumb {
-  background-color: #333;
+  background-color: black;
   border-radius: 5px;
 }
 
@@ -229,7 +230,7 @@ body {
 
 .clientIndex-hours {
   font-size: 1.2rem;
-  color: #333;
+  color: black;
 }
 
 .clientIndex-hoursMain {
@@ -262,17 +263,17 @@ body {
 .clientIndex-contactUs h2 {
   font-size: 4rem;
   margin-bottom: 20px;
-  color: #333
+  color: black
 }
 
 .clientIndex-contactLinks {
   font-size: 1.2rem;
-  color: #333;
+  color: black;
 }
 
 .clientIndex-socialLink {
   text-decoration: none;
-  color: #333;
+  color: black;
   margin: 10px;
   display: inline-block;
   font-weight: bold;
@@ -289,5 +290,5 @@ body {
 
 .clientIndex-contactInfo {
   margin: 10px 0;
-  color: #333;
+  color: black;
 }

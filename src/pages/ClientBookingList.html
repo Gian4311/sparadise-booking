@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookings</title>
+  <link rel="stylesheet" href="../styles/ClientIndex.css"> <!--navbar-->
+  <link rel="stylesheet" href="../styles/ClientBookings.css"> 
+</head>
+<body>
+
+  <header class="clientIndex-header">
+    <div class="clientIndex-logo">
+        <img src="../images/SpaRadise Logo.png" alt="SpaRadise Logo">
+    </div>
+    <nav class="clientIndex-nav">
+        <ul class="clientIndex-navList">
+            <li class="clientIndex-navItem"><a href="../pages/ClientIndex.html" class="clientIndex-link">Home</a>
+            </li>
+            <li class="clientIndex-navItem"><a href="../pages/ClientBookingList.html" class="clientIndex-link clientIndex-linkActive">Bookings</a></li>
+            <li class="clientIndex-navItem"><a href="#" class="clientIndex-link">Account</a></li>
+            <li class="clientIndex-navItem"><a href="#" class="clientIndex-link">Log-out</a></li>
+        </ul>
+        <div class="clientIndex-notification">
+            <a href="#" class="clientIndex-bell">
+                <span class="clientIndex-icon">🔔</span>
+            </a>
+        </div>
+    </nav>
+</header>
+
+<main class="bookingList-container">
+    <div class="bookingList-card">
+      <div class="bookingList-header">
+        <h1 class="bookingList-heading">Bookings</h1>
+        <a class="create-booking-btn" href="../pages/ClientBookingCreation1.html">Create Booking</a>
+      </div>
+  
+      <section class="accordion">
+        <div class="accordion-item">
+          <button class="accordion-header">
+            Upcoming Bookings
+            <span class="arrow-icon">▼</span>
+          </button>
+          <div class="accordion-content">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Packages/Services</th>
+                  <th>Time</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr onclick="redirectToBooking('bookingID123')">
+                  <td>14 December 2024 - Saturday</td>
+                  <td>Full Eyelash Extensions</td>
+                  <td>3:00PM</td>
+                  <td>Confirmed</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+  
+        <div class="accordion-item">
+          <button class="accordion-header">
+            Finished Bookings
+            <span class="arrow-icon">▼</span>
+          </button>
+          <div class="accordion-content">
+            <p>No finished bookings yet.</p>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-header">
+            Cancelled Bookings
+            <span class="arrow-icon">▼</span>
+          </button>
+          <div class="accordion-content">
+            <p>No cancelled bookings.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+  
+
+  <script>
+    document.querySelectorAll('.accordion-header').forEach((header) => {
+      header.addEventListener('click', () => {
+        const content = header.nextElementSibling;
+        content.style.display = content.style.display === 'block' ? 'none' : 'block';
+      });
+    });
+
+    function redirectToBooking(bookingID) {
+      alert(`Redirecting to booking: ${bookingID}`);
+    }
+
+    
+  </script>
+
+  
+</body>
+</html>

@@ -1,0 +1,123 @@
+/* Reset and General Styles */
+body {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: #fff;
+  }
+  
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+  }
+  .bookingList-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    background-color: white;
+    height: 100vh;
+    padding-top: 50px; 
+  }
+  
+  .bookingList-heading {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    color: black;
+    margin: 10px;
+  }
+
+  .bookingList-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px;
+  }
+
+  .create-booking-btn {
+    background-color: #FFE4E6;
+    color: white;
+    border: 2px solid black;
+    padding: 20px;
+    border-radius: 30px;
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    color: black;
+    width: 15%;
+    text-decoration: none;
+    text-align: center;
+  }
+  
+  .create-booking-btn:hover {
+    background-color: #eed0d2;
+  }
+
+  
+  .bookingList-card {
+    background-color: #FFE4E6;
+    border-radius: 45px;
+    margin-top: 10px;
+    padding: 20px;
+    width: 80%;
+    max-width: 1900px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .accordion-item {
+    margin-bottom: 10px;
+    overflow: hidden;
+    margin: 10px;
+  }
+  
+  .accordion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #FFE4E6;
+    color: black;
+    padding: 10px;
+    font-size: 2.7rem;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    border-bottom: 2px solid black;
+    
+  }
+  
+  .accordion-header:hover {
+    background-color: #eed0d2;
+  }
+  
+  .accordion-content {
+    display: none;
+    padding: 10px;
+    background-color: #FBE3EB;
+    color: black;
+    font-size: 180%;
+  }
+  
+  .arrow-icon {
+    font-size: 1rem;
+    margin-left: 10px;
+    transition: transform 0.3s;
+  }
+  
+  
+  .accordion-content table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .accordion-content th, .accordion-content td {
+    text-align: left;
+    padding: 8px;
+  }
+  
+  .accordion-content tr:hover {
+    background-color: #eed0d2;
+    cursor: pointer;
+  }
+  

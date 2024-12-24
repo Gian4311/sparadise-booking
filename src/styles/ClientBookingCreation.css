@@ -1,0 +1,127 @@
+/* Main Container */
+.booking-container {
+    margin: 50px auto;
+    padding: 50px;
+    max-width: 1500px;
+    background-color: #FBE3EB;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Section for Form */
+  .booking-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* Title */
+  .booking-title {
+    font-size: 4em;
+    font-weight: bold;
+    color: black;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  /* Client Row Styling */
+  .client-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 45px;
+    padding: 5px;
+  }
+  
+  /* Input Wrapper */
+  .client-input {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Input Labels */
+  .input-label {
+    font-size: 1.4em;
+    color: black;
+    margin-bottom: 5px;
+  }
+  
+  /* Input Fields */
+  .input-field {
+    padding: 10px;
+    font-size: 1.3em;
+    border: 1px solid #E0E0E0;
+    border-radius: 5px;
+  }
+  
+  /* Placeholder Styling */
+  .input-field::placeholder {
+    color: #C0C0C0;
+  }
+  
+  /* Add Client Button */
+  .add-client-btn {
+    width: 100%;
+    background-color: #552B59;
+    color: white;
+    font-size: 1em;
+    font-weight: bold;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border-radius: 30px;
+  }
+  
+  .add-client-btn:hover {
+    background-color: #7E3B7A;
+  }
+  
+  /* Action Buttons Section */
+  .action-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    gap: 70%;
+  }
+  
+  /* Back Button */
+  .back-btn {
+    flex: 1;
+    margin-right: 10px;
+    padding: 10px;
+    font-size: 1em;
+    font-weight: bold;
+    background-color: #A89396;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border-radius: 30px;
+  }
+  
+  .back-btn:hover {
+    background-color: #8B7D7E;
+  }
+  
+  /* Proceed Button */
+  .proceed-btn {
+    flex: 1;
+    padding: 10px;
+    font-size: 1em;
+    font-weight: bold;
+    background-color: #552B59;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border-radius: 30px;
+  }
+  
+  .proceed-btn:hover {
+    background-color: #7E3B7A;
+  }
+  
