@@ -50,9 +50,9 @@
 
         <!-- Packages Section with Toggle -->
         <section class="form-section package-section">
+            <div class="section-label">Select Packages:</div>
             <button id="toggle-packages" class="toggle-button">Select Packages</button>
             <div id="packages-list" class="hidden">
-                <div class="section-label">Select Packages:</div>
                 <div class="clickable-bars">
                     <div class="package-item">
                         <h3 class="package-title">Package 1</h3>
@@ -70,41 +70,23 @@
 
         <!-- Services Section with Toggle -->
         <section class="form-section service-section">
+            <div class="section-label">Select Services:</div>
             <button id="toggle-services" class="toggle-button">Select Services</button>
             <div id="services-list" class="hidden">
-                <div class="section-label">Select Services:</div>
                 <div class="clickable-bars">
                     <div class="service-item">
+                        <h3 class="service-title">₱600</h3>
                         <table class="service-details"></table>
                         <tbody>
                             <tr>
                                 <td class="service-title">Full Eyelash Extension</td>
                             </tr>
                             <tr>
-                                <td class="service-price">₱600.00</td>
+                                <td class="service-description">Beauty treatment where individual lashes are applied to your natural lashes to give them more volume, length, and definition.</td>
                             </tr>
+                            <br>
+                            <tr><button class="service-button"> Add +</button></tr>
                         </tbody>
-                    </div>
-                    <div class="service-item">
-                        <h3 class="service-title">Full Eyelash Extension</h3>
-                        <p class="service-price">₱600.00</p>
-                        <p class="service-description">
-                            Beauty treatment where individual lashes are applied to your natural lashes to give them
-                            more volume, length, and definition.</p>
-                        <button class="service-button"> Add +</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="form-section service-section">
-            <button id="toggle-services" class="toggle-button">Select Services</button>
-            <div id="services-list" class="hidden">
-                <div class="section-label">Select Services:</div>
-                <div class="clickable-bars">
-                    <div class="service-item">
-                        <h3 class="service-title">Back Massage</h3>
-                        <p class="service-price">₱300.00</p>
                     </div>
                     <div class="service-item">
                         <h3 class="service-title">Full Eyelash Extension</h3>
@@ -160,13 +142,13 @@
         <section class="form-section notes-section">
             <label for="notes" class="input-label">Notes:</label>
             <textarea id="notes" class="input-field" placeholder="Enter any special notes or preferences..."
-                readonly></textarea>
+                ></textarea>
         </section>
 
         <!-- Navigation Buttons -->
         <section class="action-buttons">
             <button onclick="history.back()" class="back-btn">Back</button>
-            <button class="proceed-btn">Proceed (2/4)</button>
+            <a href="../pages/ClientBookingCreation3.html"> <button onclick=" "class="proceed-btn">Proceed (2/4)</button></a>
         </section>
     </main>
 

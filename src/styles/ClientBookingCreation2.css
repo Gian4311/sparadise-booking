@@ -48,20 +48,22 @@ body {
 
 /* Section Buttons */
 .toggle-button {
-    font-size: 1.5rem;
+    font-size: 2rem;
     font-weight: bold;
     padding: 10px;
-    background-color: #552B59;
-    color: white;
+    background-color: white;
+    color: black;
     border: none;
-    border-radius: 5px;
+    border-radius: 20px;
     cursor: pointer;
     width: 100%;
     margin-bottom: 10px;
+    text-align: left;
+    padding: 20px;
 }
 
 .toggle-button:hover {
-    background-color: #7E3B7A;
+    background-color: whitesmoke;
 }
 
 /* Hidden by default */
@@ -88,7 +90,7 @@ body {
     cursor: pointer;
     background-color: #fff;
     padding: 10px;
-    border-radius: 5px;
+    border-radius: 20px;
     text-align: center;
     font-size: 1.3rem;
     width: 300px;
@@ -97,7 +99,7 @@ body {
 
 .package-item:hover,
 .service-item:hover {
-    background-color: #e1bee7;
+    background-color: whitesmoke;
 }
 
 .service-description {
@@ -125,11 +127,13 @@ body {
 .time-slot-table th{
     font-weight: bold;
 }
+
 .time-slot-table th, .time-slot-table td {
     padding: 15px;
     text-align: center;
     font-size: 1.2rem;
     background-color: white;
+
 }
 
 .time-slot-dropdown {
@@ -205,4 +209,52 @@ body {
 
 .proceed-btn:hover {
     background-color: #7E3B7A;
+}
+
+.booking-summary-table {
+    padding: 10px;
+    margin-top: 2%;
+    background-color: white;
+    width: 100%;
+    color:black;
+    text-align: center;
+    font-size: 1.4rem;
+}
+
+.booking-summary-table th{
+    padding: 1%;
+    font-size: 1.4rem;
+}
+
+.booking-summary-table td{
+    font-size: 1rem;
+}
+
+.voucher-summary-table {
+    margin-top: 1%;
+    background-color: white;
+    width: 100%;
+    padding-right: 4%;
+    padding-left: 4%;
+    padding-bottom: 1%;
+    padding-top: 2%;
+    text-align: center;
+    align-items: center;
+}
+
+.voucher-summary-table td{
+    font-size: 1rem;
+}
+
+.voucher-summary-table th{
+    padding-right: 1%;
+    font-size: 1.4rem;
+}
+
+#voucher-code {
+    width: 40%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: none;
 }
