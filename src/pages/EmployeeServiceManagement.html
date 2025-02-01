@@ -1,115 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Services & Packages</title>
-  <link rel="stylesheet" href="../styles/EmployeeServiceManagement.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services & Packages</title>
+    <link rel="stylesheet" href="../styles/EmployeeServiceManagement.css">
 </head>
+
 <body>
-  <div class="sidebar">
-    <div class="sidebar-logo">
-        <img src="../images/SpaRadise Logo.png" alt="SpaRadise Logo">
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="../images/SpaRadise Logo.png" alt="SpaRadise Logo">
+        </div>
+        <ul class="service-menu">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Bookings</a></li>
+            <li><a href="#">Clients</a></li>
+            <li><a href="#">Employees</a></li>
+            <li><a href="#" class="service-active">Services & Packages</a></li>
+            <li><a href="#">Vouchers</a></li>
+            <li><a href="#">Rooms & Chairs</a></li>
+            <li><a href="#">Log Out</a></li>
+        </ul>
     </div>
-    <ul class="service-menu">
-      <li><a href="#">Dashboard</a></li>
-      <li><a href="#">Bookings</a></li>
-      <li><a href="#">Clients</a></li>
-      <li><a href="#">Employees</a></li>
-      <li><a href="#" class="service-active">Services & Packages</a></li>
-      <li><a href="#">Vouchers</a></li>
-      <li><a href="#">Rooms & Chairs</a></li>
-      <li><a href="#">Log Out</a></li>
-    </ul>
-  </div>
-  <div class="service-main-content">
-    <label for="service-main-content" class="service-management-location">Services & Packages - Full Eyelash Extensions</label>
-    <div class="service-form-section">
-        <div class="service-header">
-            <a href="#" class="service-back-arrow" aria-label="Back">
-                &#8592;
-            </a>
-            <h1>Full Eyelash Extensions</h1>
-          </div>
-      <form>
-        <div class="service-form-row">
-          <label for="service-name">Name</label>
-          <input type="text" id="service-name" name="service-name" value="Full Eyelash Extensions">
+    <div class="service-main-content">
+        <label for="service-main-content" class="service-management-location">Services & Packages - Full Eyelash
+            Extensions</label>
+        <div class="service-form-section">
+            <div class="service-header">
+                <a href="#" class="service-back-arrow" aria-label="Back">
+                    &#8592;
+                </a>
+                <h1>Full Eyelash Extensions</h1>
+            </div>
+            <form>
+                <!-- Group 1: Basic Details -->
+                <div class="service-form-row-group">
+                    <div class="service-form-row">
+                        <label for="service-name">Name</label>
+                        <input type="text" id="service-name" name="service-name" value="Full Eyelash Extensions">
+                    </div>
+                </div>
+
+                <!-- Group 2: Description -->
+                <div class="service-form-row">
+                    <label for="service-description">Description</label>
+                    <textarea id="service-description"
+                        name="service-description">Enhances eyelashes with a fuller, longer, and natural look using lash extensions.</textarea>
+                </div>
+
+                <!-- Group 3: Service Type and Room Type -->
+                <div class="service-form-row-group">
+                    <div class="service-form-row">
+                        <label for="service-type">Service Type</label>
+                        <select id="service-type" name="service-type">
+                            <option selected>Brows & Lashes</option>
+                        </select>
+                    </div>
+                    <div class="service-form-row">
+                        <label for="service-room-type">Room Type</label>
+                        <select id="service-room-type" name="service-room-type">
+                            <option selected>Chair</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Group 4: Status and Age Limit -->
+                <div class="service-form-row-group">
+                    <div class="service-form-row">
+                        <label for="service-duration">Duration (minutes)</label>
+                        <input type="number" id="service-duration" name="service-duration" value="60">
+                        </select>
+                    </div>
+                    <div class="service-form-row">
+                        <label for="service-age-limit">Age Limit</label>
+                        <input type="number" id="service-age-limit" name="service-age-limit" value="16">
+                    </div>
+                </div>
         </div>
-        <div class="service-form-row">
-          <label for="service-price">Price</label>
-          <input type="number" id="service-price" name="service-price" value="400">
+
+        <div class="service-maintenance"><label for="service-maintenance" class="service-maintenance-label">Service
+                Maintenance:
+            </label>
+
+            <!-- Group 5: Duration and Price -->
+            <div class="service-form-row-group">
+                <div class="service-form-row">
+                    <label for="service-status">Status</label>
+                    <select id="service-status" name="service-status">
+                        <option selected>Active</option>
+                    </select>
+                </div>
+                <div class="service-form-row">
+                    <label for="service-price">Price (₱)</label>
+                    <input type="number" id="service-price" name="service-price" value="400">
+                </div>
+                <div class="service-form-row">
+                    <label for="service-commission">Commission</label>
+                    <input type="number" id="service-commission" name="service-commission" value="25">
+                </div>
+                </form>
+            </div>
+            <div class="service-history">
+                <h2>Service History</h2>
+                <table class="service-history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Price</th>
+                            <th>Commission (%)</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>12 December 2024</td>
+                            <td>₱350</td>
+                            <td>25%</td>
+                            <td>Active</td>
+                            <td><button class="service-delete-btn">Delete</button></td>
+                        </tr>
+                        <tr>
+                            <td>26 December 2024</td>
+                            <td>₱400</td>
+                            <td>25%</td>
+                            <td>Active</td>
+                            <td><button class="service-delete-btn">Delete</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="service-form-actions">
+                <button class="service-cancel-btn">Cancel</button>
+                <button class="service-save-btn">Save Changes</button>
+            </div>
         </div>
-        <div class="service-form-row">
-          <label for="service-commission">Commission</label>
-          <input type="number" id="service-commission" name="service-commission" value="25">
-        </div>
-        <div class="service-form-row">
-          <label for="service-description">Description</label>
-          <textarea id="service-description" name="service-description">Enhances eyelashes with a fuller, longer, and natural look using lash extensions.</textarea>
-        </div>
-        <div class="service-form-row">
-          <label for="service-type">Service Type</label>
-          <select id="service-type" name="service-type">
-            <option selected>Brows & Lashes</option>
-          </select>
-        </div>
-        <div class="service-form-row">
-          <label for="service-room-type">Room Type</label>
-          <select id="service-room-type" name="service-room-type">
-            <option selected>Chair</option>
-          </select>
-        </div>
-        <div class="service-form-row">
-          <label for="service-status">Status</label>
-          <select id="service-status" name="service-status">
-            <option selected>Active</option>
-          </select>
-        </div>
-        <div class="service-form-row">
-          <label for="service-age-limit">Age Limit</label>
-          <input type="number" id="service-age-limit" name="service-age-limit" value="16">
-        </div>
-        <div class="service-form-row">
-          <label for="service-duration">Duration (minutes)</label>
-          <input type="number" id="service-duration" name="service-duration" value="60">
-        </div>
-      </form>
     </div>
-    <div class="service-history">
-      <h2>Service History</h2>
-      <table class="service-history-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Price</th>
-            <th>Commission (%)</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>12 December 2024</td>
-            <td>₱350</td>
-            <td>25%</td>
-            <td>Active</td>
-            <td><button class="service-delete-btn">Delete</button></td>
-          </tr>
-          <tr>
-            <td>26 December 2024</td>
-            <td>₱400</td>
-            <td>25%</td>
-            <td>Active</td>
-            <td><button class="service-delete-btn">Delete</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="service-form-actions">
-      <button class="service-cancel-btn">Cancel</button>
-      <button class="service-save-btn">Save Changes</button>
-    </div>
-  </div>
 </body>
+
 </html>
