@@ -1,0 +1,210 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: sparadiseMainFont;
+  }
+  
+  @font-face {
+    font-family: sparadiseMainFont;
+    src: url(Product\ Sans\ Regular.ttf);
+  }
+
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    color: black;
+  }
+
+.sidebar {
+    width: 250px;
+    background-color: #552B59;
+    color: white;
+    height: 100%;
+    position: fixed;
+    padding: 20px;
+  }
+  
+  .sidebar-logo img {
+    height: 90px;
+    padding-top: 20px;
+  }
+
+  .sidebar li{
+    padding: 5%;
+  }
+  
+  .service-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .service-management-location {
+    color: black;
+  }
+
+  .service-menu li {
+    margin: 20px 0;
+  }
+  
+  .service-menu li a {
+    text-decoration: none;
+    color: white;
+    font-size: 1.2em;
+  }
+  
+  .service-menu li a.service-active {
+    font-weight: bold;
+    text-decoration: underline;
+  }
+  
+  .service-main-content {
+    margin-left: 270px;
+    padding: 30px;
+    background-color: #FDF9FE;
+    min-height: 100vh;
+  }
+
+  .service-header {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Adds spacing between the arrow and the header */
+  }
+  
+  .service-header .back-arrow {
+    text-decoration: none;
+    font-size: 1.5em;
+    color: black;
+    cursor: pointer;
+  }
+
+  .service-back-arrow{
+    text-decoration: none;
+    font-size: 40px;
+    padding-bottom: 25px;
+    color: black;
+  }
+  
+  .service-header h1 {
+    margin: 0; /* Ensures the header aligns vertically with the arrow */
+  }
+  
+  
+  .service-header h1 {
+    font-size: 2.2em;
+    color: black;
+    margin-bottom: 20px;
+  }
+  
+  .service-form-section {
+    background-color: #FDE9EE;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    margin-top: 1.5%;
+  }
+  
+  .service-form-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+  }
+  
+  .service-form-row label {
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
+  /* Grouping input fields */
+.service-form-row-group {
+    display: flex;
+    gap: 20px; /* Space between grouped fields */
+    margin-bottom: 20px; /* Space between groups */
+  }
+  
+  .service-form-row-group .service-form-row {
+    flex: 1; /* Makes the fields in the group equally wide */
+  }
+  
+  .service-form-row textarea {
+    resize: vertical; /* Allow resizing only vertically */
+  }
+  
+  
+  input, textarea, select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+  }
+  
+  textarea {
+    height: 80px;
+  }
+  
+  .service-history {
+    margin-top: 30px;
+  }
+  
+  .service-history-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .service-history-table th, 
+  .service-history-table td {
+    padding: 15px;
+    border: 1px solid #ccc;
+    text-align: center;
+  }
+  
+  .service-delete-btn {
+    background-color: #9E1A24;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.9em;
+  }
+  
+  .service-form-actions {
+    text-align: right;
+    margin-top: 20px;
+  }
+  
+  .service-cancel-btn {
+    background-color: #9E1A24;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    margin-right: 10px;
+  }
+  
+  .service-save-btn {
+    background-color: #4B306A;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+  }
+  
+  .service-maintenance{
+    background-color: #FDE9EE;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    margin-top: 1.5%;
+  }
+
+  .service-maintenance-label{
+    font-size: 2rem;
+    font-weight: bold;
+  }
+
+  .service-maintenance .service-form-row-group{
+    padding-top: 2%;
+    color: black;
+  }

@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DayPlannner from "./experiments/DayPlanner";
 import DevMenu from "./pages/DevMenu";
-// import VoucherMangement from ".pages/VoucherMangement";
+import ServiceMenu from "./pages/ServiceMenu";
+import ServiceManagement from "./pages/ServiceManagement";
 
 function App() {
 
@@ -10,6 +11,8 @@ function App() {
             <Routes>
                 <Route index element={ <DevMenu/> }/>
                 <Route path="dayPlanner" element={ <DayPlannner/> }/>
+                <Route path="management/services/menu" element={ <ServiceMenu/> }/>
+                <Route path="management/services/:id" element={ <ServiceManagement/> }/>
             </Routes>
         </BrowserRouter>
     </>;

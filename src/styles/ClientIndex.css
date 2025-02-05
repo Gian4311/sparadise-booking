@@ -11,7 +11,7 @@
   src: url(Product\ Sans\ Regular.ttf);
 }
 
-clientIndexody {
+clientIndexbody {
   background: url('../images/indexbackground.jpg') no-repeat center center/cover;
   height: 100vh;
   display: flex;

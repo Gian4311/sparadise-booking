@@ -1,20 +1,16 @@
-// Basic data
-
 export interface ServiceData {
 
     name: string
     description: string
-    serviceType: "body" | "browsAndLashes" | "facial" | "handsAndFoot" | "health" | "wax"
-    roomType: "room" | "chair"
+    serviceType: serviceType
+    roomType: roomType
     ageLimit: number
     durationMin: number
 
 }
 
-// In-app
+export interface ServiceDataMap {
 
-export interface Service extends ServiceData {
-
-    id: string
+    [ serviceId: string ]: ServiceData
 
 }
