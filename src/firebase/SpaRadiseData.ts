@@ -13,6 +13,7 @@ export default class SpaRadiseData {
     public shallowCopy(): SpaRadiseData {
 
         const shallowCopy: SpaRadiseData = new SpaRadiseData();
+        shallowCopy.serviceData = this.serviceData;
         shallowCopy.serviceDataMap = this.serviceDataMap;
         return shallowCopy;
 

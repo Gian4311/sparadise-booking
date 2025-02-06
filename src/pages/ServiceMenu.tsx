@@ -39,8 +39,8 @@ export default function ServiceMenu(): JSX.Element {
         {
 
             serviceDataMap ? Object.keys( serviceDataMap ).map(
-                ( serviceId, index ) => <Link to={ "/management/services/" + serviceId }>
-                    <h1 key={ index }>{ serviceId }</h1>
+                ( serviceId, index ) => <Link key={ index } to={ "/management/services/" + serviceId }>
+                    <h1>{ serviceId }</h1>
                 </Link>
             ) : undefined
         }
