@@ -14,7 +14,7 @@
 body {
     margin: 0;
     font-family: 'Arial', sans-serif;
-    color: #4B306A;
+    color: black;
   }
 
 .sidebar {
@@ -116,6 +116,22 @@ body {
     margin-bottom: 5px;
     font-weight: bold;
   }
+
+  /* Grouping input fields */
+.service-form-row-group {
+    display: flex;
+    gap: 20px; /* Space between grouped fields */
+    margin-bottom: 20px; /* Space between groups */
+  }
+  
+  .service-form-row-group .service-form-row {
+    flex: 1; /* Makes the fields in the group equally wide */
+  }
+  
+  .service-form-row textarea {
+    resize: vertical; /* Allow resizing only vertically */
+  }
+  
   
   input, textarea, select {
     padding: 10px;
@@ -175,3 +191,20 @@ body {
     border-radius: 5px;
   }
   
+  .service-maintenance{
+    background-color: #FDE9EE;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    margin-top: 1.5%;
+  }
+
+  .service-maintenance-label{
+    font-size: 2rem;
+    font-weight: bold;
+  }
+
+  .service-maintenance .service-form-row-group{
+    padding-top: 2%;
+    color: black;
+  }

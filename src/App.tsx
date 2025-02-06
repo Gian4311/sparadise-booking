@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DayPlannner from "./experiments/DayPlanner";
 import DevMenu from "./pages/DevMenu";
-import ServiceManagement from "./pages/ServiceManagement";
 import ServiceMenu from "./pages/ServiceMenu";
+import ServiceManagement from "./pages/ServiceManagement";
 
 function App() {
 
