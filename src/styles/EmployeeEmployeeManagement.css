@@ -17,49 +17,49 @@ body {
     color: black;
   }
   
-  .service-management-location {
+  .employee-management-location {
     color: black;
   }
 
-  .service-main-content {
+  .employee-main-content {
     margin-left: 270px;
     padding: 30px;
     background-color: #FDF9FE;
     min-height: 100vh;
   }
 
-  .service-header {
+  .employee-header {
     display: flex;
     align-items: center;
     gap: 10px; /* Adds spacing between the arrow and the header */
   }
   
-  .service-header .back-arrow {
+  .employee-header .back-arrow {
     text-decoration: none;
     font-size: 1.5em;
     color: black;
     cursor: pointer;
   }
 
-  .service-back-arrow{
+  .employee-back-arrow{
     text-decoration: none;
     font-size: 40px;
     padding-bottom: 25px;
     color: black;
   }
   
-  .service-header h1 {
+  .employee-header h1 {
     margin: 0; /* Ensures the header aligns vertically with the arrow */
   }
   
   
-  .service-header h1 {
+  .employee-header h1 {
     font-size: 2.2em;
     color: black;
     margin-bottom: 20px;
   }
   
-  .service-form-section {
+  .employee-form-section {
     background-color: #FDE9EE;
     padding: 20px;
     border-radius: 10px;
@@ -67,70 +67,74 @@ body {
     margin-top: 1.5%;
   }
   
-  .service-form-row {
+  .employee-form-row {
     display: flex;
     flex-direction: column;
-    margin-bottom: 20px;
+
   }
   
-  .service-form-row label {
+  .employee-form-row label {
     margin-bottom: 5px;
     font-weight: bold;
   }
 
   /* Grouping input fields */
-.service-form-row-group {
+.employee-form-row-group {
     display: flex;
     gap: 20px; /* Space between grouped fields */
     margin-bottom: 20px; /* Space between groups */
   }
   
-  .service-form-row-group .service-form-row {
+  .employee-form-row-group .employee-form-row {
     flex: 1; /* Makes the fields in the group equally wide */
   }
   
-  .service-form-row textarea {
-    resize: vertical; /* Allow resizing only vertically */
+  .employee-form-row textarea {
+    resize: none; /* Allow resizing only vertically */
   }
   
   
   input, textarea, select {
     padding: 10px;
     border: 1px solid #ccc;
-    border-radius: 5px;
+    border-radius: 5pxs;
     font-size: 1em;
   }
   
+  .employee-gap-row {
+    border-bottom: black solid 2px;
+    margin-bottom: 20px;
+  }
   textarea {
     height: 80px;
   }
   
-  .service-history-label{
+  .employee-history-label{
     margin-bottom: 1%;
 
   }
-  .service-history {
+  .employee-history {
     margin-top: 1%;
   }
   
-  .service-history-table {
+  .employee-history-table {
     width: 100%;
     border-collapse: collapse;
   }
   
-  .service-history-table th, 
-  .service-history-table td {
+  .employee-history-table th, 
+  .employee-history-table td {
     padding: 15px;
     text-align: center;
   }
 
-  .service-history-table th{
+  .employee-history-table th{
     background-color: #6B009E;
     color: white;
   }
 
   
-  .service-maintenance-delete-btn {
+  .employee-maintenance-delete-btn {
     background-color: #9E1A24;
     color: white;
     padding: 5px 10px;
@@ -139,12 +143,12 @@ body {
     font-size: 0.9em;
   }
   
-  .service-form-actions {
+  .employee-form-actions {
     text-align: right;
     margin-top: 20px;
   }
   
-  .service-cancel-btn {
+  .employee-cancel-btn {
     background-color: #6B009E;
     color: white;
     padding: 10px 20px;
@@ -154,7 +158,7 @@ body {
     width: 20%;
   }
 
-  .service-delete-btn {
+  .employee-delete-btn {
     background-color: #9E1A24;
     color: white;
     padding: 10px 20px;
@@ -165,7 +169,7 @@ body {
     width: 20%;
   }
   
-  .service-save-btn {
+  .employee-save-btn {
     background-color: green;
     color: white;
     padding: 10px 20px;
@@ -174,7 +178,7 @@ body {
     width: 20%;
   }
   
-  .service-maintenance{
+  .employee-maintenance{
     background-color: #FDE9EE;
     padding: 20px;
     border-radius: 10px;
@@ -182,12 +186,12 @@ body {
     margin-top: 1.5%;
   }
 
-  .service-maintenance-label{
+  .employee-maintenance-label{
     font-size: 2rem;
     font-weight: bold;
   }
 
-  .service-maintenance .service-form-row-group{
+  .employee-maintenance .employee-form-row-group{
     padding-top: 2%;
     color: black;
   }
