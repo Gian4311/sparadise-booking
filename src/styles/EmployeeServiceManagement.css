@@ -144,8 +144,12 @@ body {
     height: 80px;
   }
   
+  .service-history-label{
+    margin-bottom: 1%;
+
+  }
   .service-history {
-    margin-top: 30px;
+    margin-top: 1%;
   }
   
   .service-history-table {
@@ -156,11 +160,16 @@ body {
   .service-history-table th, 
   .service-history-table td {
     padding: 15px;
-    border: 1px solid #ccc;
     text-align: center;
   }
+
+  .service-history-table th{
+    background-color: #6B009E;
+    color: white;
+  }
+
   
-  .service-delete-btn {
+  .service-maintenance-delete-btn {
     background-color: #9E1A24;
     color: white;
     padding: 5px 10px;
@@ -175,20 +184,33 @@ body {
   }
   
   .service-cancel-btn {
+    background-color: #6B009E;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    margin-right: 10px;
+    width: 20%;
+  }
+
+  .service-delete-btn {
     background-color: #9E1A24;
     color: white;
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
     margin-right: 10px;
+    float: left;
+    width: 20%;
   }
   
   .service-save-btn {
-    background-color: #4B306A;
+    background-color: green;
     color: white;
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
+    width: 20%;
   }
   
   .service-maintenance{
