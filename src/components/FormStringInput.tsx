@@ -8,7 +8,10 @@ type main = string;
 
 export default function FormStringInput(
     {
-        keyName, maxLength, name, object, onChange, placeholder, readOnly, reloader, required, validate
+        keyName, maxLength,
+        name = keyName.toString(),
+        object, placeholder, readOnly, reloader, required,
+        onChange, validate
     }: {
         keyName: string | number,
         maxLength?: number,

@@ -4,7 +4,8 @@ type main = string;
 
 export default function FormTextInput(
     {
-        keyName, name, object, onChange, placeholder, readOnly, reloader, required, validate
+        keyName, name, object, placeholder, readOnly, reloader, required,
+        onChange, validate
     }: {
         keyName: string | number,
         name?: string,

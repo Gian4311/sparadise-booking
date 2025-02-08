@@ -33,8 +33,7 @@ export default class SpaRadiseFirestore {
 
     public static async addService( serviceData: ServiceData ): Promise< string > {
 
-        if( !SpaRadiseFirestore.isValidServiceData( serviceData ) )
-            throw new Error( `Invalid service data!` );
+        await this.checkServiceData( serviceData );
         const
             serviceCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
                 SpaRadiseCollections.SERVICE_COLLECTION
@@ -42,6 +41,56 @@ export default class SpaRadiseFirestore {
             documentReference = await addDoc( serviceCollection, serviceData )
         ;
         return documentReference.id;
+
+    }
+
+    public static async checkServiceData( serviceData: ServiceData ): Promise< boolean > {
+
+        const
+            {
+                MIN_AGE_LIMIT,
+                MIN_DENOMINATION,
+                SERVICE_DURATION_MIN_RANGE
+            } = SpaRadiseEnv,
+            {
+                name, description, serviceType, roomType, ageLimit, durationMin
+            } = serviceData
+        ;
+
+        try {
+
+            if( name === null ) throw "Name is empty.";
+            if( !StringUtils.isTinyText( name ) ) throw "Name must be tinytext.";
+            if( description === null ) throw "Description is empty.";
+            if( !StringUtils.isTinyText( description ) ) throw "Description must be text";
+            if( !SpaRadiseEnv.isServiceType( serviceData.serviceType ) ) throw "Invalid service type.";
+            if( !SpaRadiseEnv.isRoomType( serviceData.roomType ) ) throw "Invalid room type.";
+            if( !NumberUtils.isNaturalNumber( serviceData.ageLimit ) ) throw "Age limit must be a natural number.";
+            if( serviceData.ageLimit < MIN_AGE_LIMIT ) throw `Age limit must be ${ MIN_AGE_LIMIT }+`;
+            // if( !NumberUtils.isNaturalNumber( serviceData.durationMin ) ) throw "Duration (min) must be a natural number.";
+
+            // if( !NumberUtils.isDivisible( serviceData.durationMin, MIN_DENOMINATION ) ) throw "Duration (min) must be in increments of 30."
+            SERVICE_DURATION_MIN_RANGE.checkInRange( durationMin, "Duration (min)" )
+            // if( serviceData.durationMin === 0 ) 
+            // note: check if in range
+
+        } catch( error ) {
+
+            throw error;
+
+        }
+        return true;
+        // return (
+        //     StringUtils.isTinyText( serviceData.name )
+        //     && StringUtils.isText( serviceData.description )
+        //     && SpaRadiseFirestore.SERVICE_TYPE_LIST.includes( serviceData.serviceType )
+        //     && SpaRadiseFirestore.ROOM_TYPE_LIST.includes( serviceData.roomType )
+        //     && NumberUtils.isNaturalNumber( serviceData.ageLimit )
+        //     && serviceData.ageLimit >= SpaRadiseEnv.MINIMUM_AGE_LIMIT
+        //     && NumberUtils.isNaturalNumber( serviceData.durationMin )
+        //     && serviceData.durationMin % SpaRadiseEnv.MIN_DENOMINATION == 0
+
+        // );
 
     }
 
@@ -100,22 +149,6 @@ export default class SpaRadiseFirestore {
         for( let snapshot of snapshotList )
             serviceDataMap[ snapshot.id ] = await SpaRadiseFirestore.getServiceData( snapshot );
         return serviceDataMap;
-
-    }
-
-    private static isValidServiceData( serviceData: ServiceData ): boolean {
-
-        return (
-            StringUtils.isTinyText( serviceData.name )
-            && StringUtils.isText( serviceData.description )
-            && SpaRadiseFirestore.SERVICE_TYPE_LIST.includes( serviceData.serviceType )
-            && SpaRadiseFirestore.ROOM_TYPE_LIST.includes( serviceData.roomType )
-            && NumberUtils.isNaturalNumber( serviceData.ageLimit )
-            && serviceData.ageLimit >= SpaRadiseEnv.MINIMUM_AGE_LIMIT
-            && NumberUtils.isNaturalNumber( serviceData.durationMin )
-            && serviceData.durationMin % SpaRadiseEnv.MIN_DENOMINATION == 0
-
-        );
 
     }
 
