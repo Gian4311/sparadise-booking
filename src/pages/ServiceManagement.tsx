@@ -18,6 +18,13 @@ export default function ServiceManagement(): JSX.Element {
         isEditMode: boolean = ( documentId !== undefined && !isNewMode )
     ;
 
+    async function check(): Promise< void > {
+
+        if( !pageData.serviceData ) return;
+        console.log( await SpaRadiseFirestore.checkServiceData( pageData.serviceData ) ) 
+
+    }
+
     async function newEntityForm(): Promise< void > {
 
         pageData.serviceData = {
@@ -47,10 +54,7 @@ export default function ServiceManagement(): JSX.Element {
     useEffect( () => { ( async() => {
         
         if( !documentId ) return;
-        if( isNewMode )
-            newEntityForm();
-        else
-            openEntityForm();
+        await ( isNewMode ? newEntityForm() : openEntityForm() );
         reloadPageData();
 
     } )() }, [] );
@@ -64,6 +68,7 @@ export default function ServiceManagement(): JSX.Element {
             <FormTextInput keyName="description" object={ pageData.serviceData } reloader={ pageData }/>
         </form>
         <button onClick={ () => console.log( pageData ) }>Log page data</button>
+        <button onClick={ check }>Check</button>
     </>
 
 }

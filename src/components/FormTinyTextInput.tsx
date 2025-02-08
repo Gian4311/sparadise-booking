@@ -1,15 +1,11 @@
-import {
-    ChangeEvent,
-    useEffect,
-    useState
-} from "react";
 import FormStringInput from "./FormStringInput";
 
 type main = string;
 
 export default function FormTinyTextInput(
     {
-        keyName, name, object, onChange, placeholder, readOnly, reloader, required, validate
+        keyName, name, object, placeholder, readOnly, reloader, required,
+        onChange, validate
     }: {
         keyName: string | number,
         name?: string,
