@@ -72,6 +72,7 @@ body {
     flex-direction: column;
 
   }
+
   
   .employee-form-row label {
     margin-bottom: 5px;
@@ -145,7 +146,7 @@ body {
   
   .employee-form-actions {
     text-align: right;
-    margin-top: 20px;
+    margin-top: 5%;
   }
   
   .employee-cancel-btn {
@@ -194,4 +195,16 @@ body {
   .employee-maintenance .employee-form-row-group{
     padding-top: 2%;
     color: black;
+  }
+
+  .employee-inactive-btn{
+    background-color: #9E1A24;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    margin-right: 10px;
+    float: left;
+    width: auto;
+    align-items: center;
   }
