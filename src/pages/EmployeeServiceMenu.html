@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services & Packages</title>
+    <link rel="stylesheet" href="../styles/EmployeeServiceMenu.css">
+    <link rel="stylesheet" href="../styles/Sidebar.css">
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="../images/SpaRadise Logo.png" alt="SpaRadise Logo">
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Bookings</a></li>
+            <li><a href="#">Clients</a></li>
+            <li><a href="../pages/EmployeeEmployeeManagement.html">Employees</a></li>
+            <li><a href="../pages/EmployeeServiceMenu.html" class="active">Services & Packages</a></li>
+            <li><a href="#">Vouchers</a></li>
+            <li><a href="#">Rooms & Chairs</a></li>
+            <li><a href="#">Log Out</a></li>
+        </ul>
+    </div>
+
+    <div class="service-menu-main-content ">
+        <label for="service-menu-main-content" class="service-menu-main-content-location">Services & Packages
+            </label>
+        <div class="service-menu-form-section">
+            <div class="service-stats">
+                <div class="service-stat">2<br><span>Services & Packages</span></div>
+                <div class="service-stat">1<br><span>Services</span></div>
+                <div class="service-stat">1<br><span>Active Services</span></div>
+                <div class="service-stat">1<br><span>Packages</span></div>
+                <div class="service-stat">1<br><span>Active Packages</span></div>
+            </div>
+
+            <div class="controls">
+                <input type="text" placeholder="Search services or packages" class="search">
+                <select class="filter-btn" id="filter-select" name="services-packages">
+                    <option selected>A - Z</option>
+                    <option>Z - A</option>
+                </select>
+                <select class="filter-btn" id="filter-select" name="services-packages">
+                    <option selected>Services Only</option>
+                    <option>Packages Only</option>
+                    <option>Services & Packages</option>
+                </select>
+                <button class="action-btn">+ Add new service</button>
+                <button class="action-btn">+ Add new package</button>
+            </div>
+
+            <table class="services-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Commission (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Full Eyelash Extensions</td>
+                        <td>Service</td>
+                        <td>₱400</td>
+                        <td>Active</td>
+                        <td>25%</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>December Promo</td>
+                        <td>Package</td>
+                        <td>₱700</td>
+                        <td>Active</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
