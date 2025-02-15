@@ -53,18 +53,53 @@
             <div class="section-label">Select Packages:</div>
             <button id="toggle-packages" class="toggle-button">Select Packages</button>
             <div id="packages-list" class="hidden">
-                <div class="clickable-bars">
-                    <div class="package-item">
-                        <h3 class="package-title">Package 1</h3>
-                        <p class="package-price">₱400.00</p>
-                        <p class="package-details">Includes: Something 1, Something 2</p>
+                <div class="package-scroll-container">
+                    <div class="package-scroll-item">
+                        <div class="package-price">₱400.00</div>
+                        <div class="package-name">Package 1</div>
+                        <div class="package-services">
+                            <ul> > Something 1</ul>
+                            <ul> > Something 2</ul>
+                        </div>
+                        <div class="package-description">Lorem ipsum dolor sit amet. Est nostrum quidem ut quis dolorum
+                            aut voluptatibus itaque sit exercitationem quis rem enim inventore.
+                        </div>
+                        <button class="add-btn">Add</button>
                     </div>
-                    <div class="package-item">
-                        <h3 class="package-title">Package 2</h3>
-                        <p class="package-price">₱500.00</p>
-                        <p class="package-details">Includes: Something 3, Something 4</p>
+                    <div class="package-scroll-item">
+                        <div class="package-price">₱400.00</div>
+                        <div class="package-name">December Package</div>
+                        <div class="package-services">
+                            <ul> > Back Massage</ul>
+                            <ul> > Full Eyelash Extension</ul>
+                        </div>
+                        <div class="package-description">Lorem ipsum dolor sit amet. Est nostrum quidem ut quis dolorum
+                            aut voluptatibus itaque sit exercitationem quis rem enim inventore. </div>
+                        <button class="remove-btn">Remove</button>
+                    </div>
+                    <div class="package-scroll-item">
+                        <div class="package-price">₱500.00</div>
+                        <div class="package-name">Package 2</div>
+                        <div class="package-services">
+                            <ul class="package-services-conflict"> > Back Massage</ul>
+                            <ul class="package-services-conflict"> > Full Eyelash Extension</ul>
+                            <ul> > Something 3</ul>
+                        </div>
+                        <div class="package-description">Lorem ipsum dolor sit amet. </div>
+                        <button class="conflict-btn">In-Conflict</button>
+                    </div>
+                    <div class="package-scroll-item">
+                        <div class="package-price">₱400.00</div>
+                        <div class="package-name">Package 3</div>
+                        <div class="package-services">
+                            <ul> > Something 3</ul>
+                            <ul> > Something 4</ul>
+                        </div>
+                        <div class="package-description">Lorem ipsum dolor sit amet. </div>
+                        <button class="add-btn">Add</button>
                     </div>
                 </div>
+            </div>
             </div>
         </section>
 
@@ -73,30 +108,36 @@
             <div class="section-label">Select Services:</div>
             <button id="toggle-services" class="toggle-button">Select Services</button>
             <div id="services-list" class="hidden">
-                <div class="clickable-bars">
-                    <div class="service-item">
-                        <h3 class="service-title">₱600</h3>
-                        <table class="service-details"></table>
-                        <tbody>
-                            <tr>
-                                <td class="service-title">Full Eyelash Extension</td>
-                            </tr>
-                            <tr>
-                                <td class="service-description">Beauty treatment where individual lashes are applied to your natural lashes to give them more volume, length, and definition.</td>
-                            </tr>
-                            <br>
-                            <tr><button class="service-button"> Add +</button></tr>
-                        </tbody>
+                <div class="service-scroll-container">
+                    <div class="service-scroll-item">
+                        <div class="service-price">₱400.00</div>
+                        <div class="service-name">Package 1</div>
+                        <div class="service-description">Lorem ipsum dolor sit amet. Est nostrum quidem ut quis dolorum
+                            aut voluptatibus itaque sit exercitationem quis rem enim inventore.
+                        </div>
+                        <button class="add-btn">Add</button>
                     </div>
-                    <div class="service-item">
-                        <h3 class="service-title">Full Eyelash Extension</h3>
-                        <p class="service-price">₱600.00</p>
-                        <p class="service-description">
-                            Beauty treatment where individual lashes are applied to your natural lashes to give them
-                            more volume, length, and definition.</p>
-                        <button class="service-button"> Add +</button>
+                    <div class="service-scroll-item">
+                        <div class="service-price">₱400.00</div>
+                        <div class="service-name">December Package</div>
+                        <div class="service-description">Lorem ipsum dolor sit amet. Est nostrum quidem ut quis dolorum
+                            aut voluptatibus itaque sit exercitationem quis rem enim inventore. </div>
+                        <button class="remove-btn">Remove</button>
+                    </div>
+                    <div class="service-scroll-item">
+                        <div class="service-price">₱500.00</div>
+                        <div class="service-name">Package 2</div>
+                        <div class="service-description">Lorem ipsum dolor sit amet. </div>
+                        <button class="conflict-btn">In-Conflict</button>
+                    </div>
+                    <div class="service-scroll-item">
+                        <div class="service-price">₱400.00</div>
+                        <div class="service-name">Package 3</div>
+                        <div class="service-description">Lorem ipsum dolor sit amet. </div>
+                        <button class="add-btn">Add</button>
                     </div>
                 </div>
+            </div>
             </div>
         </section>
 
@@ -141,14 +182,14 @@
         <!-- Notes Section -->
         <section class="form-section notes-section">
             <label for="notes" class="input-label">Notes:</label>
-            <textarea id="notes" class="input-field" placeholder="Enter any special notes or preferences..."
-                ></textarea>
+            <textarea id="notes" class="input-field" placeholder="Enter any special notes or preferences..."></textarea>
         </section>
 
         <!-- Navigation Buttons -->
         <section class="action-buttons">
             <button onclick="history.back()" class="back-btn">Back</button>
-            <a href="../pages/ClientBookingCreation3.html"> <button onclick=" "class="proceed-btn">Proceed (2/4)</button></a>
+            <a href="../pages/ClientBookingCreation3.html"> <button onclick=" " class="proceed-btn">Proceed
+                    (2/4)</button></a>
         </section>
     </main>
 
