@@ -117,10 +117,10 @@ export default function ServiceManagement(): JSX.Element {
             serviceData,
             serviceMaintenanceDataMap
         } = pageData;
-        if( !ObjectUtils.hasKeys( serviceMaintenanceDataMap ) )
-            throw new Error( `There must be at least 1 service maintenance.` );
         if( serviceData.name === "New Service" )
             throw new Error( `Service name cannot be "New Service"!` );
+        if( !ObjectUtils.hasKeys( serviceMaintenanceDataMap ) )
+            throw new Error( `There must be at least 1 service maintenance.` );
         return true;
 
     }
