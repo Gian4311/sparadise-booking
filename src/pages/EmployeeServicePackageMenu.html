@@ -19,7 +19,7 @@
             <li><a href="#">Bookings</a></li>
             <li><a href="#">Clients</a></li>
             <li><a href="../pages/EmployeeEmployeeManagement.html">Employees</a></li>
-            <li><a href="../pages/EmployeeServiceMenu.html" class="active">Services & Packages</a></li>
+            <li><a href="../pages/EmployeeServicePackageMenu.html" class="active">Services & Packages</a></li>
             <li><a href="#">Vouchers</a></li>
             <li><a href="#">Rooms & Chairs</a></li>
             <li><a href="#">Log Out</a></li>
@@ -28,7 +28,7 @@
 
     <div class="service-menu-main-content ">
         <label for="service-menu-main-content" class="service-menu-main-content-location">Services & Packages
-            </label>
+        </label>
         <div class="service-menu-form-section">
             <div class="service-stats">
                 <div class="service-stat">2<br><span>Services & Packages</span></div>
@@ -65,7 +65,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    <tr onclick="showService1()">
                         <td>1</td>
                         <td>Full Eyelash Extensions</td>
                         <td>Service</td>
@@ -73,7 +73,7 @@
                         <td>Active</td>
                         <td>25%</td>
                     </tr>
-                    <tr>
+                    <tr onclick="showPackage1()">
                         <td>2</td>
                         <td>December Promo</td>
                         <td>Package</td>
@@ -82,9 +82,22 @@
                         <td>-</td>
                     </tr>
                 </tbody>
+
             </table>
         </div>
     </div>
+
+    <script>
+        function showService1() {
+            window.location.href = "../pages/EmployeeServiceManagement.html";
+        }
+        function showPackage1() {
+            window.location.href = "../pages/EmployeePackageManagement.html";
+        }
+    </script>
+
+    </script>
+
 </body>
 
 </html>
