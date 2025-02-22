@@ -64,14 +64,14 @@ clientIndexbody {
 
 /* Notification Bell */
 .clientIndex-notification img{
-  height: 25px; /* Adjust the distance from the right edge */
+  height: 30px; /* Adjust the distance from the right edge */
+  padding-left: 120px;
 }
 
 
 .clientIndex-notification {
   height: 50px;
 }
-
 
 /* Hero Section */
 .clientIndex-hero {
