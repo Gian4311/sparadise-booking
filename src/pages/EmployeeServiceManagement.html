@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Services & Packages</title>
     <link rel="stylesheet" href="../styles/EmployeeServiceManagement.css">
+    <link rel="stylesheet" href="../styles/Sidebar.css">
 </head>
 
 <body>
@@ -13,12 +14,12 @@
         <div class="sidebar-logo">
             <img src="../images/SpaRadise Logo.png" alt="SpaRadise Logo">
         </div>
-        <ul class="service-menu">
+        <ul class="sidebar-menu">
             <li><a href="#">Dashboard</a></li>
             <li><a href="#">Bookings</a></li>
             <li><a href="#">Clients</a></li>
-            <li><a href="#">Employees</a></li>
-            <li><a href="#" class="service-active">Services & Packages</a></li>
+            <li><a href="../pages/EmployeeEmployeeManagement.html">Employees</a></li>
+            <li><a href="../pages/EmployeeServiceManagement.html" class="active">Services & Packages</a></li>
             <li><a href="#">Vouchers</a></li>
             <li><a href="#">Rooms & Chairs</a></li>
             <li><a href="#">Log Out</a></li>
@@ -103,7 +104,7 @@
                 </form>
             </div>
             <div class="service-history">
-                <h2>Service History</h2>
+                <h2 class="service-history-label">Service History</h2>
                 <table class="service-history-table">
                     <thead>
                         <tr>
@@ -120,19 +121,20 @@
                             <td>₱350</td>
                             <td>25%</td>
                             <td>Active</td>
-                            <td><button class="service-delete-btn">Delete</button></td>
+                            <td><button class="service-maintenance-delete-btn">Delete</button></td>
                         </tr>
                         <tr>
                             <td>26 December 2024</td>
                             <td>₱400</td>
                             <td>25%</td>
                             <td>Active</td>
-                            <td><button class="service-delete-btn">Delete</button></td>
+                            <td><button class="service-maintenance-delete-btn">Delete</button></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             <div class="service-form-actions">
+                <button class="service-delete-btn">Delete</button>
                 <button class="service-cancel-btn">Cancel</button>
                 <button class="service-save-btn">Save Changes</button>
             </div>
