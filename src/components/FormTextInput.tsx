@@ -1,32 +1,43 @@
 import FormStringInput from "./FormStringInput";
+import {
+    SpaRadiseDocumentData,
+    SpaRadisePageData
+} from "../firebase/SpaRadiseTypes";
 
 type main = string;
 
 export default function FormTextInput(
     {
-        keyName, name, object, placeholder, readOnly, reloader, required,
+        documentDefaultData, documentData, documentId, keyName, name, pageData, placeholder, readOnly,
+        required,
         onChange, validate
     }: {
-        keyName: string | number,
+        defaultValue?: main,
+        documentDefaultData?: SpaRadiseDocumentData,
+        documentData: SpaRadiseDocumentData,
+        documentId?: string,
+        keyName: string,
+        maxLength?: number,
         name?: string,
-        object: any,
+        pageData: SpaRadisePageData,
         placeholder?: string,
         readOnly?: boolean,
-        reloader: any,
         required?: boolean,
-        onChange?( parsedValue: main | null, unparsedValue: string ): Promise< void > | void,
+        onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
         validate?( parsedValue: main | null ): Promise< boolean >
     }
 ): JSX.Element {
 
     return <FormStringInput
+        documentData={ documentData }
+        documentDefaultData={ documentDefaultData }
+        documentId={ documentId }
         keyName={ keyName }
         maxLength={ 2**16 - 1 }
         name={ name }
-        object={ object }
+        pageData={ pageData }
         placeholder={ placeholder }
         readOnly={ readOnly }
-        reloader={ reloader }
         required={ required }
         onChange={ onChange }
         validate={ validate }

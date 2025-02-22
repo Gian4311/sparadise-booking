@@ -1,44 +1,55 @@
-import FormStringInput from "./FormStringInput";
+import FormNumberInput from "./FormNumberInput";
 import {
     SpaRadiseDocumentData,
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
 
-type main = string;
+type main = number;
 
-export default function FormTinyTextInput(
+export default function FormPercentageInput(
     {
-        documentDefaultData, documentData, documentId, keyName, name, pageData, placeholder, readOnly,
-        required,
+        documentData, documentDefaultData, documentId, keyName, max = 100, min = 0,
+        name = keyName.toString(),
+        pageData, placeholder, readOnly, required, step = 0.01,
         onChange, validate
     }: {
-        defaultValue?: main,
-        documentDefaultData?: SpaRadiseDocumentData,
         documentData: SpaRadiseDocumentData,
+        documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
         keyName: string,
-        maxLength?: number,
+        max?: number,
+        min?: number,
         name?: string,
         pageData: SpaRadisePageData,
         placeholder?: string,
         readOnly?: boolean,
         required?: boolean,
+        step?: number,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
         validate?( parsedValue: main | null ): Promise< boolean >
     }
 ): JSX.Element {
 
-    return <FormStringInput
+    if( min === undefined || min < 0 )
+        throw new Error( `Percentage input minimum must be more than or equals to 0.` );
+    if( max === undefined || max > 100 )
+        throw new Error( `Percentage input maximum must be less than or equals to 100.` );
+    if( step === undefined || ( step % 0.01 ) > 0 )
+        throw new Error( `Percentage input step must more than 0.01.` );
+
+    return <FormNumberInput
         documentData={ documentData }
         documentDefaultData={ documentDefaultData }
         documentId={ documentId }
         keyName={ keyName }
-        maxLength={ 2**8 - 1 }
+        max={ max }
+        min={ min }
         name={ name }
         pageData={ pageData }
         placeholder={ placeholder }
         readOnly={ readOnly }
         required={ required }
+        step={ step }
         onChange={ onChange }
         validate={ validate }
     />;

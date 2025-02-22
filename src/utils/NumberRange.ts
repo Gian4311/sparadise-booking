@@ -8,7 +8,12 @@ export class NumberRange {
         private readonly endInclusive: boolean = true
     ) {
         
-        // add use cases
+        const
+            trueStart: number = this.getTrueStart(),
+            trueEnd: number = this.getTrueEnd()
+        ;
+        if( trueStart >= trueEnd )
+            throw new Error( `True start of number range must be less than true end. True start is ${ trueStart } and true end is ${ trueEnd }` );
 
     }
 

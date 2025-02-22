@@ -9,25 +9,27 @@ import {
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
 
-type main = string;
+type main = number;
 
-export default function FormStringInput(
+export default function FormNumberInput(
     {
-        documentData, documentDefaultData, documentId, keyName, maxLength,
+        documentData, documentDefaultData, documentId, keyName, max, min,
         name = keyName.toString(),
-        pageData, placeholder, readOnly, required,
+        pageData, placeholder, readOnly, required, step,
         onChange, validate
     }: {
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
         keyName: string,
-        maxLength?: number,
+        max?: number,
+        min?: number,
         name?: string,
         pageData: SpaRadisePageData,
         placeholder?: string,
         readOnly?: boolean,
         required?: boolean,
+        step?: number,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
         validate?( parsedValue: main | null ): Promise< boolean >
     }
@@ -51,7 +53,7 @@ export default function FormStringInput(
     }
 
     async function handleDefault( parsedValue: main | null ): Promise< void > {
-
+        
         if( !documentDefaultData || !documentId ) return;
         const
             { updateMap } = pageData,
@@ -74,13 +76,13 @@ export default function FormStringInput(
 
     async function parseValue( unparsedValue: string ): Promise< main | null > {
 
-        return unparsedValue ? unparsedValue : null;
+        return ( unparsedValue !== undefined ) ? +unparsedValue : null;
 
     }
 
     async function unparseValue( parsedValue: main | null ): Promise< string > {
 
-        return parsedValue ?? "";
+        return parsedValue?.toString() ?? "";
 
     }
 
@@ -96,12 +98,14 @@ export default function FormStringInput(
 
     return <input
         id={ name }
-        maxLength={ maxLength }
+        max={ max }
+        min={ min }
         name={ name }
         placeholder={ placeholder }
         readOnly={ readOnly }
         required={ required }
-        type="text"
+        type="number"
+        step={ step }
         value={ unparsedValue }
         onChange={ event => handleChange( event ) }
     />;

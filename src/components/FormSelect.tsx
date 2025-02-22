@@ -9,23 +9,23 @@ import {
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
 
-type main = string;
+type main = string | boolean | number | null;
 
-export default function FormStringInput(
+export default function FormSelect(
     {
-        documentData, documentDefaultData, documentId, keyName, maxLength,
+        children, documentData, documentDefaultData, documentId, keyName,
         name = keyName.toString(),
-        pageData, placeholder, readOnly, required,
+        pageData, optionList, readOnly, required,
         onChange, validate
     }: {
+        children: JSX.Element | JSX.Element[],
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
         keyName: string,
-        maxLength?: number,
         name?: string,
+        optionList: main[],
         pageData: SpaRadisePageData,
-        placeholder?: string,
         readOnly?: boolean,
         required?: boolean,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
@@ -35,12 +35,22 @@ export default function FormStringInput(
 
     const [ unparsedValue, setUnparsedValue ] = useState< string >( "" );
 
-    async function handleChange( event: ChangeEvent< HTMLInputElement > ): Promise< void > {
+    async function handleChange( event: ChangeEvent< HTMLSelectElement > ): Promise< void > {
 
+        if( readOnly ) return;
         const
             unparsedValue: string = event.target.value,
             parsedValue: main | null = await parseValue( unparsedValue )
         ;
+        if( !optionList.includes( parsedValue ) ) {
+
+            const
+                isString: boolean = ( typeof parsedValue === "string" ),
+                quote: string = ( isString ? `"` : `` )
+            ;
+            throw new Error( `${ quote }${ parsedValue?.toString() }${ quote } value is not in option list.` );
+
+        }    
         if( validate ) if( !( await validate( parsedValue ) ) ) return;
         setUnparsedValue( unparsedValue );
         const old = documentData[ keyName ] as main | null;
@@ -51,7 +61,7 @@ export default function FormStringInput(
     }
 
     async function handleDefault( parsedValue: main | null ): Promise< void > {
-
+            
         if( !documentDefaultData || !documentId ) return;
         const
             { updateMap } = pageData,
@@ -74,13 +84,27 @@ export default function FormStringInput(
 
     async function parseValue( unparsedValue: string ): Promise< main | null > {
 
-        return unparsedValue ? unparsedValue : null;
+        const
+            isTrue: boolean = ( unparsedValue === "true" ),
+            isFalse: boolean = ( unparsedValue === "false" ),
+            isNull: boolean = ( unparsedValue === "null" ),
+            isNumber: boolean = !isNaN( +unparsedValue ),
+            isEmpty: boolean = ( unparsedValue.length === 0 )
+        ;
+        return (
+            isTrue ? true
+            : isFalse ? false
+            : isNull ? null
+            : isNumber ? +unparsedValue
+            : isEmpty ? null
+            : unparsedValue
+        );
 
     }
 
     async function unparseValue( parsedValue: main | null ): Promise< string > {
 
-        return parsedValue ?? "";
+        return parsedValue?.toString() ?? "";
 
     }
 
@@ -94,16 +118,14 @@ export default function FormStringInput(
 
     } )() }, [ pageData ] );
 
-    return <input
+    return <select
         id={ name }
-        maxLength={ maxLength }
         name={ name }
-        placeholder={ placeholder }
-        readOnly={ readOnly }
         required={ required }
-        type="text"
         value={ unparsedValue }
         onChange={ event => handleChange( event ) }
-    />;
+    >{
+        children
+    }</select>;
 
 }
