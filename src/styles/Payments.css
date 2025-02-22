@@ -1,0 +1,175 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #f8dedd;
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    min-width: 0;
+}
+
+body > *{
+    /* height:100vh; */
+}
+
+/* Navigation Bar */
+.navbar {
+    background-color: #54204d;
+    color: white;
+    display: flex;
+    padding: 15px 20px;
+    flex-direction: column;
+    width: 200px;
+    height:calc(100vh - 30px);
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.logo span {
+    color: yellow;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    flex-direction: column;
+    padding : 0;
+}
+
+.nav-links li {
+    display: inline;
+    margin: 10px 0px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+div {
+    display: block;
+    unicode-bidi: isolate;
+}
+
+.header {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.content {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+/* Form Container */
+.payment-container {
+    background-color: #EDB3B4;
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    max-width: 100%;
+    height: calc(100% - 120px);
+    margin: auto;
+}
+
+h2 {
+    font-size: 24px;
+    color: #54204d;
+}
+
+/* Input Groups */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.input-group input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+/* Buttons */
+.add-client {
+    background-color: #54204d;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    font-size: 16px;
+}
+
+.add-client:hover {
+    background-color: #3e1639;
+}
+
+/* Navigation Buttons */
+.buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.back, .proceed {
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+.back {
+    background-color: #54204d;
+    color: white;
+}
+
+.proceed {
+    background-color: #6a1b9a;
+    color: white;
+}
+
+.proceed:hover {
+    background-color: #4e1374;
+}
+
+.clientIndex-Logo img{
+    width: 200px; 
+}
+
+.payment-details {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+.services, .total-cost {
+    font-size: 18px;
+}
+.payment-options {
+    display: flex;
+    gap: 20px;
+}
+.payment-options button {
+    background-color: #287233;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    border-radius: 10px;
+    cursor: pointer;
+}
