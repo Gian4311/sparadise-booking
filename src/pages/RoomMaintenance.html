@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rooms & Chairs</title>
+    <link rel="stylesheet" href="../styles/RoomMaintenance.css">
+    <link rel="stylesheet" href="../styles/Sidebar.css">
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="../images/SpaRadise Logo.png" alt="SpaRadise Logo">
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Bookings</a></li>
+            <li><a href="#">Clients</a></li>
+            <li><a href="#">Employees</a></li>
+            <li><a href="#">Services & Packages</a></li>
+            <li><a href="#">Vouchers</a></li>
+            <li><a href="#" class="active">Rooms & Chairs</a></li>
+            <li><a href="#">Log Out</a></li>
+        </ul>
+    </div>
+
+    <div class="service-menu-main-content">
+        <label for="service-menu-main-content" class="service-menu-main-content-location">Rooms and Chairs</label>
+        <div class="room-maintenance">
+            <h2>Room Maintenance</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody id="maintenance-table-body">
+                    <!-- Data will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+            <button class="edit-btn" onclick="editEntries()">Edit</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const maintenanceData = [
+                { date: "12 December 2024", time: "10:30am", count: 4 },
+                { date: "22 December 2024", time: "1:30pm", count: 2 }
+            ];
+
+            const tableBody = document.getElementById("maintenance-table-body");
+
+            maintenanceData.forEach(entry => {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${entry.date}</td><td>${entry.time}</td><td>${entry.count}</td>`;
+                tableBody.appendChild(row);
+            });
+        });
+
+        function editEntries() {
+            alert("Edit button clicked!");
+        }
+    </script>
+</body>
+
+</html>
