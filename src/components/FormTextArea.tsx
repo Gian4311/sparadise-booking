@@ -11,7 +11,7 @@ import {
 
 type main = string;
 
-export default function FormStringInput(
+export default function FormTextArea(
     {
         documentData, documentDefaultData, documentId, keyName, maxLength,
         name = keyName.toString(),
@@ -35,7 +35,7 @@ export default function FormStringInput(
 
     const [ unparsedValue, setUnparsedValue ] = useState< string >( "" );
 
-    async function handleChange( event: ChangeEvent< HTMLInputElement > ): Promise< void > {
+    async function handleChange( event: ChangeEvent< HTMLTextAreaElement > ): Promise< void > {
 
         const
             unparsedValue: string = event.target.value,
@@ -94,14 +94,13 @@ export default function FormStringInput(
 
     } )() }, [ pageData ] );
 
-    return <input
+    return <textarea
         id={ name }
         maxLength={ maxLength }
         name={ name }
         placeholder={ placeholder }
         readOnly={ readOnly }
         required={ required }
-        type="text"
         value={ unparsedValue }
         onChange={ event => handleChange( event ) }
     />;

@@ -1,6 +1,7 @@
 import { doc, getDoc } from "firebase/firestore/lite";
 import { Firestore } from "firebase/firestore/lite";
 import { Link } from "react-router-dom";
+import ServiceUtils from "../firebase/ServiceUtils";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import { useEffect } from "react";
 
@@ -18,7 +19,7 @@ export default function DevMenu(): JSX.Element {
 
     async function addNewService(): Promise< void > {
 
-        await SpaRadiseFirestore.addService( {
+        await ServiceUtils.createService( {
             name: "data.name",
             description: "data.description",
             serviceType: "body",

@@ -3,17 +3,18 @@ import {
     useEffect,
     useState
 } from "react";
+import DateUtils from "../utils/DateUtils";
 import ObjectUtils from "../utils/ObjectUtils";
 import {
     SpaRadiseDocumentData,
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
 
-type main = string;
+type main = Date;
 
-export default function FormStringInput(
+export default function FormDateInput(
     {
-        documentData, documentDefaultData, documentId, keyName, maxLength,
+        documentData, documentDefaultData, documentId, keyName, max, min,
         name = keyName.toString(),
         pageData, placeholder, readOnly, required,
         onChange, validate
@@ -22,7 +23,8 @@ export default function FormStringInput(
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
         keyName: string,
-        maxLength?: number,
+        max?: Date,
+        min?: Date,
         name?: string,
         pageData: SpaRadisePageData,
         placeholder?: string,
@@ -51,11 +53,14 @@ export default function FormStringInput(
     }
 
     async function handleDefault( parsedValue: main | null ): Promise< void > {
-
+        
         if( !documentDefaultData || !documentId ) return;
         const
             { updateMap } = pageData,
-            isDefault: boolean = ( documentDefaultData[ keyName ] === parsedValue ),
+            dateDefault = documentDefaultData[ keyName ] as Date | null,
+            isDefault: boolean = ( dateDefault && parsedValue ) ? DateUtils.areSameDay(
+                dateDefault, parsedValue
+            ) : !parsedValue,
             hasUpdateRecord: boolean = ( documentId in updateMap )
         ;
         if( isDefault ) {
@@ -74,13 +79,13 @@ export default function FormStringInput(
 
     async function parseValue( unparsedValue: string ): Promise< main | null > {
 
-        return unparsedValue ? unparsedValue : null;
+        return unparsedValue ? new Date( unparsedValue ) : null;
 
     }
 
     async function unparseValue( parsedValue: main | null ): Promise< string > {
 
-        return parsedValue ?? "";
+        return parsedValue ? DateUtils.toString( parsedValue, "yyyy-mm-dd" ) : "";
 
     }
 
@@ -96,12 +101,13 @@ export default function FormStringInput(
 
     return <input
         id={ name }
-        maxLength={ maxLength }
+        max={ max ? DateUtils.toString( max, "yyyy-mm-dd" ) : undefined }
+        min={ min ? DateUtils.toString( min, "yyyy-mm-dd" ) : undefined }
         name={ name }
         placeholder={ placeholder }
         readOnly={ readOnly }
         required={ required }
-        type="text"
+        type="date"
         value={ unparsedValue }
         onChange={ event => handleChange( event ) }
     />;

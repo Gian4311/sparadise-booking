@@ -31,7 +31,7 @@ body {
   .service-header {
     display: flex;
     align-items: center;
-    gap: 10px; /* Adds spacing between the arrow and the header */
+    gap: 20px; /* Adds spacing between the arrow and the header */
   }
   
   .service-header .back-arrow {
@@ -41,11 +41,9 @@ body {
     cursor: pointer;
   }
 
-  .service-back-arrow{
-    text-decoration: none;
-    font-size: 40px;
-    padding-bottom: 25px;
-    color: black;
+  .service-back-arrow img{
+    width: 40px;
+    padding-bottom: 12px;;
   }
   
   .service-header h1 {
@@ -190,4 +188,100 @@ body {
   .service-maintenance .service-form-row-group{
     padding-top: 2%;
     color: black;
+  }
+
+  .service-main-content {
+    margin-left: 270px;
+    padding: 30px;
+    background-color: #FDF9FE;
+    min-height: 100vh;
+  }
+  .service-scroll-container {
+    background-color: #FDE9EE;
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: 2%;
+    padding: 10px;
+  }
+  
+  .service-scroll-item {
+    flex: 0 0 auto;
+    width: 350px; /* Adjusted for content */
+    height: 350px;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: rgba(255, 255, 255, 0.7) ;
+    border-radius: 10px;
+    padding: 10px;
+    position: relative;
+    text-align: center;
+    display: flex;
+  }
+  
+  .service-price {
+    font-weight: bold;
+    color: #000000;
+    font-size: 2rem;
+    text-align: right;
+  }
+  
+  .service-name {
+    font-weight: bold;
+    font-size: 200%;
+  }
+  
+  .service-services {
+    margin-top: 5%;
+    margin-left: 2%;
+    font-size: 120%;
+    color: black;
+    margin-bottom: 5px;
+    text-align: left;
+  }
+  
+  .service-services-conflict {
+    color: #FF0000;
+  }
+  
+  
+  .service-description {
+    white-space: normal;
+    margin-top: 5%;
+    font-size: 100%;
+    color: #777;
+    margin-bottom: 5px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+
+  .add-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px;
+    font-size: 100%;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 20%;
+  }
+  
+  .add-btn:hover {
+    background-color: #45a049;
+  }
+
+  .remove-btn {
+    background-color: #850D0D;
+    color: white;
+    border: none;
+    padding: 5px;
+    font-size: 100%;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 20%;
+  }
+  
+  .remove-btn:hover {
+    background-color: #451414;
   }

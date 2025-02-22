@@ -18,4 +18,10 @@ export default class NumberUtils {
 
     }
 
+    public static isNumeric( value: string | number ): boolean {
+
+        return !isNaN( +value );
+
+    }
+
 }
