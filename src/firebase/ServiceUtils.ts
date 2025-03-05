@@ -6,8 +6,10 @@ import {
     DocumentReference,
     DocumentSnapshot,
     getDocs,
-    updateDoc,
+    orderBy,
     QueryDocumentSnapshot,
+    query,
+    updateDoc,
     WithFieldValue
 } from "firebase/firestore/lite";
 import NumberUtils from "../utils/NumberUtils";
@@ -132,7 +134,11 @@ export default class ServiceUtils {
             serviceCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
                 SpaRadiseEnv.SERVICE_COLLECTION
             ),
-            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( serviceCollection ) ).docs,
+            serviceQuery = query(
+                serviceCollection,
+                orderBy( "name" )
+            ),
+            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( serviceQuery ) ).docs,
             serviceDataMap: ServiceDataMap = {}
         ;
         for( let snapshot of snapshotList )

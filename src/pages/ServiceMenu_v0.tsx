@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 import { ServiceDataMap } from "../firebase/SpaRadiseTypes";
 import ServiceUtils from "../firebase/ServiceUtils";
+import { SpaRadisePageData } from "../firebase/SpaRadiseTypes";
 import {
     useEffect,
     useState
 } from "react";
 
-interface PageData {
+interface ServiceMenuPageData extends SpaRadisePageData  {
 
     serviceDataMap: ServiceDataMap
 
@@ -15,8 +16,9 @@ interface PageData {
 export default function ServiceMenu(): JSX.Element {
 
     const
-        [ pageData, setPageData ] = useState< PageData >( {
-            serviceDataMap: {}
+        [ pageData, setPageData ] = useState< ServiceMenuPageData >( {
+            serviceDataMap: {},
+            updateMap: {}
         } ),
         { serviceDataMap } = pageData
     ;

@@ -32,6 +32,7 @@ export default function DevMenu(): JSX.Element {
 
     return <>
         <Link to="dayPlanner"><button>Go to Day Planner experiment page</button></Link>
+        <Link to="management/packages/menu"><button>Package Menu</button></Link>
         <Link to="management/services/menu"><button>Service Menu</button></Link>
         <button onClick={ addNewService }>Add</button>
     </>;
