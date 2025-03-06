@@ -6,7 +6,9 @@ import {
     DocumentReference,
     DocumentSnapshot,
     getDocs,
+    orderBy,
     QueryDocumentSnapshot,
+    query,
     updateDoc,
     WithFieldValue
 } from "firebase/firestore/lite";
@@ -122,7 +124,11 @@ export default class PackageUtils {
             packageCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
                 SpaRadiseEnv.PACKAGE_COLLECTION
             ),
-            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( packageCollection ) ).docs,
+            packageQuery = query(
+                packageCollection,
+                orderBy( "name" )
+            ),
+            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( packageQuery ) ).docs,
             packageDataMap: PackageDataMap = {}
         ;
         for( let snapshot of snapshotList )

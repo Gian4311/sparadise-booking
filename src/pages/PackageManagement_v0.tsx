@@ -88,7 +88,7 @@ export default function PackageManagement(): JSX.Element {
             const packageMaintenanceId = packageMaintenanceDateKeyMap[ dateKey ] as string;
             if( packageMaintenanceId in packageMaintenanceToDeleteMap ) {
 
-                await restorePackageMaintenanceRow( packageMaintenanceId );
+                await restorePackageMaintenance( packageMaintenanceId );
                 return;
 
             }
@@ -150,12 +150,12 @@ export default function PackageManagement(): JSX.Element {
         const {
             packageData,
             packageMaintenanceDataMap,
-            packageServiceDataMap
+            packageServiceIncludedMap
         } = pageData;
         if( packageData.name === "New Package" )
             throw new Error( `Package name cannot be "New Package"!` );
         // check if duplicate name
-        if( Object.keys( packageServiceDataMap ).length < 2 )
+        if( Object.keys( packageServiceIncludedMap ).length < 2 )
             throw new Error( `There must be at least 2 package services.` );
         if( !ObjectUtils.hasKeys( packageMaintenanceDataMap ) )
             throw new Error( `There must be at least 1 package maintenance.` );
@@ -173,6 +173,7 @@ export default function PackageManagement(): JSX.Element {
         pageData.packageDocumentReference = documentReference;
         await updatePackageMaintenanceList();
         await updatePackageServiceList();
+        delete pageData.updateMap[ "new" ];
         alert( `Created!` ); // note: remove later
         window.open( `/management/packages/${ documentReference.id }`, `_self`);
 
@@ -243,10 +244,15 @@ export default function PackageManagement(): JSX.Element {
     async function deletePackage(): Promise< void > {
 
         if( !isEditMode || !documentId ) return;
-        const { packageMaintenanceDataMap } = pageData;
+        const {
+            packageMaintenanceDataMap, packageServiceDataMap, packageServiceIncludedMap
+        } = pageData;
         for( let packageMaintenanceId in packageMaintenanceDataMap )
             await deletePackageMaintenance( packageMaintenanceId );
         await updatePackageMaintenanceList();
+        for( let packageServiceId in packageServiceDataMap )
+            await deletePackageService( packageServiceIncludedMap[ packageServiceId ] as string );
+        await updatePackageServiceList();
         await PackageUtils.deletePackage( documentId );
         alert( `Deleted!` ); // note: remove later
         window.open( `/management/packages/menu`, `_self`);
@@ -429,7 +435,7 @@ export default function PackageManagement(): JSX.Element {
 
     }
 
-    async function restorePackageMaintenanceRow( packageMaintenanceId: documentId ): Promise< void > {
+    async function restorePackageMaintenance( packageMaintenanceId: documentId ): Promise< void > {
 
         const { packageMaintenanceToDeleteMap } = pageData;
         delete packageMaintenanceToDeleteMap[ packageMaintenanceId ];
@@ -448,7 +454,6 @@ export default function PackageManagement(): JSX.Element {
     async function submit( event: FormEvent< HTMLFormElement > ): Promise< void > {
 
         event.preventDefault();
-
         if( isNewMode )
             await createPackage();
         else
@@ -460,7 +465,14 @@ export default function PackageManagement(): JSX.Element {
 
         if( !isEditMode || !documentId ) return;
         await checkFormValidity();
-        await PackageUtils.updatePackage( documentId, pageData.packageData );
+        const { updateMap } = pageData;
+        if( documentId in updateMap ) {
+        
+            await PackageUtils.updatePackage( documentId, pageData.packageData );
+            pageData.packageDefaultData = { ...pageData.packageData };
+
+        }
+        delete updateMap[ documentId ];
         await updatePackageMaintenanceList();
         await updatePackageServiceList();
         reloadPageData();
@@ -517,7 +529,7 @@ export default function PackageManagement(): JSX.Element {
 
     }
 
-    useEffect( () => { loadPageData() }, [] );
+    useEffect( () => { loadPageData(); }, [] );
 
     return <>
         <form onSubmit={ submit }>

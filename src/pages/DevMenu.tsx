@@ -17,24 +17,11 @@ export default function DevMenu(): JSX.Element {
 
     } )() }, [] );
 
-    async function addNewService(): Promise< void > {
-
-        await ServiceUtils.createService( {
-            name: "data.name",
-            description: "data.description",
-            serviceType: "body",
-            roomType: "chair",
-            ageLimit: 35,
-            durationMin: 45
-        } );
-
-    }
-
     return <>
         <Link to="dayPlanner"><button>Go to Day Planner experiment page</button></Link>
         <Link to="management/packages/menu"><button>Package Menu</button></Link>
         <Link to="management/services/menu"><button>Service Menu</button></Link>
-        <button onClick={ addNewService }>Add</button>
+        <Link to="management/vouchers/menu"><button>Voucher Menu</button></Link>
     </>;
 
 }

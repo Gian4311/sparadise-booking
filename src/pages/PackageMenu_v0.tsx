@@ -23,24 +23,20 @@ export default function PackageMenu(): JSX.Element {
         { packageDataMap } = pageData
     ;
 
+    async function loadPageData(): Promise< void > {
+
+        pageData.packageDataMap = await PackageUtils.getPackageListAll();
+        reloadPageData();
+
+    }
+
     function reloadPageData(): void {
 
         setPageData( { ...pageData } );
 
     }
 
-    useEffect( () => { ( async() => {
-
-        pageData.packageDataMap = await PackageUtils.getPackageListAll();
-        reloadPageData();
-
-    } )() }, [] );
-
-    useEffect( () => {
-
-        console.log( pageData );
-
-    }, [ pageData ] );
+    useEffect( () => { loadPageData(); }, [] );
 
     return <>
         <Link to="/management/packages/new">

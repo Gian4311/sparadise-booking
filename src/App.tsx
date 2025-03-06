@@ -5,6 +5,8 @@ import PackageManagement from "./pages/PackageManagement_v0";
 import PackageMenu from "./pages/PackageMenu_v0";
 import ServiceManagement from "./pages/ServiceManagement";
 import ServiceMenu from "./pages/ServiceMenu_v0";
+import VoucherManagement from "./pages/VoucherManagement_v0";
+import VoucherMenu from "./pages/VoucherMenu_v0";
 
 function App() {
 
@@ -17,6 +19,8 @@ function App() {
                 <Route path="management/packages/:id" element={ <PackageManagement/> }/>
                 <Route path="management/services/menu" element={ <ServiceMenu/> }/>
                 <Route path="management/services/:id" element={ <ServiceManagement/> }/>
+                <Route path="management/vouchers/menu" element={ <VoucherMenu/> }/>
+                <Route path="management/vouchers/:id" element={ <VoucherManagement/> }/>
             </Routes>
         </BrowserRouter>
     </>;

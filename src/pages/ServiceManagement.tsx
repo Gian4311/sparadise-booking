@@ -141,6 +141,7 @@ export default function ServiceManagement(): JSX.Element {
         );
         pageData.serviceDocumentReference = documentReference;
         await updateServiceMaintenanceList();
+        delete pageData.updateMap[ "new" ];
         alert( `Created!` ); // note: remove later
         window.open( `/management/services/${ documentReference.id }`, `_self`);
 
@@ -319,7 +320,6 @@ export default function ServiceManagement(): JSX.Element {
     async function submit( event: FormEvent< HTMLFormElement > ): Promise< void > {
 
         event.preventDefault();
-
         if( isNewMode )
             await createService();
         else
@@ -331,8 +331,15 @@ export default function ServiceManagement(): JSX.Element {
 
         if( !isEditMode || !documentId ) return;
         await checkFormValidity();
-        const { serviceData } = pageData;
-        await ServiceUtils.updateService( documentId, serviceData );
+        const { serviceData, updateMap } = pageData;
+        if( documentId in updateMap ) 
+        if( documentId in updateMap ) {
+                
+            await ServiceUtils.updateService( documentId, serviceData );
+            pageData.serviceDefaultData = { ...pageData.serviceData };
+        
+        }
+        delete updateMap[ documentId ];
         await updateServiceMaintenanceList();
         pageData.serviceName = serviceData.name;
         reloadPageData();
@@ -382,7 +389,7 @@ export default function ServiceManagement(): JSX.Element {
 
     }
 
-    useEffect( () => { loadPageData() }, [] );
+    useEffect( () => { loadPageData(); }, [] );
 
     return <>
 

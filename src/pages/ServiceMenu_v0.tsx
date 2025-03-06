@@ -23,24 +23,20 @@ export default function ServiceMenu(): JSX.Element {
         { serviceDataMap } = pageData
     ;
 
+    async function loadPageData(): Promise< void > {
+    
+        pageData.serviceDataMap = await ServiceUtils.getServiceListAll();
+        reloadPageData();
+
+    }
+
     function reloadPageData(): void {
 
         setPageData( { ...pageData } );
 
     }
 
-    useEffect( () => { ( async() => {
-
-        pageData.serviceDataMap = await ServiceUtils.getServiceListAll();
-        reloadPageData();
-
-    } )() }, [] );
-
-    useEffect( () => {
-
-        console.log( pageData );
-
-    }, [ pageData ] );
+    useEffect( () => { loadPageData(); }, [] );
 
     return <>
         <Link to="/management/services/new">

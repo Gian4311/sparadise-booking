@@ -29,7 +29,7 @@ export default function FormSelect(
         readOnly?: boolean,
         required?: boolean,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
-        validate?( parsedValue: main | null ): Promise< boolean >
+        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >
     }
 ): JSX.Element {
 
@@ -40,7 +40,8 @@ export default function FormSelect(
         if( readOnly ) return;
         const
             unparsedValue: string = event.target.value,
-            parsedValue: main | null = await parseValue( unparsedValue )
+            parsedValue: main | null = await parseValue( unparsedValue ),
+            old = documentData[ keyName ] as main | null
         ;
         if( !optionList.includes( parsedValue ) ) {
 
@@ -51,9 +52,8 @@ export default function FormSelect(
             throw new Error( `${ quote }${ parsedValue?.toString() }${ quote } value is not in option list.` );
 
         }    
-        if( validate ) if( !( await validate( parsedValue ) ) ) return;
+        if( validate ) if( !( await validate( parsedValue, unparsedValue, old ) ) ) return;
         setUnparsedValue( unparsedValue );
-        const old = documentData[ keyName ] as main | null;
         documentData[ keyName ] = parsedValue;
         await handleDefault( parsedValue );
         if( onChange ) await onChange( parsedValue, unparsedValue, old );

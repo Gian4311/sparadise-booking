@@ -89,3 +89,44 @@ export interface SpaRadisePageData {
     }
 
 }
+
+export interface VoucherData extends SpaRadiseDocumentData {
+
+    name: string,
+    code: string,
+    amount: number | null,
+    percentage: number | null
+
+}
+
+export interface VoucherDataMap {
+
+    [ voucherId: string ]: VoucherData
+
+}
+
+export interface VoucherPackageData extends SpaRadiseDocumentData {
+
+    voucher: DocumentReference,
+    package: DocumentReference
+
+}
+
+export interface VoucherPackageDataMap {
+
+    [ voucherPackageId: string | number ]: VoucherPackageData
+
+}
+
+export interface VoucherServiceData extends SpaRadiseDocumentData {
+
+    voucher: DocumentReference,
+    service: DocumentReference
+
+}
+
+export interface VoucherServiceDataMap {
+
+    [ voucherServiceId: string | number ]: VoucherServiceData
+
+}

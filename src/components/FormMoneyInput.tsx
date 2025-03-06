@@ -26,7 +26,7 @@ export default function FormMoneyInput(
         required?: boolean,
         step?: number,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
-        validate?( parsedValue: main | null ): Promise< boolean >
+        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >
     }
 ): JSX.Element {
 

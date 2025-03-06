@@ -24,7 +24,7 @@ export default function FormTextInput(
         readOnly?: boolean,
         required?: boolean,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
-        validate?( parsedValue: main | null ): Promise< boolean >
+        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >
     }
 ): JSX.Element {
 

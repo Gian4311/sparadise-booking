@@ -6,4 +6,10 @@ export default class ObjectUtils {
 
     }
 
+    public static keyLength( object: Object ): number {
+
+        return Object.keys( object ).length;
+
+    }
+
 }
