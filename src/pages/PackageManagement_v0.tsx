@@ -150,14 +150,25 @@ export default function PackageManagement(): JSX.Element {
         const {
             packageData,
             packageMaintenanceDataMap,
-            packageServiceIncludedMap
+            packageMaintenanceDateKeyMap,
+            packageMaintenanceToDeleteMap,
+            packageServiceIncludedMap,
+            packageServiceToDeleteMap
         } = pageData;
         if( packageData.name === "New Package" )
             throw new Error( `Package name cannot be "New Package"!` );
         // check if duplicate name
-        if( Object.keys( packageServiceIncludedMap ).length < 2 )
+        const noServices: number =
+            ObjectUtils.keyLength( packageServiceIncludedMap )
+            - ObjectUtils.keyLength( packageServiceToDeleteMap )
+        ;
+        if( noServices < 2 )
             throw new Error( `There must be at least 2 package services.` );
-        if( !ObjectUtils.hasKeys( packageMaintenanceDataMap ) )
+        const noMaintenances: number =
+            ObjectUtils.keyLength( packageMaintenanceDateKeyMap )
+            - ObjectUtils.keyLength( packageMaintenanceToDeleteMap )
+        ;
+        if( noMaintenances < 1 )
             throw new Error( `There must be at least 1 package maintenance.` );
         return true;
 

@@ -8,8 +8,8 @@ type main = string;
 
 export default function FormTinyTextInput(
     {
-        documentDefaultData, documentData, documentId, keyName, name, pageData, pattern, placeholder,
-        readOnly, required,
+        documentDefaultData, documentData, documentId, keyName, name, pageData, placeholder, readOnly,
+        required,
         onChange, validate
     }: {
         defaultValue?: main,
@@ -20,7 +20,6 @@ export default function FormTinyTextInput(
         maxLength?: number,
         name?: string,
         pageData: SpaRadisePageData,
-        pattern?: string,
         placeholder?: string,
         readOnly?: boolean,
         required?: boolean,
@@ -37,7 +36,6 @@ export default function FormTinyTextInput(
         maxLength={ 2**8 - 1 }
         name={ name }
         pageData={ pageData }
-        pattern={ pattern }
         placeholder={ placeholder }
         readOnly={ readOnly }
         required={ required }

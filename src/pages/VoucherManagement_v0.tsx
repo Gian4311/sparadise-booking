@@ -1,17 +1,10 @@
-import DataMapUtils from "../utils/DataMapUtils";
-import DateUtils from "../utils/DateUtils";
 import { DocumentReference } from "firebase/firestore/lite";
-import FormDateInput from "../components/FormDateInput";
 import {
     FormEvent,
     useEffect,
     useState
 } from "react";
-import FormMoneyInput from "../components/FormMoneyInput";
 import FormMoneyOrPercentageInput from "../components/FormMoneyOrPercentageInput";
-import FormPercentageInput from "../components/FormPercentageInput";
-import FormSelect from "../components/FormSelect";
-import FormTextArea from "../components/FormTextArea";
 import FormTinyTextInput from "../components/FormTinyTextInput";
 import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";

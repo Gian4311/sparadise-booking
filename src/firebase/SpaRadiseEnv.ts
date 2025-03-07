@@ -2,6 +2,11 @@ import { NumberRange } from "../utils/NumberRange";
 
 export default class SpaRadiseEnv {
 
+    public static ACCOUNT_COLLECTION = "accounts";
+    public static BOOKING_COLLECTION = "bookings";
+    public static CLIENT_COLLECTION = "clients";
+    public static JOB_COLLECTION = "jobs";
+    public static JOB_SERVICE_COLLECTION = "jobServices";
     public static MIN_AGE_LIMIT = 12;
     public static MIN_DENOMINATION = 30;
     public static PACKAGE_COLLECTION = "packages";

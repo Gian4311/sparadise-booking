@@ -15,7 +15,7 @@ export default function FormStringInput(
     {
         documentData, documentDefaultData, documentId, keyName, maxLength,
         name = keyName.toString(),
-        pageData, placeholder, readOnly, required,
+        pageData, pattern, placeholder, readOnly, required,
         onChange, validate
     }: {
         documentData: SpaRadiseDocumentData,
@@ -25,6 +25,7 @@ export default function FormStringInput(
         maxLength?: number,
         name?: string,
         pageData: SpaRadisePageData,
+        pattern?: string,
         placeholder?: string,
         readOnly?: boolean,
         required?: boolean,

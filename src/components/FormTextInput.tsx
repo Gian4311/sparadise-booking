@@ -8,8 +8,8 @@ type main = string;
 
 export default function FormTextInput(
     {
-        documentDefaultData, documentData, documentId, keyName, name, pageData, placeholder, readOnly,
-        required,
+        documentDefaultData, documentData, documentId, keyName, name, pageData, pattern, placeholder,
+        readOnly, required,
         onChange, validate
     }: {
         defaultValue?: main,
@@ -20,6 +20,7 @@ export default function FormTextInput(
         maxLength?: number,
         name?: string,
         pageData: SpaRadisePageData,
+        pattern?: string,
         placeholder?: string,
         readOnly?: boolean,
         required?: boolean,
@@ -36,6 +37,7 @@ export default function FormTextInput(
         maxLength={ 2**16 - 1 }
         name={ name }
         pageData={ pageData }
+        pattern={ pattern }
         placeholder={ placeholder }
         readOnly={ readOnly }
         required={ required }

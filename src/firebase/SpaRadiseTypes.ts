@@ -1,5 +1,81 @@
 import { DocumentReference } from "firebase/firestore/lite";
 
+export interface AccountData extends SpaRadiseDocumentData {
+
+    lastName: string,
+    firstName: string,
+    middleName: string | null,
+    sex: sex,
+    birthDate: Date,
+    email: string,
+    contactNumber: string,
+    contactNumberAlternate: string | null
+
+}
+
+export interface AccountDataMap {
+
+    [ accountId: string ]: AccountData
+
+}
+
+export interface BookingData extends SpaRadiseDocumentData {
+
+    account: DocumentReference,
+    reservedDateTime: Date,
+    activeDateTime: Date,
+    finishedDateTime: Date,
+    canceledDateTime: Date
+
+}
+
+export interface BookingDataMap {
+
+    [ bookingId: string ]: BookingData
+
+}
+
+export interface ClientData extends SpaRadiseDocumentData {
+
+    booking: DocumentReference,
+    name: string,
+    birthDate: Date,
+    notes: string | null
+
+}
+
+export interface ClientDataMap {
+
+    [ clientId: string ]: ClientData
+
+}
+
+export interface JobData extends SpaRadiseDocumentData {
+
+    name: string,
+    description: string
+
+}
+
+export interface JobDataMap {
+
+    [ jobId: string ]: JobData
+
+}
+
+export interface JobServiceData extends SpaRadiseDocumentData {
+
+    job: DocumentReference,
+    service: DocumentReference
+
+}
+
+export interface JobServiceDataMap {
+
+    [ jobServiceId: string | number ]: JobServiceData
+
+}
+
 export interface PackageData extends SpaRadiseDocumentData {
 
     name: string,

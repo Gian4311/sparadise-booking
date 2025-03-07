@@ -121,12 +121,17 @@ export default function ServiceManagement(): JSX.Element {
 
         const {
             serviceData,
-            serviceMaintenanceDataMap
+            serviceMaintenanceDateKeyMap,
+            serviceMaintenanceToDeleteMap
         } = pageData;
         if( serviceData.name === "New Service" )
             throw new Error( `Service name cannot be "New Service"!` );
         // check if duplicate name
-        if( !ObjectUtils.hasKeys( serviceMaintenanceDataMap ) )
+        const noMaintenances: number =
+            ObjectUtils.keyLength( serviceMaintenanceDateKeyMap )
+            - ObjectUtils.keyLength( serviceMaintenanceToDeleteMap )
+        ;
+        if( noMaintenances < 1 )
             throw new Error( `There must be at least 1 service maintenance.` );
         return true;
 
