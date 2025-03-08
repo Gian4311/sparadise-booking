@@ -440,7 +440,7 @@ export default function ServiceManagement(): JSX.Element {
                             <div className="service-form-row">
                                 <label htmlFor="service-type">Service Type</label>
                                 <FormSelect documentData={ pageData.serviceData } documentDefaultData={ pageData.serviceDefaultData } documentId={ documentId } name="service-type" keyName="serviceType" optionList={ SpaRadiseEnv.SERVICE_TYPE_LIST } pageData={ pageData } required={ true }>
-                                    <option value="" disabled>Choose Service Type</option>
+                                    <option value="" disabled>Select Service Type</option>
                                     <option value="body">Body</option>
                                     <option value="browsAndLashes">Brows and Lashes</option>
                                     <option value="facial">Facial</option>
@@ -452,7 +452,7 @@ export default function ServiceManagement(): JSX.Element {
                             <div className="service-form-row">
                                 <label htmlFor="service-room-type">Room Type</label>
                                 <FormSelect documentData={ pageData.serviceData } documentDefaultData={ pageData.serviceDefaultData } documentId={ documentId } keyName="roomType" name="service-room-type" optionList={ SpaRadiseEnv.ROOM_TYPE_LIST } pageData={ pageData } required={ true }>
-                                    <option value="" disabled>Choose Service Type</option>
+                                    <option value="" disabled>Select Service Type</option>
                                     <option value="room">Room</option>
                                     <option value="chair">Chair</option>
                                 </FormSelect>
@@ -522,7 +522,7 @@ export default function ServiceManagement(): JSX.Element {
                                         </td>
                                         <td>
                                             <FormSelect documentData={ serviceMaintenanceData } documentDefaultData={ serviceMaintenanceDefaultData } documentId={ inputDocumentId } keyName="status" optionList={ SpaRadiseEnv.SERVICE_MAINTENANCE_STATUS_TYPE_LIST } pageData={ pageData } required={ true }>
-                                                <option value="" disabled>Choose Service Type</option>
+                                                <option value="" disabled>Select Service Type</option>
                                                 <option value="active">Active</option>
                                                 <option value="inactive">Inactive</option>
                                             </FormSelect>

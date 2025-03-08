@@ -116,7 +116,7 @@ export default class AccountUtils {
             firstName: data.firstName,
             middleName: data.middleName,
             sex: data.sex,
-            birthDate: data.birthDate,
+            birthDate: SpaRadiseFirestore.getDateFromSnapshot( snapshot, "birthDate" ),
             email: data.email,
             contactNumber: data.contactNumber,
             contactNumberAlternate: data.contactNumberAlternate

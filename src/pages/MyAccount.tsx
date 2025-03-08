@@ -1,9 +1,12 @@
 import { DocumentReference } from "firebase/firestore/lite";
+import FormDateInput from "../components/FormDateInput";
+import FormEmailInput from "../components/FormEmailInput";
 import {
     FormEvent,
     useEffect,
     useState
 } from "react";
+import FormSelect from "../components/FormSelect";
 import FormTextArea from "../components/FormTextArea";
 import FormTinyTextInput from "../components/FormTinyTextInput";
 import NumberUtils from "../utils/NumberUtils";
@@ -13,22 +16,16 @@ import {
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
 import AccountUtils from "../firebase/AccountUtils";
-import AccountServiceUtils from "../firebase/AccountServiceUtils";
-import ServiceUtils from "../firebase/ServiceUtils";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import { useParams } from "react-router-dom";
 import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
+import FormContactNumberInput from "../components/FormContactNumberInput";
 
 interface AccountManagementPageData extends SpaRadisePageData {
     
-    jobDefaultData: AccountData,
-    jobData: AccountData,
-    jobDocumentReference?: DocumentReference,
-    jobServiceDataMap: AccountServiceDataMap,
-    jobServiceIncludedMap: { [ serviceId: documentId ]: documentId | number },
-    jobServiceIndex: number,
-    jobServiceToDeleteMap: { [ jobServiceId: documentId ]: boolean },
-    serviceDataMap: ServiceDataMap
+    accountData: AccountData,
+    accountDefaultData: AccountData,
+    accountDocumentReference?: DocumentReference
 
 }
 
@@ -36,212 +33,60 @@ export default function MyAccount(): JSX.Element {
 
     const
         [ pageData, setPageData ] = useState< AccountManagementPageData >( {
-            jobData: {
-                name: null as unknown as string,
-                description: null as unknown as string
+            accountData: {
+                lastName: null as unknown as string,
+                firstName: null as unknown as string,
+                middleName: null,
+                sex: null as unknown as sex,
+                birthDate: null as unknown as Date,
+                email: null as unknown as string,
+                contactNumber: null as unknown as string,
+                contactNumberAlternate: null
             },
-            jobDefaultData: {} as AccountData,
-            jobServiceDataMap: {},
-            jobServiceIncludedMap: {},
-            jobServiceIndex: 0,
-            jobServiceToDeleteMap: {},
-            serviceDataMap: {},
+            accountDefaultData: {} as AccountData,
             updateMap: {}
         } ),
-        documentId: string | undefined = useParams().id,
-        isNewMode: boolean = ( documentId === "new" ),
-        isEditMode: boolean = ( documentId !== undefined && !isNewMode )
+        accountId: string | undefined = useParams().accountId
     ;
-
-    async function addAccountService( serviceId: string ): Promise< void > {
-
-        const
-            { jobServiceIncludedMap, jobServiceToDeleteMap } = pageData,
-            jobServiceId = jobServiceIncludedMap[ serviceId ] as string
-        ;
-        if( jobServiceId in jobServiceToDeleteMap ) {
-
-            await restoreAccountServiceInclusion( jobServiceId );
-            return;
-
-        }
-        const
-            {
-                jobServiceDataMap,
-                jobServiceIndex
-            } = pageData
-        ;
-        jobServiceDataMap[ jobServiceIndex ] = {
-            job: null as unknown as DocumentReference,
-            service: SpaRadiseFirestore.getDocumentReference(
-                serviceId, SpaRadiseEnv.SERVICE_COLLECTION
-            )
-        };
-        pageData.jobServiceIndex++;
-        jobServiceIncludedMap[ serviceId ] = jobServiceIndex;
-        reloadPageData();
-
-    }
 
     async function cancelAccountForm(): Promise< void > {
 
-        window.open( `/management/jobs/menu`, `_self`);
+        window.open( `/home`, `_self`);
 
     }
 
     async function checkFormValidity(): Promise< boolean > {
     
-        const {
-            jobData,
-            jobServiceIncludedMap,
-            jobServiceToDeleteMap
-        } = pageData;
-        if( jobData.name === "New Account" )
-            throw new Error( `Account name cannot be "New Account"!` );
-        // check if duplicate name
-        const noServices: number =
-            ObjectUtils.keyLength( jobServiceIncludedMap )
-            - ObjectUtils.keyLength( jobServiceToDeleteMap )
-        ;
-        if( noServices < 1 )
-            throw new Error( `There must be at least 1 job service.` );
+        // check if duplicate email
         return true;
-
-    }
-
-    async function createAccount(): Promise< void > {
-
-        if( !isNewMode || !documentId ) return;
-        await checkFormValidity();
-        const documentReference: DocumentReference = await AccountUtils.createAccount(
-            pageData.jobData
-        );
-        pageData.jobDocumentReference = documentReference;
-        await updateAccountServiceList();
-        delete pageData.updateMap[ "new" ];
-        alert( `Created!` ); // note: remove later
-        window.open( `/management/jobs/${ documentReference.id }`, `_self`);
-
-    }
-
-    async function createAccountServiceList(): Promise< void > {
-
-        const {
-            jobDocumentReference,
-            jobServiceDataMap,
-            jobServiceIncludedMap
-        } = pageData;
-        if( !jobDocumentReference ) return;
-        for( let jobServiceId in jobServiceDataMap ) {
-
-            const isNew: boolean = NumberUtils.isNumeric( jobServiceId );
-            if( !isNew ) continue;
-            const jobServiceData = jobServiceDataMap[ jobServiceId ];
-            jobServiceData.job = jobDocumentReference;
-            const
-                jobServiceDocumentReference =
-                    await AccountServiceUtils.createAccountService( jobServiceData )
-                ,
-                jobServiceIdNew: string = jobServiceDocumentReference.id,
-                serviceId: string = jobServiceData.service.id
-            ;
-            delete jobServiceDataMap[ jobServiceId ];
-            jobServiceDataMap[ jobServiceIdNew ] = jobServiceData;
-            jobServiceIncludedMap[ serviceId ] = jobServiceIdNew;
-
-        }
 
     }
 
     async function deleteAccount(): Promise< void > {
 
-        if( !isEditMode || !documentId ) return;
-        const {
-            jobServiceDataMap, jobServiceIncludedMap
-        } = pageData;
-        for( let jobServiceId in jobServiceDataMap )
-            await deleteAccountService( jobServiceIncludedMap[ jobServiceId ] as string );
-        await updateAccountServiceList();
-        await AccountUtils.deleteAccount( documentId );
+        if( !accountId ) return;
+        await AccountUtils.deleteAccount( accountId );
+        // note: logout
         alert( `Deleted!` ); // note: remove later
-        window.open( `/management/jobs/menu`, `_self`);
-
-    }
-
-    async function deleteAccountService( serviceId: documentId ): Promise< void > {
-
-        const
-            {
-                jobServiceDataMap,
-                jobServiceIncludedMap,
-                jobServiceToDeleteMap
-            } = pageData,
-            jobServiceId: string | number = jobServiceIncludedMap[ serviceId ],
-            isNewAccountService: boolean =  NumberUtils.isNumeric( jobServiceId )
-        ;
-        if( isNewAccountService ) {
-
-            delete jobServiceDataMap[ jobServiceId ];
-            delete jobServiceIncludedMap[ serviceId ];
-
-        } else
-            jobServiceToDeleteMap[ jobServiceId ] = true;
-        reloadPageData();
-
-    }
-
-    async function deleteAccountServiceListInToDeleteMap(): Promise< void > {
-
-        const {
-            jobServiceDataMap,
-            jobServiceIncludedMap,
-            jobServiceToDeleteMap
-        } = pageData;
-        for( let jobServiceId in jobServiceToDeleteMap ) {
-
-            const serviceId: string = jobServiceDataMap[ jobServiceId ].service.id;
-            await AccountServiceUtils.deleteAccountService( jobServiceId );
-            delete jobServiceDataMap[ jobServiceId ];
-            delete jobServiceIncludedMap[ serviceId ];
-            delete jobServiceToDeleteMap[ jobServiceId ];
-
-        }
+        window.open( `/home`, `_self`);
 
     }
 
     async function loadAccount(): Promise< void > {
 
-        if( !documentId ) return;
-        pageData.jobDocumentReference = SpaRadiseFirestore.getDocumentReference(
-            documentId, SpaRadiseEnv.JOB_COLLECTION
+        if( !accountId ) return;
+        pageData.accountDocumentReference = SpaRadiseFirestore.getDocumentReference(
+            accountId, SpaRadiseEnv.ACCOUNT_COLLECTION
         );
-        pageData.jobData = await AccountUtils.getAccountData( documentId );
-        pageData.jobDefaultData = { ...pageData.jobData };
-        await loadAccountServiceList();
-
-    }
-
-    async function loadAccountServiceList(): Promise< void > {
-
-        if( !documentId ) return;
-        pageData.jobServiceDataMap =
-            await AccountServiceUtils.getAccountServiceListByAccount( documentId )
-        ;
-        const { jobServiceDataMap, jobServiceIncludedMap } = pageData;
-        for( let jobServiceId in jobServiceDataMap ) {
-
-            const serviceId: string = jobServiceDataMap[ jobServiceId ].service.id;
-            jobServiceIncludedMap[ serviceId ] = jobServiceId;
-
-        }
+        pageData.accountData = await AccountUtils.getAccountData( accountId );
+        pageData.accountDefaultData = { ...pageData.accountData };
 
     }
 
     async function loadPageData(): Promise< void > {
 
-        if( !documentId ) return;
-        pageData.serviceDataMap = await ServiceUtils.getServiceListAll();
-        if( isEditMode ) await loadAccount();
+        if( !accountId ) return;
+        await loadAccount();
         reloadPageData();
 
     }
@@ -252,88 +97,60 @@ export default function MyAccount(): JSX.Element {
 
     }
 
-    async function restoreAccountServiceInclusion( jobServiceId: string ): Promise< void > {
-
-        const { jobServiceToDeleteMap } = pageData;
-        delete jobServiceToDeleteMap[ jobServiceId ];
-        reloadPageData();
-
-    }
-
     async function submit( event: FormEvent< HTMLFormElement > ): Promise< void > {
 
         event.preventDefault();
-        if( isNewMode )
-            await createAccount();
-        else
-            await updateAccount();
+        await updateAccount();
 
     }
 
     async function updateAccount(): Promise< void > {
 
-        if( !isEditMode || !documentId ) return;
+        if( !accountId ) return;
         await checkFormValidity();
         const { updateMap } = pageData;
-        if( documentId in updateMap ) {
+        if( accountId in updateMap ) {
         
-            await AccountUtils.updateAccount( documentId, pageData.jobData );
-            pageData.jobDefaultData = { ...pageData.jobData };
+            await AccountUtils.updateAccount( accountId, pageData.accountData );
+            pageData.accountDefaultData = { ...pageData.accountData };
 
         }
-        delete updateMap[ documentId ];
-        await updateAccountServiceList();
+        delete updateMap[ accountId ];
         reloadPageData();
         alert( `Updated!` ); // note: remove later
-
-    }
-
-    async function updateAccountServiceList(): Promise< void > {
-
-        await deleteAccountServiceListInToDeleteMap();
-        await createAccountServiceList();
 
     }
 
     useEffect( () => { loadPageData(); }, [] );
 
     return <>
-        jefwhjfewiihfihefwihefih
         <form onSubmit={ submit }>
-            <h1>ID: { documentId }</h1>
-            <label>Name</label>
-            <FormTinyTextInput documentData={ pageData.jobData } documentDefaultData={ pageData.jobDefaultData } documentId={ documentId } keyName="name" pageData={ pageData } required={ true }/>
-            <label>Description</label>
-            <FormTextArea documentData={ pageData.jobData } documentDefaultData={ pageData.jobDefaultData } documentId={ documentId } keyName="description" pageData={ pageData } required={ true }/>
+            <h1>ID: { accountId }</h1>
+            <label>Last Name</label>
+            <FormTinyTextInput documentData={ pageData.accountData } documentDefaultData={ pageData.accountDefaultData } documentId={ accountId } keyName="lastName" pageData={ pageData } required={ true }/>
+            <label>First Name</label>
+            <FormTinyTextInput documentData={ pageData.accountData } documentDefaultData={ pageData.accountDefaultData } documentId={ accountId } keyName="firstName" pageData={ pageData } required={ true }/>
+            <label>Middle Name</label>
+            <FormTinyTextInput documentData={ pageData.accountData } documentDefaultData={ pageData.accountDefaultData } documentId={ accountId } keyName="middleName" pageData={ pageData }/>
+            <label>Sex</label>
+            <FormSelect documentData={ pageData.accountData } documentDefaultData={ pageData.accountDefaultData } documentId={ accountId } keyName="sex" optionList={ SpaRadiseEnv.SEX_LIST } pageData={ pageData } required={ true }>
+                <option value="" disabled>Select Sex</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="others">Others</option>
+            </FormSelect>
+            <label>Birth Date</label>
+            <FormDateInput documentData={ pageData.accountData } documentDefaultData={ pageData.accountDefaultData } documentId={ accountId } keyName="birthDate" pageData={ pageData } required={ true }/>
+            <label>Email</label>
+            <FormEmailInput documentData={ pageData.accountData } documentDefaultData={ pageData.accountDefaultData } documentId={ accountId } keyName="email" pageData={ pageData } required={ true }/>
+            <label>Contact Number</label>
+            <FormContactNumberInput documentData={ pageData.accountData } documentDefaultData={ pageData.accountDefaultData } documentId={ accountId } keyName="contactNumber" pageData={ pageData } required={ true }/>
+            <label>Contact Number (Alternate)</label>
+            <FormContactNumberInput documentData={ pageData.accountData } documentDefaultData={ pageData.accountDefaultData } documentId={ accountId } keyName="contactNumberAlternate" pageData={ pageData }/>
+            <button type="button" onClick={ cancelAccountForm }>Cancel</button>
             <button type="button" onClick={ () => console.log( pageData ) }>Log page data</button>
             <button type="button" onClick={ deleteAccount }>Delete</button>
             <button type="submit">Submit</button>
-
-            <h1>Services</h1>
-            {
-                Object.keys( pageData.serviceDataMap ).map( ( serviceId, key ) => {
-
-                    const
-                        service = pageData.serviceDataMap[ serviceId ],
-                        jobServiceId: string | number = pageData.jobServiceIncludedMap[ serviceId ]
-                    ;
-                    return <div key={ key }>
-                        { service.name }
-                        {
-                            (
-                                !( serviceId in pageData.jobServiceIncludedMap )
-                                || ( jobServiceId in pageData.jobServiceToDeleteMap )
-                            ) ? (
-                                <button type="button" onClick={ () => addAccountService( serviceId ) }>Add</button>
-                            ) : (
-                                <button type="button" onClick={ () => deleteAccountService( serviceId ) }>Remove</button>
-                            )
-                        }
-                        
-                    </div>;
-
-                } )
-            }
         </form>
 
     </>

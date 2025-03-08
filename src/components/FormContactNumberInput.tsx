@@ -6,7 +6,16 @@ import {
 
 type main = string;
 
-export default function FormTinyTextInput(
+const CONTACT_NUMBER_REGEX =
+    `(^09[0-9]{9}$)`
+    + `|(^09[0-9]{2} [0-9]{3} [0-9]{4}$)`
+    + `|(^09[0-9]{2}-[0-9]{3}-[0-9]{4}$)`
+    + `|(^[+]639[0-9]{9}$)`
+    + `|(^[+]639[0-9]{2} [0-9]{3} [0-9]{4}$)`
+    + `|(^[+]639[0-9]{2}-[0-9]{3}-[0-9]{4}$)`
+;
+
+export default function FormContactNumberInput(
     {
         documentDefaultData, documentData, documentId, keyName, name, pageData, placeholder, readOnly,
         required,
@@ -17,7 +26,6 @@ export default function FormTinyTextInput(
         documentData: SpaRadiseDocumentData,
         documentId?: string,
         keyName: string,
-        maxLength?: number,
         name?: string,
         pageData: SpaRadisePageData,
         placeholder?: string,
@@ -33,9 +41,9 @@ export default function FormTinyTextInput(
         documentDefaultData={ documentDefaultData }
         documentId={ documentId }
         keyName={ keyName }
-        maxLength={ 2**8 - 1 }
         name={ name }
         pageData={ pageData }
+        pattern={ CONTACT_NUMBER_REGEX }
         placeholder={ placeholder }
         readOnly={ readOnly }
         required={ required }

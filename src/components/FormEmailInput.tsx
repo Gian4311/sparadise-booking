@@ -11,21 +11,21 @@ import {
 
 type main = string;
 
-export default function FormStringInput(
+const EMAIL_REGEX = "/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/";
+
+export default function FormEmailInput(
     {
-        documentData, documentDefaultData, documentId, keyName, maxLength,
+        documentData, documentDefaultData, documentId, keyName,
         name = keyName.toString(),
-        pageData, pattern, placeholder, readOnly, required,
+        pageData, placeholder, readOnly, required,
         onChange, validate
     }: {
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
         keyName: string,
-        maxLength?: number,
         name?: string,
         pageData: SpaRadisePageData,
-        pattern?: string,
         placeholder?: string,
         readOnly?: boolean,
         required?: boolean,
@@ -97,13 +97,12 @@ export default function FormStringInput(
 
     return <input
         id={ name }
-        maxLength={ maxLength }
         name={ name }
-        pattern={ pattern }
+        pattern={ EMAIL_REGEX }
         placeholder={ placeholder }
         readOnly={ readOnly }
         required={ required }
-        type="text"
+        type="email"
         value={ unparsedValue }
         onChange={ event => handleChange( event ) }
     />;

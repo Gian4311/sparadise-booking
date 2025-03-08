@@ -17,7 +17,6 @@ export default function FormTextInput(
         documentData: SpaRadiseDocumentData,
         documentId?: string,
         keyName: string,
-        maxLength?: number,
         name?: string,
         pageData: SpaRadisePageData,
         pattern?: string,

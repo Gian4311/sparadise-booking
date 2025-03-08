@@ -19,8 +19,8 @@ function App() {
             <Routes>
                 <Route index element={ <DevMenu/> }/>
                 <Route path="dayPlanner" element={ <DayPlannner/> }/>
-                <Route path="clients/:clientId/account" element={ <MyAccount/> }/>
-                <Route path="clients/:clientId/bookings/new" element={ <BookingCreation/> }/>
+                <Route path="clients/:accountId/account" element={ <MyAccount/> }/>
+                <Route path="clients/:accountId/bookings/new" element={ <BookingCreation/> }/>
                 <Route path="management/jobs/menu" element={ <JobMenu/> }/>
                 <Route path="management/jobs/:id" element={ <JobManagement/> }/>
                 <Route path="management/packages/menu" element={ <PackageMenu/> }/>

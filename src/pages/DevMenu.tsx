@@ -21,8 +21,8 @@ export default function DevMenu(): JSX.Element {
         <Link to="dayPlanner"><button>Go to Day Planner experiment page</button></Link>
         <Link to="management/jobs/menu"><button>Job Menu</button></Link>
         <Link to="management/packages/menu"><button>Package Menu</button></Link>
-        <Link to="clients/ExYVsLj3WMuUxXqKTCAf/account"><button>R-Man's Account</button></Link>
-        <Link to="clients/ExYVsLj3WMuUxXqKTCAf/bookings/new"><button>R-Man's New Booking</button></Link>
+        <Link to="clients/A6xoQYfymODeKJdp8bnT/account"><button>R-Man's Account</button></Link>
+        <Link to="clients/A6xoQYfymODeKJdp8bnT/bookings/new"><button>R-Man's New Booking</button></Link>
         <Link to="management/services/menu"><button>Service Menu</button></Link>
         <Link to="management/vouchers/menu"><button>Voucher Menu</button></Link>
     </>;

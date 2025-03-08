@@ -611,7 +611,7 @@ export default function PackageManagement(): JSX.Element {
                         <FormMoneyInput documentData={ packageMaintenanceData } documentDefaultData={ packageMaintenanceDefaultData } documentId={ inputDocumentId } keyName="price" min={ 0.01 } pageData={ pageData } required={ true }/>
                         <label>Status</label>
                         <FormSelect documentData={ packageMaintenanceData } documentDefaultData={ packageMaintenanceDefaultData } documentId={ inputDocumentId } keyName="status" optionList={ SpaRadiseEnv.SERVICE_MAINTENANCE_STATUS_TYPE_LIST } pageData={ pageData } required={ true }>
-                            <option value="" disabled>Choose Package Type</option>
+                            <option value="" disabled>Select Package Type</option>
                             <option value="active">Active</option>
                             <option value="inactive">Inactive</option>
                         </FormSelect>
