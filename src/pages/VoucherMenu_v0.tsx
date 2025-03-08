@@ -43,12 +43,15 @@ export default function VoucherMenu(): JSX.Element {
             <h1>New</h1>
         </Link>
         {
-
-            voucherDataMap ? Object.keys( voucherDataMap ).map(
-                ( voucherId, index ) => <Link key={ index } to={ "/management/vouchers/" + voucherId }>
-                    <h1>{ voucherId }</h1>
+                
+            voucherDataMap ? Object.keys( voucherDataMap ).map( ( voucherId, index ) => {
+                
+                const voucherData = pageData.voucherDataMap[ voucherId ];
+                return <Link key={ index } to={ "/management/vouchers/" + voucherId }>
+                    <h1>{ voucherData.name }</h1>
                 </Link>
-            ) : undefined
+
+            } ) : undefined
 
         }
     </>;

@@ -43,12 +43,15 @@ export default function PackageMenu(): JSX.Element {
             <h1>New</h1>
         </Link>
         {
-
-            packageDataMap ? Object.keys( packageDataMap ).map(
-                ( packageId, index ) => <Link key={ index } to={ "/management/packages/" + packageId }>
-                    <h1>{ packageId }</h1>
+        
+            packageDataMap ? Object.keys( packageDataMap ).map( ( packageId, index ) => {
+                
+                const packageData = pageData.packageDataMap[ packageId ];
+                return <Link key={ index } to={ "/management/packages/" + packageId }>
+                    <h1>{ packageData.name }</h1>
                 </Link>
-            ) : undefined
+
+            } ) : undefined
 
         }
     </>;

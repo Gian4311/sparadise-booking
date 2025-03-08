@@ -44,11 +44,14 @@ export default function JobMenu(): JSX.Element {
         </Link>
         {
 
-            jobDataMap ? Object.keys( jobDataMap ).map(
-                ( jobId, index ) => <Link key={ index } to={ "/management/jobs/" + jobId }>
-                    <h1>{ jobId }</h1>
+            jobDataMap ? Object.keys( jobDataMap ).map( ( jobId, index ) => {
+                
+                const jobData = pageData.jobDataMap[ jobId ];
+                return <Link key={ index } to={ "/management/jobs/" + jobId }>
+                    <h1>{ jobData.name }</h1>
                 </Link>
-            ) : undefined
+
+            } ) : undefined
 
         }
     </>;
