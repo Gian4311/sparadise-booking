@@ -40,6 +40,23 @@ export default class DateUtils {
 
     }
 
+    public static getYearAge( date: Date ): number {
+
+        const
+            today: Date = new Date(),
+            year1: number = today.getFullYear(),
+            month1: number = today.getMonth(),
+            day1: number = today.getDate(),
+            year2: number = date.getFullYear(),
+            month2: number = date.getMonth(),
+            day2: number = date.getDate()
+        ;
+        let yearAge: number = year1 - year2;
+        if( ( month1 < month2 ) || ( month1 === month2 && day1 < day2 ) ) yearAge--;
+        return yearAge;
+
+    }
+
     public static setTime(
         date: Date,
         {

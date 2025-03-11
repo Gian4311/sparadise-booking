@@ -23,9 +23,9 @@ export interface BookingData extends SpaRadiseDocumentData {
 
     account: DocumentReference,
     reservedDateTime: Date,
-    activeDateTime: Date,
-    finishedDateTime: Date,
-    canceledDateTime: Date
+    activeDateTime: Date | null,
+    finishedDateTime: Date | null,
+    canceledDateTime: Date | null
 
 }
 

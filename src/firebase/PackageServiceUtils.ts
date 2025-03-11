@@ -105,6 +105,23 @@ export default class PackageServiceUtils {
 
     }
 
+    public static async getPackageServiceListAll(): Promise< PackageServiceDataMap > {
+        
+        const
+            packageServiceCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
+                SpaRadiseEnv.PACKAGE_SERVICE_COLLECTION
+            ),
+            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( packageServiceCollection ) ).docs,
+            packageServiceDataMap: PackageServiceDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            packageServiceDataMap[ snapshot.id ] = await PackageServiceUtils.getPackageServiceData(
+                snapshot
+            );
+        return packageServiceDataMap;
+
+    }
+
     public static async getPackageServiceListByPackage(
         by: documentId | DocumentReference | DocumentSnapshot
     ): Promise< PackageServiceDataMap > {
