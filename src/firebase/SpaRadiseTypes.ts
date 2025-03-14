@@ -166,6 +166,35 @@ export interface SpaRadisePageData {
 
 }
 
+export interface EmployeeData extends SpaRadiseDocumentData {
+
+    lastName: string,
+    firstName: string,
+    middleName: string,
+    sex: "male" | "female" | "others",
+    email: string,
+    contactNumber: string,
+    contactNumberAlternate: string | null,
+    buildingNumber: string | null,
+    streetName: string | null,
+    barangay: string,
+    city: string,
+    province: string,
+    region: string,
+    postalCode: string,
+    jobStatus: string,
+    hireDate:  Date | null,
+    unemploymentDate: Date | null,
+    unemploymentReason: string | null
+
+}
+
+export interface EmployeeDataMap {
+
+    [ employeeID: string ]: EmployeeData
+
+}
+
 export interface VoucherData extends SpaRadiseDocumentData {
 
     name: string,
