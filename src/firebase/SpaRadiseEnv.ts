@@ -2,6 +2,7 @@ import { NumberRange } from "../utils/NumberRange";
 
 export default class SpaRadiseEnv {
 
+    public static EMPLOYEE_COLLECTION = "employees";
     public static ACCOUNT_COLLECTION = "accounts";
     public static BOOKING_COLLECTION = "bookings";
     public static CLIENT_COLLECTION = "clients";
@@ -12,6 +13,21 @@ export default class SpaRadiseEnv {
     public static PACKAGE_COLLECTION = "packages";
     public static PACKAGE_MAINTENANCE_COLLECTION = "packageMaintenances";
     public static PACKAGE_SERVICE_COLLECTION = "packageServices";
+    public static REGION_LIST: region[] = ["Davao Region (XI)","Metro Manila (NCR)","Ilocos Region (I)"
+       ,"Cagayan Valley (II)"
+      ,"Central Luzon (III)"
+       ,"CALABARZON (IV-A)"
+       ,"MIMAROPA (IV-B)"
+       ,"Bicol Region (V)"
+       ,"Western Visayas (VI)"
+       ,"Central Visayas (VII)"
+       ,"Eastern Visayas (VIII)"
+       ,"Zamboanga Peninsula (IX)"
+       ,"Northern Mindanao (X)"
+       ,"SOCCSKSARGEN (XII)"
+       ,"Caraga (XIII)"
+       ,"Cordillera Administrative Region (CAR)"
+       ,"Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)" ];
     public static ROOM_TYPE_LIST: roomType[] = [ "chair", "room" ];
     public static SERVICE_COLLECTION = "services";
     public static SERVICE_DURATION_MIN_RANGE = new NumberRange( 0, 120, 30, false );
@@ -22,6 +38,7 @@ export default class SpaRadiseEnv {
     public static SERVICE_MAINTENANCE_STATUS_TYPE_LIST: serviceMaintenanceStatus[] = [
         "active", "inactive"
     ];
+    public static EMPLOYEE_STATUS: employeeStatus[] = ["active", "inactive"]
     public static SEX_LIST: sex[] = [ "female", "male", "others" ];
     public static VOUCHER_COLLECTION = "vouchers";
     public static VOUCHER_PACKAGE_COLLECTION = "voucherPackages";
