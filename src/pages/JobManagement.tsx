@@ -47,6 +47,7 @@ export default function JobManagement(): JSX.Element {
             jobServiceIncludedMap: {},
             jobServiceIndex: 0,
             jobServiceToDeleteMap: {},
+            loaded: false,
             serviceDataMap: {},
             updateMap: {}
         } ),
@@ -244,6 +245,7 @@ export default function JobManagement(): JSX.Element {
         if( !documentId ) return;
         pageData.serviceDataMap = await ServiceUtils.getServiceListAll();
         if( isEditMode ) await loadJob();
+        pageData.loaded = true;
         reloadPageData();
 
     }

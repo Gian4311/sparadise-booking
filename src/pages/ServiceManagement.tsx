@@ -52,6 +52,7 @@ export default function ServiceManagement(): JSX.Element {
 
     const
         [ pageData, setPageData ] = useState< ServiceManagementPageData >( {
+            loaded: false,
             serviceData: {
                 name: null as unknown as string,
                 description: null as unknown as string,
@@ -271,6 +272,7 @@ export default function ServiceManagement(): JSX.Element {
     
         if( !documentId ) return;
         if( isEditMode ) await loadService();
+        pageData.loaded = true;
         reloadPageData();
 
     }

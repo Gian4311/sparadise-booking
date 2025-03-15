@@ -17,6 +17,7 @@ export default function PackageMenu(): JSX.Element {
 
     const
         [ pageData, setPageData ] = useState< PackageMenuPageData >( {
+            loaded: false,
             packageDataMap: {},
             updateMap: {}
         } ),
@@ -26,6 +27,7 @@ export default function PackageMenu(): JSX.Element {
     async function loadPageData(): Promise< void > {
 
         pageData.packageDataMap = await PackageUtils.getPackageListAll();
+        pageData.loaded = true;
         reloadPageData();
 
     }

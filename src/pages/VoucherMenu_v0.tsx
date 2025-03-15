@@ -17,6 +17,7 @@ export default function VoucherMenu(): JSX.Element {
 
     const
         [ pageData, setPageData ] = useState< VoucherMenuPageData >( {
+            loaded: false,
             voucherDataMap: {},
             updateMap: {}
         } ),
@@ -26,6 +27,7 @@ export default function VoucherMenu(): JSX.Element {
     async function loadPageData(): Promise< void > {
     
         pageData.voucherDataMap = await VoucherUtils.getVoucherListAll();
+        pageData.loaded = true;
         reloadPageData();
 
     }

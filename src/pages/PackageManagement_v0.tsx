@@ -51,6 +51,7 @@ export default function PackageManagement(): JSX.Element {
 
     const
         [ pageData, setPageData ] = useState< PackageManagementPageData >( {
+            loaded: false,
             packageData: {
                 name: null as unknown as string,
                 description: null as unknown as string
@@ -436,6 +437,7 @@ export default function PackageManagement(): JSX.Element {
         if( !documentId ) return;
         pageData.serviceDataMap = await ServiceUtils.getServiceListAll();
         if( isEditMode ) await loadPackage();
+        pageData.loaded = true;
         reloadPageData();
 
     }

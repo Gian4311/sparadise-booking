@@ -17,6 +17,7 @@ export default function ServiceMenu(): JSX.Element {
 
     const
         [ pageData, setPageData ] = useState< ServiceMenuPageData >( {
+            loaded: false,
             serviceDataMap: {},
             updateMap: {}
         } ),
@@ -26,6 +27,7 @@ export default function ServiceMenu(): JSX.Element {
     async function loadPageData(): Promise< void > {
     
         pageData.serviceDataMap = await ServiceUtils.getServiceListAll();
+        pageData.loaded = true;
         reloadPageData();
 
     }

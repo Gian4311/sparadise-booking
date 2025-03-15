@@ -44,6 +44,7 @@ export default function MyAccount(): JSX.Element {
                 contactNumberAlternate: null
             },
             accountDefaultData: {} as AccountData,
+            loaded: false,
             updateMap: {}
         } ),
         accountId: string | undefined = useParams().accountId
@@ -87,6 +88,7 @@ export default function MyAccount(): JSX.Element {
 
         if( !accountId ) return;
         await loadAccount();
+        pageData.loaded = true;
         reloadPageData();
 
     }

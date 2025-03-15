@@ -158,6 +158,7 @@ export interface SpaRadiseDocumentData {
 
 export interface SpaRadisePageData {
 
+    loaded: boolean,
     updateMap: {
         [ documentId: string ]: {
             [ keyName: string ]: boolean

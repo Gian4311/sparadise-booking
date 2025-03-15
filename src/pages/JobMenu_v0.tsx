@@ -18,6 +18,7 @@ export default function JobMenu(): JSX.Element {
     const
         [ pageData, setPageData ] = useState< JobMenuPageData >( {
             jobDataMap: {},
+            loaded: false,
             updateMap: {}
         } ),
         { jobDataMap } = pageData
@@ -26,6 +27,7 @@ export default function JobMenu(): JSX.Element {
     async function loadPageData(): Promise< void > {
 
         pageData.jobDataMap = await JobUtils.getJobListAll();
+        pageData.loaded = true;
         reloadPageData();
 
     }

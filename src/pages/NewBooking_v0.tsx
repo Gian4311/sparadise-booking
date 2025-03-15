@@ -1,7 +1,6 @@
 import {
     AccountData,
     BookingData,
-    BookingDataMap,
     ClientData,
     ClientDataMap,
     PackageDataMap,
@@ -23,6 +22,7 @@ import FormTextArea from "../components/FormTextArea";
 import FormTinyTextInput from "../components/FormTinyTextInput";
 import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
+import PackageServiceUtils from "../firebase/PackageServiceUtils";
 import PackageUtils from "../firebase/PackageUtils";
 import PersonUtils from "../utils/PersonUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
@@ -30,15 +30,25 @@ import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import { useParams } from "react-router-dom";
 import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 
+import "../styles/NewBooking_v0.css"
+
 interface NewBookingPageData extends SpaRadisePageData {
     
     accountData: AccountData,
     bookingData: BookingData,
     clientDataMap: ClientDataMap,
     clientIndex: number,
+    clientMiscInfo: { [ clientIndex: number ]: {
+        showPackages: boolean,
+        showServices: boolean
+    } },
     packageDataMap: PackageDataMap,
     packageServiceDataMap: PackageServiceDataMap,
+    packageServiceKeyMap: {
+        [ packageId: documentId ]: { [ packageServiceId: documentId ]: documentId }
+    },
     serviceDataMap: ServiceDataMap,
+    serviceIncludedMap: { [ serviceId: documentId ]: boolean },
     formIndex: number
 
 }
@@ -57,10 +67,14 @@ export default function NewBooking(): JSX.Element {
             },
             clientDataMap: {} as ClientDataMap,
             clientIndex: 0,
+            clientMiscInfo: {},
             formIndex: 0,
+            loaded: false,
             packageDataMap: {} as PackageDataMap,
             packageServiceDataMap: {} as PackageServiceDataMap,
+            packageServiceKeyMap: {},
             serviceDataMap: {} as ServiceDataMap,
+            serviceIncludedMap: {},
             updateMap: {}
         } ),
         accountId: string | undefined = useParams().accountId
@@ -97,7 +111,7 @@ export default function NewBooking(): JSX.Element {
 
     }
 
-    function loadFirstClient(): void {
+    async function loadFirstClient(): Promise< void > {
 
         const { accountData: { birthDate, firstName, middleName, lastName } } = pageData;
         pageData.clientDataMap[ -1 ] = {
@@ -106,6 +120,7 @@ export default function NewBooking(): JSX.Element {
             birthDate,
             notes: null
         };
+        pageData.clientMiscInfo[ -1 ] = { showPackages: true, showServices: false };
 
     }
 
@@ -116,10 +131,28 @@ export default function NewBooking(): JSX.Element {
         pageData.bookingData.account = SpaRadiseFirestore.getDocumentReference(
             accountId, SpaRadiseEnv.ACCOUNT_COLLECTION
         );
-        pageData.packageDataMap = await PackageUtils.getPackageListAll();
-        pageData.serviceDataMap = await ServiceUtils.getServiceListAll();
-        loadFirstClient();
+        await loadFirstClient();
+        await loadServiceData();
         reloadPageData();
+
+    }
+
+    async function loadServiceData(): Promise< void > {
+
+        pageData.serviceDataMap = await ServiceUtils.getServiceListAll();
+        pageData.packageDataMap = await PackageUtils.getPackageListAll();
+        pageData.packageServiceDataMap = await PackageServiceUtils.getPackageServiceListAll();
+        const { packageDataMap, packageServiceDataMap, packageServiceKeyMap } = pageData;
+        for( let packageId in packageDataMap ) packageServiceKeyMap[ packageId ] = {};
+        for( let packageServiceId in packageServiceDataMap ) {
+
+            const {
+                package: { id: packageId }, service: { id: serviceId }
+            } = packageServiceDataMap[ packageServiceId ];
+            packageServiceKeyMap[ packageId ][ packageServiceId ] = serviceId;
+
+        }
+        pageData.loaded = true;
 
     }
 
@@ -161,7 +194,10 @@ function ChooseClients( { addFormIndex, pageData, reloadPageData }: {
     reloadPageData: () => void
 } ): JSX.Element {
 
-    const { clientDataMap } = pageData;
+    const
+        { clientDataMap, clientMiscInfo } = pageData,
+        clientLength: number = ObjectUtils.keyLength( clientDataMap )
+    ;
 
     async function addClient(): Promise< void > {
     
@@ -172,6 +208,7 @@ function ChooseClients( { addFormIndex, pageData, reloadPageData }: {
             birthDate: null as unknown as Date,
             notes: null
         };
+        clientMiscInfo[ clientIndex ] = { showPackages: true, showServices: false };
         pageData.clientIndex++;
         reloadPageData();
 
@@ -183,6 +220,8 @@ function ChooseClients( { addFormIndex, pageData, reloadPageData }: {
             { MIN_AGE_LIMIT } = SpaRadiseEnv,
             { clientDataMap } = pageData
         ;
+        if( !ObjectUtils.hasKeys( clientDataMap ) )
+            throw new Error( `There must be at least 1 client!` );
         for( let clientId in clientDataMap ) {
 
             const { name, birthDate } = clientDataMap[ clientId ];
@@ -194,6 +233,14 @@ function ChooseClients( { addFormIndex, pageData, reloadPageData }: {
 
         }
         return true;
+
+    }
+
+    async function deleteClient( clientIndex: number ): Promise< void > {
+
+        delete clientDataMap[ clientIndex ];
+        delete clientMiscInfo[ clientIndex ];
+        reloadPageData();
 
     }
 
@@ -213,14 +260,18 @@ function ChooseClients( { addFormIndex, pageData, reloadPageData }: {
     return <>
         <h1>Who are the Clients?</h1>
         {
-            Object.keys( clientDataMap ).sort().map( ( clientId, index ) => {
+            Object.keys( clientDataMap ).sort().map( ( clientIndex, index ) => {
 
-                const clientData: ClientData = clientDataMap[ clientId ];
+                const clientData: ClientData = clientDataMap[ clientIndex ];
                 return <div key={ index }>
                     <label>Name</label>
                     <FormTinyTextInput documentData={ clientData } keyName="name" pageData={ pageData } required={ true }/>
                     <label>Birth Date</label>
                     <FormDateInput documentData={ clientData } keyName="birthDate" pageData={ pageData } required={ true }/>
+                    {
+                        ( clientLength > 1 ) ? <button type="button" onClick={ () => deleteClient( +clientIndex ) }>Delete</button>
+                        : <></>
+                    }
                 </div>;
 
             } )
@@ -239,10 +290,11 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
 } ): JSX.Element {
 
     const
-        { clientDataMap } = pageData,
-        [ clientIndexActive, setClientIndexActive ] = useState< number >( getFirstClientIndex ),
-        [ showPackages, setShowPackages ] = useState< boolean >( true ),
-        [ showServices, setShowServices ] = useState< boolean >( true )
+        {
+            clientDataMap, clientMiscInfo, packageDataMap, packageServiceKeyMap, serviceDataMap,
+            serviceIncludedMap
+        } = pageData,
+        [ clientIndexActive, setClientIndexActive ] = useState< number >( getFirstClientIndex )
     ;
 
     async function checkFormValidity(): Promise< boolean > {
@@ -300,13 +352,19 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
 
     function togglePackages(): void {
 
-        setShowPackages( !showPackages );
+        clientMiscInfo[ clientIndexActive ].showPackages =
+            !clientMiscInfo[ clientIndexActive ].showPackages
+        ;
+        reloadPageData();
 
     }
 
     function toggleServices(): void {
 
-        setShowServices( !showServices );
+        clientMiscInfo[ clientIndexActive ].showServices =
+            !clientMiscInfo[ clientIndexActive ].showServices
+        ;
+        reloadPageData();
 
     }
 
@@ -322,11 +380,44 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
             )
         }</ul>
         <button type="button" onClick={ togglePackages }><h1>Packages</h1></button>
-        {
-            showPackages ? <div>
-                feef
-            </div> : <></>
-        }
+        <div className={ clientMiscInfo[ clientIndexActive ].showPackages ? `` : `hidden` }>{
+            Object.keys( packageDataMap ).map( packageId => {
+                
+                const
+                    { name, description } = packageDataMap[ packageId ],
+                    serviceKeyMap = packageServiceKeyMap[ packageId ]
+                ;
+                return <div className="package-box" key={ packageId }>
+                    <h3>{ name }</h3>
+                    Description:
+                    <p>{ description }</p>
+                    <ul>{
+                        Object.keys( serviceKeyMap ).map( packageServiceId => serviceKeyMap[ packageServiceId ] ).sort(
+                            ( serviceId1, serviceId2 ) => {
+
+                                const
+                                    { name: name1 } = serviceDataMap[ serviceId1 ],
+                                    { name: name2 } = serviceDataMap[ serviceId2 ]
+                                ;
+                                return ( name1 > name2 ) ? 1 : -1;
+
+                            }
+                        ).map(
+                            serviceId => {
+
+                                const
+                                    { name } = serviceDataMap[ serviceId ],
+                                    isIncluded: boolean = ( serviceId in serviceIncludedMap )
+                                ;
+                                return <li className={ isIncluded ? `included` : `` } key={ serviceId }>{ name }</li>;
+
+                            }
+                        )
+                    }</ul>
+                </div>;
+
+            } )
+        }</div>
         <button type="button" onClick={ previousPage }>Back</button>
         <button type="button" onClick={ nextPage }>Proceed (1/3)</button>
     </>;

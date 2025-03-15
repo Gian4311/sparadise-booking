@@ -47,6 +47,7 @@ export default function VoucherManagement(): JSX.Element {
 
     const
         [ pageData, setPageData ] = useState< VoucherManagementPageData >( {
+            loaded: false,
             packageDataMap: {},
             serviceDataMap: {},
             updateMap: {},
@@ -336,6 +337,7 @@ export default function VoucherManagement(): JSX.Element {
         pageData.serviceDataMap = await ServiceUtils.getServiceListAll();
         pageData.packageDataMap = await PackageUtils.getPackageListAll();
         if( isEditMode ) await loadVoucher();
+        pageData.loaded = true;
         reloadPageData();
 
     }
