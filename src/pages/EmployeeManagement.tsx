@@ -4,6 +4,8 @@ import { DocumentReference } from "firebase/firestore/lite";
 import { useNavigate} from "react-router-dom";
 import {
     EmployeeData,
+    JobData,
+    JobDataMap,
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
 import EmployeeUtils from "../firebase/EmployeeUtils";
@@ -15,12 +17,14 @@ import {
     useEffect,
     useState
 } from "react";
+import FormEntitySelect from "../components/FormEntitySelect";
 import FormMoneyInput from "../components/FormMoneyInput";
 import FormNaturalNumberInput from "../components/FormNaturalNumberInput";
 import FormPercentageInput from "../components/FormPercentageInput";
 import FormSelect from "../components/FormSelect";
 import FormTextArea from "../components/FormTextArea";
 import FormTinyTextInput from "../components/FormTinyTextInput";
+import JobUtils from "../firebase/JobUtils";
 import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
 import PersonUtils from "../utils/PersonUtils";
@@ -39,7 +43,8 @@ interface EmployeeManagementPageData extends SpaRadisePageData {
     employeeData: EmployeeData,
     employeeDefaultData: EmployeeData,
     employeeDocumentReference?: DocumentReference,
-    employeeName: string
+    employeeName: string,
+    jobDataMap: JobDataMap
 
 }
 
@@ -73,6 +78,7 @@ export default function EmployeeManagement(): JSX.Element {
             },
             employeeDefaultData: {} as EmployeeData,
             employeeName: "New Employee",
+            jobDataMap: {},
             loaded: false,
             updateMap: {}
         } ),
@@ -111,7 +117,6 @@ export default function EmployeeManagement(): JSX.Element {
 
     }
 
-
     async function deleteEmployee(): Promise< void > {
 
         if (!isEditMode || !documentId) return;
@@ -137,6 +142,7 @@ export default function EmployeeManagement(): JSX.Element {
     async function loadPageData(): Promise< void > {
     
         if( !documentId ) return;
+        pageData.jobDataMap = await JobUtils.getJobListAll();
         if( isEditMode ) await loadEmployee();
         pageData.loaded = true;
         reloadPageData();
@@ -322,6 +328,12 @@ export default function EmployeeManagement(): JSX.Element {
                             <option value="inactive">Inactive</option>
                         </FormSelect>
                     </div> */}
+                    <div className="employee-form-row">
+                        <label htmlFor="employee-job">Job</label>
+                        <FormEntitySelect< JobData > collectionName={ SpaRadiseEnv.JOB_COLLECTION } documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="job" name="employee-job" optionDataMap={ pageData.jobDataMap } pageData={pageData} required={true} getDocumentName={ ( { name } ) => name }>
+                            <option value="" disabled>Select job</option>
+                        </FormEntitySelect>
+                    </div>
                     <div className="employee-form-row">
                         <label htmlFor="employee-hire-date">Date Hired</label>
                         <FormDateInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="hireDate" name="employee-hireDate" pageData={pageData} required={true} />
