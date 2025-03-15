@@ -181,6 +181,27 @@ export interface ServiceMaintenanceDataMap {
 
 }
 
+export interface ServiceTransactionData extends SpaRadiseDocumentData {
+
+    client: DocumentReference,
+    service: DocumentReference,
+    package: DocumentReference | null,
+    status: serviceTransactionStatus,
+    bookingFromDateTime: Date,
+    bookingToDateTime: Date,
+    actualBookingFromDateTime: Date | null,
+    actualBookingToDateTime: Date | null,
+    employee: DocumentReference | null,
+    notes: string | null
+
+}
+
+export interface ServiceTransactionDataMap {
+
+    [ serviceTransactionId: string | number ]: ServiceTransactionData
+
+}
+
 export interface SpaRadiseDocumentData {
 
     [ keyName: string ]: boolean | DocumentReference | Date | null | number | string

@@ -6,12 +6,14 @@ import {
     PackageDataMap,
     PackageServiceDataMap,
     ServiceDataMap,
+    ServiceTransactionData,
+    ServiceTransactionDataMap,
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
 import AccountUtils from "../firebase/AccountUtils";
 import BookingUtils from "../firebase/BookingUtils";
 import DateUtils from "../utils/DateUtils";
-import { DocumentReference } from "firebase/firestore/lite";
+import { documentId, DocumentReference } from "firebase/firestore/lite";
 import FormDateInput from "../components/FormDateInput";
 import {
     FormEvent,
@@ -25,6 +27,7 @@ import ObjectUtils from "../utils/ObjectUtils";
 import PackageServiceUtils from "../firebase/PackageServiceUtils";
 import PackageUtils from "../firebase/PackageUtils";
 import PersonUtils from "../utils/PersonUtils";
+import ServiceTransactionUtils from "../firebase/ServiceTransactionUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import { useParams } from "react-router-dom";
@@ -38,19 +41,22 @@ interface NewBookingPageData extends SpaRadisePageData {
     bookingData: BookingData,
     clientDataMap: ClientDataMap,
     clientIndex: number,
-    clientMiscInfo: { [ clientIndex: number ]: {
+    clientInfoMap: { [ clientIndex: number ]: {
+        packageIncluded: { [ packageId: documentId ]: boolean },
+        serviceIncludedMap: { [ serviceId: documentId ]: number },
+        serviceTransactionDataMap: { [ serviceTransactionIndex: number ]: ServiceTransactionData },
+        serviceTransactionIndex: number,
         showPackages: boolean,
-        showServices: boolean
+        showServices: boolean,
+        singleServiceIncluded: { [ serviceId: documentId ]: boolean }
     } },
+    formIndex: number,
     packageDataMap: PackageDataMap,
     packageServiceDataMap: PackageServiceDataMap,
     packageServiceKeyMap: {
         [ packageId: documentId ]: { [ packageServiceId: documentId ]: documentId }
     },
-    serviceDataMap: ServiceDataMap,
-    serviceIncludedMap: { [ serviceId: documentId ]: boolean },
-    formIndex: number
-
+    serviceDataMap: ServiceDataMap
 }
 
 export default function NewBooking(): JSX.Element {
@@ -67,14 +73,13 @@ export default function NewBooking(): JSX.Element {
             },
             clientDataMap: {} as ClientDataMap,
             clientIndex: 0,
-            clientMiscInfo: {},
+            clientInfoMap: {},
             formIndex: 0,
             loaded: false,
             packageDataMap: {} as PackageDataMap,
             packageServiceDataMap: {} as PackageServiceDataMap,
             packageServiceKeyMap: {},
             serviceDataMap: {} as ServiceDataMap,
-            serviceIncludedMap: {},
             updateMap: {}
         } ),
         accountId: string | undefined = useParams().accountId
@@ -120,7 +125,15 @@ export default function NewBooking(): JSX.Element {
             birthDate,
             notes: null
         };
-        pageData.clientMiscInfo[ -1 ] = { showPackages: true, showServices: false };
+        pageData.clientInfoMap[ -1 ] = {
+            packageIncluded: {},
+            serviceIncludedMap: {},
+            serviceTransactionDataMap: {},
+            serviceTransactionIndex: 0,
+            showPackages: true,
+            showServices: false,
+            singleServiceIncluded: {}
+        };
 
     }
 
@@ -195,7 +208,7 @@ function ChooseClients( { addFormIndex, pageData, reloadPageData }: {
 } ): JSX.Element {
 
     const
-        { clientDataMap, clientMiscInfo } = pageData,
+        { clientDataMap, clientInfoMap } = pageData,
         clientLength: number = ObjectUtils.keyLength( clientDataMap )
     ;
 
@@ -208,7 +221,15 @@ function ChooseClients( { addFormIndex, pageData, reloadPageData }: {
             birthDate: null as unknown as Date,
             notes: null
         };
-        clientMiscInfo[ clientIndex ] = { showPackages: true, showServices: false };
+        clientInfoMap[ clientIndex ] = {
+            packageIncluded: {},
+            serviceIncludedMap: {},
+            serviceTransactionDataMap: {},
+            serviceTransactionIndex: 0,
+            showPackages: true,
+            showServices: false,
+            singleServiceIncluded: {}
+        };
         pageData.clientIndex++;
         reloadPageData();
 
@@ -239,7 +260,7 @@ function ChooseClients( { addFormIndex, pageData, reloadPageData }: {
     async function deleteClient( clientIndex: number ): Promise< void > {
 
         delete clientDataMap[ clientIndex ];
-        delete clientMiscInfo[ clientIndex ];
+        delete clientInfoMap[ clientIndex ];
         reloadPageData();
 
     }
@@ -291,15 +312,62 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
 
     const
         {
-            clientDataMap, clientMiscInfo, packageDataMap, packageServiceKeyMap, serviceDataMap,
-            serviceIncludedMap
+            clientDataMap, clientInfoMap, packageDataMap,  packageServiceKeyMap, serviceDataMap
         } = pageData,
-        [ clientIndexActive, setClientIndexActive ] = useState< number >( getFirstClientIndex )
+        [ clientIndexActive, setClientIndexActive ] = useState< number >( getFirstClientIndex ),
+        {
+            packageIncluded, serviceIncludedMap, serviceTransactionDataMap, singleServiceIncluded,
+            showPackages, showServices
+        } = clientInfoMap[ clientIndexActive ]
     ;
 
     async function addPackage( packageId: documentId ): Promise< void > {
 
-        
+        if( isConflictingPackage( packageId ) ) return;
+        const packageServiceMap = packageServiceKeyMap[ packageId ];
+        for( let packageServiceId in packageServiceMap ) {
+
+            const serviceId: string = packageServiceMap[ packageServiceId ];
+            await addServiceTransaction( serviceId, packageId );
+
+        }
+        packageIncluded[ packageId ] = true;
+        reloadPageData();
+
+    }
+
+    async function addServiceTransaction(
+        serviceId: documentId, packageId?: documentId
+    ): Promise< void > {
+
+        const { serviceTransactionIndex } = clientInfoMap[ clientIndexActive ];
+        serviceTransactionDataMap[ serviceTransactionIndex ] = {
+            client: null as unknown as DocumentReference,
+            service: SpaRadiseFirestore.getDocumentReference(
+                serviceId, SpaRadiseEnv.SERVICE_COLLECTION
+            ),
+            package: packageId ? SpaRadiseFirestore.getDocumentReference(
+                packageId, SpaRadiseEnv.PACKAGE_COLLECTION
+            ) : null,
+            status: "uncanceled",
+            bookingFromDateTime: null as unknown as Date,
+            bookingToDateTime: null as unknown as Date,
+            actualBookingFromDateTime: null,
+            actualBookingToDateTime: null,
+            employee: null,
+            notes: null
+        };
+        serviceIncludedMap[ serviceId ] = serviceTransactionIndex;
+        clientInfoMap[ clientIndexActive ].serviceTransactionIndex++;
+
+    }
+
+    async function addSingleService( serviceId: documentId ): Promise< void > {
+
+        if( isConflictingService( serviceId ) ) return;
+        await addServiceTransaction( serviceId );
+        singleServiceIncluded[ serviceId ] = true;
+        reloadPageData();
 
     }
 
@@ -323,6 +391,36 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
 
     }
 
+    async function deletePackage( packageId: documentId ): Promise< void > {
+
+        const packageServiceMap = packageServiceKeyMap[ packageId ];
+        for( let packageServiceId in packageServiceMap ) {
+
+            const serviceId: string = packageServiceMap[ packageServiceId ];
+            await deleteServiceTransaction( serviceId );
+
+        }
+        delete packageIncluded[ packageId ];
+        reloadPageData();
+
+    }
+
+    async function deleteServiceTransaction( serviceId: documentId ): Promise< void > {
+
+        const serviceTransactionIndex = serviceIncludedMap[ serviceId ];
+        delete serviceTransactionDataMap[ serviceTransactionIndex ];
+        delete serviceIncludedMap[ serviceId ];
+
+    }
+
+    async function deleteSingleService( serviceId: documentId ): Promise< void > {
+
+        await deleteServiceTransaction( serviceId );
+        delete singleServiceIncluded[ serviceId ];
+        reloadPageData();
+
+    }
+
     function getFirstClientIndex(): number {
 
         let minimum: number = Infinity;
@@ -343,6 +441,25 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
 
     }
 
+    function isConflictingPackage( packageId: documentId ): boolean {
+
+        const packageServiceMap = packageServiceKeyMap[ packageId ];
+        for( let packageServiceId in packageServiceMap ) {
+
+            const serviceId: string = packageServiceMap[ packageServiceId ];
+            if( isConflictingService( serviceId ) ) return true;
+
+        }
+        return false;
+
+    }
+
+    function isConflictingService( serviceId: documentId ): boolean {
+
+        return serviceId in serviceIncludedMap;
+
+    }
+
     async function nextPage(): Promise< void > {
 
         await checkFormValidity();
@@ -358,8 +475,8 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
 
     function togglePackages(): void {
 
-        clientMiscInfo[ clientIndexActive ].showPackages =
-            !clientMiscInfo[ clientIndexActive ].showPackages
+        clientInfoMap[ clientIndexActive ].showPackages =
+            !clientInfoMap[ clientIndexActive ].showPackages
         ;
         reloadPageData();
 
@@ -367,8 +484,8 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
 
     function toggleServices(): void {
 
-        clientMiscInfo[ clientIndexActive ].showServices =
-            !clientMiscInfo[ clientIndexActive ].showServices
+        clientInfoMap[ clientIndexActive ].showServices =
+            !clientInfoMap[ clientIndexActive ].showServices
         ;
         reloadPageData();
 
@@ -386,7 +503,7 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
             )
         }</ul>
         <button type="button" onClick={ togglePackages }><h1>Packages</h1></button>
-        <div className={ clientMiscInfo[ clientIndexActive ].showPackages ? `` : `hidden` }>{
+        <div className={ showPackages ? `` : `hidden` }>{
             Object.keys( packageDataMap ).map( packageId => {
                 
                 const
@@ -411,16 +528,35 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
                         ).map(
                             serviceId => {
 
-                                const
-                                    { name } = serviceDataMap[ serviceId ],
-                                    isIncluded: boolean = ( serviceId in serviceIncludedMap )
-                                ;
-                                return <li className={ isIncluded ? `included` : `` } key={ serviceId }>{ name }</li>;
+                                const { name } = serviceDataMap[ serviceId ];
+                                return <li className={ isConflictingService( serviceId ) ? `included` : `` } key={ serviceId }>{ name }</li>;
 
                             }
                         )
                     }</ul>
-                    <button type="button" onClick={ () => addPackage( packageId ) }>Add</button>
+                    {
+                        ( packageId in packageIncluded ) ?  <button type="button" onClick={ () => deletePackage( packageId ) }>Remove</button>
+                        : isConflictingPackage( packageId ) ? <button type="button">In Conflict</button>
+                        : <button type="button" onClick={ () => addPackage( packageId ) }>Add</button>
+                    }
+                </div>;
+
+            } )
+        }</div>
+        <button type="button" onClick={ toggleServices }><h1>Services</h1></button>
+        <div className={ showServices ? `` : `hidden` }>{
+            Object.keys( serviceDataMap ).map( serviceId => {
+                
+                const { name, description } = serviceDataMap[ serviceId ];
+                return <div className="package-box" key={ serviceId }>
+                    <h3>{ name }</h3>
+                    Description:
+                    <p>{ description }</p>
+                    {
+                        ( serviceId in singleServiceIncluded ) ?  <button type="button" onClick={ () => deleteSingleService( serviceId ) }>Remove</button>
+                        : isConflictingService( serviceId ) ? <button type="button">In Conflict</button>
+                        : <button type="button" onClick={ () => addSingleService( serviceId ) }>Add</button>
+                    }
                 </div>;
 
             } )

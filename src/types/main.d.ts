@@ -3,6 +3,7 @@ type employeeStatus = "active" | "inactive";
 type jobStatus = "active" | "inactive";
 type packageMaintenanceStatus = "active" | "inactive";
 type roomType = "room" | "chair";
+type serviceTransactionStatus = "canceled" | "uncanceled";
 type serviceType = "body" | "browsAndLashes" | "facial" | "handsAndFeet" | "health" | "wax";
 type serviceMaintenanceStatus = packageMaintenanceStatus;
 type sex = "female" | "male" | "others";

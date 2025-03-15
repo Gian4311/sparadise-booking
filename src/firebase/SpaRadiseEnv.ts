@@ -22,13 +22,16 @@ export default class SpaRadiseEnv {
     public static SERVICE_COLLECTION = "services";
     public static SERVICE_DURATION_MIN_RANGE = new NumberRange( 0, 120, 30, false );
     public static SERVICE_MAINTENANCE_COLLECTION = "serviceMaintenances";
+    public static SERVICE_MAINTENANCE_STATUS_LIST: serviceMaintenanceStatus[] = [
+        "active", "inactive"
+    ];
+    public static SERVICE_TRANSACTION_COLLECTION = "serviceTransactions";
+    public static SERVICE_TRANSACTION_STATUS_LIST: serviceTransactionStatus[] = [
+        "canceled", "uncanceled"
+    ];
     public static SERVICE_TYPE_LIST: serviceType[] = [
         "body", "browsAndLashes", "facial", "handsAndFeet", "health", "wax"
     ];
-    public static SERVICE_MAINTENANCE_STATUS_TYPE_LIST: serviceMaintenanceStatus[] = [
-        "active", "inactive"
-    ];
-    public static EMPLOYEE_STATUS: employeeStatus[] = ["active", "inactive"]
     public static SEX_LIST: sex[] = [ "female", "male", "others" ];
     public static VOUCHER_COLLECTION = "vouchers";
     public static VOUCHER_PACKAGE_COLLECTION = "voucherPackages";

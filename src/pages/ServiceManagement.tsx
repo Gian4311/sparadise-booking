@@ -522,7 +522,7 @@ export default function ServiceManagement(): JSX.Element {
                                             <FormPercentageInput documentData={ serviceMaintenanceData } documentDefaultData={ serviceMaintenanceDefaultData } documentId={ inputDocumentId } keyName="commissionPercentage" min={ 0.01 } pageData={ pageData } required={ true }/>
                                         </td>
                                         <td>
-                                            <FormSelect documentData={ serviceMaintenanceData } documentDefaultData={ serviceMaintenanceDefaultData } documentId={ inputDocumentId } keyName="status" optionList={ SpaRadiseEnv.SERVICE_MAINTENANCE_STATUS_TYPE_LIST } pageData={ pageData } required={ true }>
+                                            <FormSelect documentData={ serviceMaintenanceData } documentDefaultData={ serviceMaintenanceDefaultData } documentId={ inputDocumentId } keyName="status" optionList={ SpaRadiseEnv.SERVICE_MAINTENANCE_STATUS_LIST } pageData={ pageData } required={ true }>
                                                 <option value="" disabled>Select Service Type</option>
                                                 <option value="active">Active</option>
                                                 <option value="inactive">Inactive</option>
