@@ -339,16 +339,15 @@ export default function ServiceManagement(): JSX.Element {
         if( !isEditMode || !documentId ) return;
         await checkFormValidity();
         const { serviceData, updateMap } = pageData;
-        if( documentId in updateMap ) 
         if( documentId in updateMap ) {
                 
             await ServiceUtils.updateService( documentId, serviceData );
             pageData.serviceDefaultData = { ...pageData.serviceData };
+            pageData.serviceName = serviceData.name;
         
         }
         delete updateMap[ documentId ];
         await updateServiceMaintenanceList();
-        pageData.serviceName = serviceData.name;
         reloadPageData();
         alert( `Updated!` ); // note: remove later
 

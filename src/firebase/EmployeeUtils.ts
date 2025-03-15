@@ -27,7 +27,7 @@ export default class EmployeeUtils {
     
         const
             {
-                lastName, firstName, middleName, sex, email, contactNumber, contactNumberAlternate, buildingNumber, streetName, barangay, city, provincee, region, postalCode, jobStatus, hireDate, unemploymentDate, unemploymentReason
+                lastName, firstName, middleName, sex, email, contactNumber, contactNumberAlternate, buildingNumber, street, barangay, city, provincee, region, postalCode, jobStatus, hireDate, unemploymentDate, unemploymentReason
             } = employeeData
         ;
 
@@ -119,19 +119,21 @@ export default class EmployeeUtils {
             firstName: data.firstName,
             middleName: data.middleName,
             sex: data.sex,
+            birthDate: SpaRadiseFirestore.getDateFromSnapshot( snapshot, "birthDate" ),
             email: data.email,
             contactNumber: data.contactNumber,
             contactNumberAlternate: data.contactNumberAlternate,
             buildingNumber: data.buildingNumber,
-            streetName: data.streetName,
+            street: data.street,
             barangay: data.barangay,
             city: data.city,
             province: data.province,
             region: data.region,
             postalCode: data.postalCode,
+            job: data.job,
             jobStatus: data.jobStatus,
-            hireDate: data.hireDate,
-            unemploymentDate: data.unemploymentDate,
+            hireDate: SpaRadiseFirestore.getDateFromSnapshot( snapshot, "hireDate" ),
+            unemploymentDate: SpaRadiseFirestore.getDateFromSnapshot( snapshot, "unemploymentDate" ),
             unemploymentReason: data.unemploymentReason
         };
 
@@ -145,7 +147,9 @@ export default class EmployeeUtils {
             ),
             employeeQuery = query(
                 employeeCollection,
-                orderBy( "name" )
+                orderBy( "lastName" ),
+                orderBy( "firstName" ),
+                orderBy( "middleName" )
             ),
             snapshotList: QueryDocumentSnapshot[] = ( await getDocs( employeeQuery ) ).docs,
             employeeDataMap: EmployeeDataMap = {}

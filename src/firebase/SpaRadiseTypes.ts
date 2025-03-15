@@ -50,6 +50,37 @@ export interface ClientDataMap {
 
 }
 
+export interface EmployeeData extends SpaRadiseDocumentData {
+
+    lastName: string,
+    firstName: string,
+    middleName: string,
+    sex: sex,
+    birthDate: Date,
+    email: string,
+    contactNumber: string,
+    contactNumberAlternate: string | null,
+    buildingNumber: string | null,
+    street: string | null,
+    barangay: string,
+    city: string,
+    province: string,
+    region: string,
+    postalCode: string,
+    job: DocumentReference,
+    jobStatus: jobStatus,
+    hireDate:  Date | null,
+    unemploymentDate: Date | null,
+    unemploymentReason: string | null
+
+}
+
+export interface EmployeeDataMap {
+
+    [ employeeId: string ]: EmployeeData
+
+}
+
 export interface JobData extends SpaRadiseDocumentData {
 
     name: string,
@@ -164,35 +195,6 @@ export interface SpaRadisePageData {
             [ keyName: string ]: boolean
         }
     }
-
-}
-
-export interface EmployeeData extends SpaRadiseDocumentData {
-
-    lastName: string,
-    firstName: string,
-    middleName: string,
-    sex: "male" | "female" | "others",
-    email: string,
-    contactNumber: string,
-    contactNumberAlternate: string | null,
-    buildingNumber: string | null,
-    streetName: string | null,
-    barangay: string,
-    city: string,
-    province: string,
-    region: string,
-    postalCode: string,
-    jobStatus: string,
-    hireDate:  Date | null,
-    unemploymentDate: Date | null,
-    unemploymentReason: string | null
-
-}
-
-export interface EmployeeDataMap {
-
-    [ employeeID: string ]: EmployeeData
 
 }
 

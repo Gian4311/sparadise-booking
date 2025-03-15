@@ -297,6 +297,12 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
         [ clientIndexActive, setClientIndexActive ] = useState< number >( getFirstClientIndex )
     ;
 
+    async function addPackage( packageId: documentId ): Promise< void > {
+
+        
+
+    }
+
     async function checkFormValidity(): Promise< boolean > {
     
         const
@@ -414,6 +420,7 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
                             }
                         )
                     }</ul>
+                    <button type="button" onClick={ () => addPackage( packageId ) }>Add</button>
                 </div>;
 
             } )

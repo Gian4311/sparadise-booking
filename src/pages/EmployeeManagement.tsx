@@ -1,7 +1,14 @@
 import DataMapUtils from "../utils/DataMapUtils";
 import DateUtils from "../utils/DateUtils";
 import { DocumentReference } from "firebase/firestore/lite";
+import {
+    EmployeeData,
+    SpaRadisePageData
+} from "../firebase/SpaRadiseTypes";
+import EmployeeUtils from "../firebase/EmployeeUtils";
+import FormContactNumberInput from "../components/FormContactNumberInput";
 import FormDateInput from "../components/FormDateInput";
+import FormEmailInput from "../components/FormEmailInput";
 import {
     FormEvent,
     useEffect,
@@ -14,28 +21,22 @@ import FormSelect from "../components/FormSelect";
 import FormTextArea from "../components/FormTextArea";
 import FormTinyTextInput from "../components/FormTinyTextInput";
 import NumberUtils from "../utils/NumberUtils";
-import FormContactNumberInput from "../components/FormContactNumberInput";
-import FormEmailInput from "../components/FormEmailInput";
-import {
-    EmployeeData,
-    SpaRadisePageData
-} from "../firebase/SpaRadiseTypes";
-import EmployeeUtils from "../firebase/EmployeeUtils";
+import ObjectUtils from "../utils/ObjectUtils";
+import PersonUtils from "../utils/PersonUtils";
+import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import { useParams } from "react-router-dom";
-import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 
 import "../styles/EmployeeEmployeeManagement.css";
 import "../styles/Sidebar.css";
 
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 import BackButton from "../images/back button.png";
-import ObjectUtils from "../utils/ObjectUtils";
 
 interface EmployeeManagementPageData extends SpaRadisePageData {
 
-    employeeDefaultData: EmployeeData,
     employeeData: EmployeeData,
+    employeeDefaultData: EmployeeData,
     employeeDocumentReference?: DocumentReference,
     employeeName: string
 
@@ -46,43 +47,46 @@ const IS_DEV_MODE = true;
 export default function EmployeeManagement(): JSX.Element {
 
     const
-        [pageData, setPageData] = useState<EmployeeManagementPageData>({
+        [ pageData, setPageData ] = useState< EmployeeManagementPageData >( {
             employeeData: {
                 lastName: null as unknown as string,
                 firstName: null as unknown as string,
                 middleName: null as unknown as string,
-                sex: null as unknown as "male" | "female" | "others",
+                sex: null as unknown as sex,
+                birthDate: null as unknown as Date,
                 email: null as unknown as string,
                 contactNumber: null as unknown as string,
                 contactNumberAlternate: null as unknown as string,
                 buildingNumber: null as unknown as string,
-                streetName: null as unknown as string | null,
+                street: null as unknown as string | null,
                 barangay: null as unknown as string,
                 city: null as unknown as string,
                 province: null as unknown as string,
                 region: null as unknown as string,
                 postalCode: null as unknown as string,
-                jobStatus: null as unknown as string,
-                hireDate: null as unknown as Date | null,
-                unemploymentDate: null as unknown as Date | null,
-                unemploymentReason: null as unknown as string | null
-            },//undefined as unknown as EmployeeData,
+                job: null as unknown as DocumentReference,
+                jobStatus: null as unknown as jobStatus,
+                hireDate: null,
+                unemploymentDate: null,
+                unemploymentReason: null
+            },
             employeeDefaultData: {} as EmployeeData,
             employeeName: "New Employee",
+            loaded: false,
             updateMap: {}
-        }),
+        } ),
         documentId: string | undefined = useParams().id,
         isNewMode: boolean = (documentId === "new"),
         isEditMode: boolean = (documentId !== undefined && !isNewMode)
-        ;
+    ;
 
-    async function cancelEmployeeForm(): Promise<void> {
+    async function cancelEmployeeForm(): Promise< void > {
 
         window.open(`/management/employees/menu`, `_self`);
 
     }
 
-    async function checkFormValidity(): Promise<boolean> {
+    async function checkFormValidity(): Promise< boolean > {
 
         const {
             employeeData,
@@ -93,7 +97,7 @@ export default function EmployeeManagement(): JSX.Element {
 
     }
 
-    async function createEmployee(): Promise<void> {
+    async function createEmployee(): Promise< void > {
 
         if (!isNewMode || !documentId) return;
         await checkFormValidity();
@@ -107,7 +111,7 @@ export default function EmployeeManagement(): JSX.Element {
     }
 
 
-    async function deleteEmployee(): Promise<void> {
+    async function deleteEmployee(): Promise< void > {
 
         if (!isEditMode || !documentId) return;
         await EmployeeUtils.deleteEmployee(documentId);
@@ -116,45 +120,26 @@ export default function EmployeeManagement(): JSX.Element {
 
     }
 
-
-    function getDateKey(date: Date): string {
-
-        return DateUtils.toString(date, "yyyymmdd");
-
-    }
-
-    async function newEmployeeForm(): Promise<void> {
-
-        pageData.employeeData = {
-            lastName: null as unknown as string,
-            firstName: null as unknown as string,
-            middleName: null as unknown as string,
-            sex: null as unknown as "male" | "female" | "others",
-            email: null as unknown as string,
-            contactNumber: null as unknown as string,
-            contactNumberAlternate: null as unknown as string,
-            buildingNumber: null as unknown as string,
-            streetName: null as unknown as string | null,
-            barangay: null as unknown as string,
-            city: null as unknown as string,
-            province: null as unknown as string,
-            region: null as unknown as string,
-            postalCode: null as unknown as string,
-            jobStatus: null as unknown as string,
-            hireDate: null as unknown as Date | null,
-            unemploymentDate: null as unknown as Date | null,
-            unemploymentReason: null as unknown as string | null
-        }
-
-    }
-
-    async function openEmployeeForm(): Promise<void> {
+    async function loadEmployee(): Promise< void > {
 
         if (!documentId) return;
         pageData.employeeDocumentReference = SpaRadiseFirestore.getDocumentReference(
             documentId, SpaRadiseEnv.EMPLOYEE_COLLECTION
         );
-        pageData.employeeData = await EmployeeUtils.getEmployeeData(documentId);
+        pageData.employeeData = await EmployeeUtils.getEmployeeData( documentId );
+        pageData.employeeDefaultData = { ...pageData.employeeData };
+        const { lastName, firstName, middleName } = pageData.employeeDefaultData;
+        pageData.employeeName = PersonUtils.format( firstName, middleName, lastName, "f mi l" );
+
+    }
+
+    async function loadPageData(): Promise< void > {
+    
+        if( !documentId ) return;
+        if( isEditMode ) await loadEmployee();
+        pageData.loaded = true;
+        reloadPageData();
+
     }
 
     function reloadPageData(): void {
@@ -163,11 +148,10 @@ export default function EmployeeManagement(): JSX.Element {
 
     }
 
-    async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
+    async function submit( event: FormEvent< HTMLFormElement > ): Promise< void > {
 
         event.preventDefault();
-
-        if (isNewMode)
+        if ( isNewMode )
             await createEmployee();
         else
             await updateEmployee();
@@ -179,40 +163,21 @@ export default function EmployeeManagement(): JSX.Element {
         if (!isEditMode || !documentId) return;
         await checkFormValidity();
         const { employeeData, updateMap } = pageData;
-        if (documentId in updateMap)
-            if (documentId in updateMap) {
+        if (documentId in updateMap) {
 
-                await EmployeeUtils.updateEmployee(documentId, employeeData);
-                pageData.employeeDefaultData = { ...pageData.employeeData };
+            await EmployeeUtils.updateEmployee(documentId, employeeData);
+            pageData.employeeDefaultData = { ...pageData.employeeData };
+            const { lastName, firstName, middleName } = pageData.employeeDefaultData;
+            pageData.employeeName = PersonUtils.format( firstName, middleName, lastName, "f mi l" );
 
-            }
+        }
         delete updateMap[documentId];
-        pageData.employeeName = employeeData.name;
         reloadPageData();
         alert(`Updated!`); // note: remove later
 
     }
-    useEffect(() => {
-        (async () => {
-
-            if (!documentId) return;
-            await (isNewMode ? newEmployeeForm() : openEmployeeForm());
-            reloadPageData();
-
-        })()
-    }, []);
-
-    async function loadEmployee(): Promise<void> {
-
-        if (!documentId) return;
-        pageData.employeeDocumentReference = SpaRadiseFirestore.getDocumentReference(
-            documentId, SpaRadiseEnv.EMPLOYEE_COLLECTION
-        );
-        pageData.employeeData = await EmployeeUtils.getEmployeeData(documentId);
-        pageData.employeeData = pageData.employeeData.name;
-        pageData.employeeDefaultData = { ...pageData.employeeData };
-
-    }
+    
+    useEffect( () => { loadPageData(); }, [] );
 
     return <>
 
@@ -253,23 +218,23 @@ export default function EmployeeManagement(): JSX.Element {
                         </div>
                         <div className="employee-form-row">
                             <label htmlFor="employee-middle-name">Middle Name</label>
-                            <FormDateInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="middleName" name="employee-middleName" pageData={pageData} required={true} />
+                            <FormTinyTextInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="middleName" name="employee-middleName" pageData={pageData}/>
                         </div>
                     </div>
 
                     <div className="employee-form-row-group">
                         <div className="employee-form-row">
                             <label htmlFor="employee-sex">Sex</label>
-                            <FormSelect documentData={pageData.employeeData} documentDefaultData={pageData.employeeData} documentId={documentId} name="employee-sex" keyName="employeeSex" optionList={SpaRadiseEnv.SEX_LIST} pageData={pageData} required={true}>
+                            <FormSelect documentData={pageData.employeeData} documentDefaultData={pageData.employeeData} documentId={documentId} name="employee-sex" keyName="sex" optionList={SpaRadiseEnv.SEX_LIST} pageData={pageData} required={true}>
                                 <option value="" disabled>Select sex</option>
-                                <option value="body">Female</option>
-                                <option value="browsAndLashes">Male</option>
-                                <option value="browsAndLashes">Others</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="others">Others</option>
                             </FormSelect>
                         </div>
                         <div className="employee-form-row">
                             <label htmlFor="employee-birthdate">Birthdate</label>
-                            <FormDateInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="birthdate" name="employee-birthdate" pageData={pageData} required={true} />
+                            <FormDateInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="birthDate" name="employee-birthdate" pageData={pageData} required={true} />
                         </div>
                     </div>
 
@@ -287,7 +252,7 @@ export default function EmployeeManagement(): JSX.Element {
                         </div>
                         <div className="employee-form-row">
                             <label htmlFor="employee-alter-contact-number">Alternate Contact Number</label>
-                            <FormContactNumberInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="contactNumberAlternate" name="employee-contactNumber" pageData={pageData} required={true} />
+                            <FormContactNumberInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="contactNumberAlternate" name="employee-contactNumber" pageData={pageData}/>
                         </div>
                     </div>
 
@@ -301,7 +266,7 @@ export default function EmployeeManagement(): JSX.Element {
                         </div>
                         <div className="employee-form-row">
                             <label htmlFor="employee-street">Street Name</label>
-                            <FormTinyTextInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="streetName" name="employee-streetName" pageData={pageData} />
+                            <FormTinyTextInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="street" name="employee-street" pageData={pageData} />
                         </div>
                         <div className="employee-form-row">
                             <label htmlFor="employee-barangay">Barangay</label>
@@ -319,25 +284,25 @@ export default function EmployeeManagement(): JSX.Element {
                         </div>
                         <div className="employee-form-row">
                             <label htmlFor="employee-region">Region</label>
-                            <FormSelect documentData={pageData.employeeData} documentDefaultData={pageData.employeeData} documentId={documentId} name="employee-region" keyName="employeeRegion" optionList={SpaRadiseEnv.REGION_LIST} pageData={pageData} required={true}>
+                            <FormSelect documentData={pageData.employeeData} documentDefaultData={pageData.employeeData} documentId={documentId} name="employee-region" keyName="region" optionList={ SpaRadiseEnv.REGION_LIST } pageData={pageData} required={true}>
                                 <option value="" disabled>Select region</option>
-                                <option >Davao Region (XI)</option>
-                                <option>Metro Manila (NCR)</option>
-                                <option>Ilocos Region (I)</option>
-                                <option>Cagayan Valley (II)</option>
-                                <option>Central Luzon (III)</option>
-                                <option>CALABARZON (IV-A)</option>
-                                <option>MIMAROPA (IV-B)</option>
-                                <option>Bicol Region (V)</option>
-                                <option>Western Visayas (VI)</option>
-                                <option>Central Visayas (VII)</option>
-                                <option>Eastern Visayas (VIII)</option>
-                                <option>Zamboanga Peninsula (IX)</option>
-                                <option>Northern Mindanao (X)</option>
-                                <option>SOCCSKSARGEN (XII)</option>
-                                <option>Caraga (XIII)</option>
-                                <option>Cordillera Administrative Region (CAR)</option>
-                                <option>Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)</option>
+                                <option value="XI">Davao Region (XI)</option>
+                                <option value="NCR">Metro Manila (NCR)</option>
+                                <option value="I">Ilocos Region (I)</option>
+                                <option value="II">Cagayan Valley (II)</option>
+                                <option value="III">Central Luzon (III)</option>
+                                <option value="IV-A">CALABARZON (IV-A)</option>
+                                <option value="IV-B">MIMAROPA (IV-B)</option>
+                                <option value="V">Bicol Region (V)</option>
+                                <option value="VI">Western Visayas (VI)</option>
+                                <option value="VII">Central Visayas (VII)</option>
+                                <option value="VIII">Eastern Visayas (VIII)</option>
+                                <option value="IX">Zamboanga Peninsula (IX)</option>
+                                <option value="X">Northern Mindanao (X)</option>
+                                <option value="XII">SOCCSKSARGEN (XII)</option>
+                                <option value="XIII">Caraga (XIII)</option>
+                                <option value="CAR">Cordillera Administrative Region (CAR)</option>
+                                <option value="BARMM">Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)</option>
                             </FormSelect>
                         </div>
                         <div className="employee-form-row">
@@ -349,20 +314,20 @@ export default function EmployeeManagement(): JSX.Element {
                     <div className="employee-gap-row">
                     </div>
 
-                    <div className="employee-form-row">
+                    {/* <div className="employee-form-row">
                         <label htmlFor="employee-status">Status</label>
                         <FormSelect documentData={pageData.employeeData} documentDefaultData={pageData.employeeData} documentId={documentId} name="employee-status" keyName="employeeStatus" optionList={SpaRadiseEnv.REGION_LIST} pageData={pageData} required={true}>
                             <option value="" disabled>Select status</option>
-                            <option>Active</option>
-                            <option>Inactive</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
                         </FormSelect>
-                    </div>
+                    </div> */}
                     <div className="employee-form-row">
                         <label htmlFor="employee-hire-date">Date Hired</label>
                         <FormDateInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="hireDate" name="employee-hireDate" pageData={pageData} required={true} />
                     </div>
                 </div>
-                <div className="employee-form-row-group">
+                {/* <div className="employee-form-row-group">
                     <div className="employee-form-row">
                         <label htmlFor="employee-leave-from">Leave From</label>
                         <FormDateInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="leaveFrom" name="employee-fromLeave" pageData={pageData} />
@@ -379,24 +344,24 @@ export default function EmployeeManagement(): JSX.Element {
                             <option>Inactive</option>
                         </FormSelect>
                     </div>
-                </div>
-                <div className="employee-form-row-group">
+                </div> */}
+                {/* <div className="employee-form-row-group">
                     <div className="employee-form-row">
                         <label htmlFor="employee-leave-reason">Leave Reason:</label>
                         <FormTextArea documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="leaveReason" name="employee-leaveReason" pageData={pageData} />
                     </div>
-                </div>
+                </div> */}
 
-                <div className="employee-gap-row">
-                </div>
-                <div className="employee-form-row-group">
+                {/* <div className="employee-gap-row">
+                </div> */}
+                {/* <div className="employee-form-row-group">
                     <div className="employee-form-row">
                         <label></label>
                         <button className="employee-inactive-btn">Mark Employee as Inactive</button>
                     </div>
-                </div>
+                </div> */}
 
-                <div className="employee-form-row-group">
+                {/* <div className="employee-form-row-group">
                     <div className="employee-form-row">
                         <label htmlFor="employee-unemployment-date">Unemployment Date</label>
                         <FormDateInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="unemploymentDate" name="employee-unemploymentDate" pageData={pageData} />
@@ -405,7 +370,7 @@ export default function EmployeeManagement(): JSX.Element {
                         <label htmlFor="employee-unemployment-date">Unemployment Reason</label>
                         <FormTextArea documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="unemploymentReason" name="employee-unemploymentReason" pageData={pageData} />
                     </div>
-                </div>
+                </div> */}
 
                 <div className="employee-form-actions">
                     {
