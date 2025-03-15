@@ -3,37 +3,49 @@ import {
     useEffect,
     useState
 } from "react";
+import { DocumentReference } from "firebase/firestore/lite";
 import ObjectUtils from "../utils/ObjectUtils";
 import {
     SpaRadiseDocumentData,
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
+import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 
-type main = string | boolean | number | null;
+interface NameMap {
 
-export default function FormEntitySelect(
+    [ documentId: documentId ]: string
+
+}
+
+type main = DocumentReference | boolean | number | null;
+
+export default function FormEntitySelect< T extends SpaRadiseDocumentData >(
     {
-        children, documentData, documentDefaultData, documentId, keyName,
-        name = keyName.toString(),
-        pageData, optionList, readOnly, required,
-        onChange, validate
+        children, collectionName, documentData, documentDefaultData, documentId,
+        keyName, name = keyName.toString(), pageData, optionDataMap, readOnly, required,
+        getDocumentName, onChange, validate
     }: {
-        children: JSX.Element | JSX.Element[],
+        children?: JSX.Element | JSX.Element[],
+        collectionName: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
         keyName: string,
         name?: string,
-        optionList: main[],
+        optionDataMap: { [ documentId: documentId ]: T },
         pageData: SpaRadisePageData,
         readOnly?: boolean,
         required?: boolean,
+        getDocumentName: ( document: T ) => Promise< string > | string,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
         validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >
     }
 ): JSX.Element {
 
-    const [ unparsedValue, setUnparsedValue ] = useState< string >( "" );
+    const
+        [ unparsedValue, setUnparsedValue ] = useState< string >( "" ),
+        [ nameMap, setNameMap ] = useState< NameMap >( {} )
+    ;
 
     async function handleChange( event: ChangeEvent< HTMLSelectElement > ): Promise< void > {
 
@@ -43,15 +55,8 @@ export default function FormEntitySelect(
             parsedValue: main | null = await parseValue( unparsedValue ),
             old = documentData[ keyName ] as main | null
         ;
-        if( !optionList.includes( parsedValue ) ) {
-
-            const
-                isString: boolean = ( typeof parsedValue === "string" ),
-                quote: string = ( isString ? `"` : `` )
-            ;
-            throw new Error( `${ quote }${ parsedValue?.toString() }${ quote } value is not in option list.` );
-
-        }    
+        if( !( unparsedValue in optionDataMap ) )
+            throw new Error( `"${ unparsedValue.toString() }" value is not in option list.` );
         if( validate ) if( !( await validate( parsedValue, unparsedValue, old ) ) ) return;
         setUnparsedValue( unparsedValue );
         documentData[ keyName ] = parsedValue;
@@ -97,14 +102,17 @@ export default function FormEntitySelect(
             : isNull ? null
             : isNumber ? +unparsedValue
             : isEmpty ? null
-            : unparsedValue
+            : SpaRadiseFirestore.getDocumentReference( unparsedValue, collectionName )
         );
 
     }
 
     async function unparseValue( parsedValue: main | null ): Promise< string > {
 
-        return parsedValue?.toString() ?? "";
+        return (
+            ( parsedValue instanceof DocumentReference ) ? parsedValue.id
+            : ( parsedValue?.toString() ?? "" )
+        );
 
     }
 
@@ -113,6 +121,11 @@ export default function FormEntitySelect(
         if( !documentData ) return;
         if( documentData[ keyName ] === undefined )
             throw new Error( `Key name "${ keyName }" does not exist.` );
+        const newNameMap: NameMap = {};
+        for( let documentId in optionDataMap ) newNameMap[ documentId ] = await getDocumentName(
+            optionDataMap[ documentId ]
+        );
+        setNameMap( newNameMap );
         const parsedValue: main = documentData[ keyName ] as main;
         setUnparsedValue( await unparseValue( parsedValue ) );
 
@@ -124,8 +137,15 @@ export default function FormEntitySelect(
         required={ required }
         value={ unparsedValue }
         onChange={ event => handleChange( event ) }
-    >{
-        children
-    }</select>;
+    >
+        { children }
+        {
+            Object.keys( nameMap ).sort( ( documentId1, documentId2 ) =>
+                ( nameMap[ documentId1 ] > nameMap[ documentId2 ] ? 1 : -1 )
+            ).map( documentId => <option key={ documentId } value={ documentId }>{
+                nameMap[ documentId ]
+            }</option> )
+        }
+    </select>;
 
 }
