@@ -1,4 +1,5 @@
 import { DocumentReference } from "firebase/firestore/lite";
+import { useNavigate} from "react-router-dom";
 import {
     EmployeeData,
     JobData,
@@ -189,15 +190,14 @@ export default function EmployeeManagement(): JSX.Element {
                     <li><a href="#">Bookings</a></li>
                     <li><a href="#">Clients</a></li>
                     <li><a href="../pages/EmployeeEmployeeManagement.html" className="active">Employees</a></li>
-                    <li><a href="../pages/EmployeeEmployeePackageMenu.html">Employees & Packages</a></li>
+                    <li><a href="../pages/EmployeeEmployeePackageMenu.html">Services & Packages</a></li>
                     <li><a href="#">Vouchers</a></li>
                     <li><a href="#">Rooms & Chairs</a></li>
                     <li><a href="#">Log Out</a></li>
                 </ul>
             </div>
             <div className="employee-main-content">
-                <label htmlFor="employee-main-content" className="employee-management-location">Employees - Cabangbang, R-Man Rey
-                    S.</label>
+                <label htmlFor="employee-main-content" className="employee-management-location">Employees - {PersonUtils.format(pageData.employeeDefaultData.firstName, pageData.employeeDefaultData.middleName, pageData.employeeDefaultData.lastName, "f mi l" )}</label>
                 <div className="employee-form-section">
                     <div className="employee-header">
                         <a href="#" className="employee-back-arrow" aria-label="Back">
@@ -305,7 +305,7 @@ export default function EmployeeManagement(): JSX.Element {
                         </div>
                         <div className="employee-form-row">
                             <label htmlFor="employee-postal">Postal Code</label>
-                            <FormDateInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="postalCode" name="employee-postalCode" pageData={pageData} required={true} />
+                            <FormTinyTextInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="postalCode" name="employee-postalCode" pageData={pageData} required={true} />
                         </div>
                     </div>
 
