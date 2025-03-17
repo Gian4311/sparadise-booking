@@ -1,6 +1,7 @@
 type documentId = string;
 type employeeStatus = "active" | "inactive";
 type jobStatus = "active" | "inactive";
+type objectKeyName = number | string | symbol;
 type packageMaintenanceStatus = "active" | "inactive";
 type roomType = "room" | "chair";
 type serviceTransactionStatus = "canceled" | "uncanceled";

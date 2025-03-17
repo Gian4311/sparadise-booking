@@ -228,7 +228,7 @@ export default function JobManagement(): JSX.Element {
 
         if( !documentId ) return;
         pageData.jobServiceDataMap =
-            await JobServiceUtils.getJobServiceListByJob( documentId )
+            await JobServiceUtils.getJobServiceDataMapByJob( documentId )
         ;
         const { jobServiceDataMap, jobServiceIncludedMap } = pageData;
         for( let jobServiceId in jobServiceDataMap ) {
@@ -243,7 +243,7 @@ export default function JobManagement(): JSX.Element {
     async function loadPageData(): Promise< void > {
 
         if( !documentId ) return;
-        pageData.serviceDataMap = await ServiceUtils.getServiceListAll();
+        pageData.serviceDataMap = await ServiceUtils.getServiceDataMapAll();
         if( isEditMode ) await loadJob();
         pageData.loaded = true;
         reloadPageData();

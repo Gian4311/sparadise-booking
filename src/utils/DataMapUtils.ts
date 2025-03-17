@@ -1,8 +1,12 @@
-export default class DataMapUtils {
+import { SpaRadiseDataMap, SpaRadiseDocumentData } from "../firebase/SpaRadiseTypes";
 
-    public static clone< T extends {} >( dataMap: T ): T {
+export default class SpaRadiseDataMapUtils {
 
-        const dataMapNew: T = {} as T;
+    public static clone< T extends SpaRadiseDocumentData  >(
+        dataMap: SpaRadiseDataMap< T >
+    ): SpaRadiseDataMap< T > {
+
+        const dataMapNew: SpaRadiseDataMap< T > = {};
         for( let keyName in dataMap ) dataMapNew[ keyName ] = { ...dataMap[ keyName ] };
         return dataMapNew;
 

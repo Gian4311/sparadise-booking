@@ -6,12 +6,14 @@ import {
     DocumentReference,
     DocumentSnapshot,
     getDocs,
+    orderBy,
     query,
     updateDoc,
     QueryDocumentSnapshot,
     WithFieldValue,
     where
 } from "firebase/firestore/lite";
+import DateUtils from "../utils/DateUtils";
 import {
     PackageMaintenanceData,
     PackageMaintenanceDataMap
@@ -107,7 +109,39 @@ export default class PackageMaintenanceUtils {
 
     }
 
-    public static async getPackageMaintenanceListByPackage(
+    public static async getPackageMaintenanceDataMapByDate(
+        date: Date
+    ): Promise< PackageMaintenanceDataMap > {
+        
+        date = DateUtils.toCeilByDay( date );
+        const
+            packageMaintenanceCollection: CollectionReference =
+                SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.PACKAGE_MAINTENANCE_COLLECTION )
+            ,
+            packageMaintenanceQuery = query(
+                packageMaintenanceCollection,
+                where( "date", "<", date ),
+                orderBy( "date", "desc" )
+            ),
+            snapshotList: QueryDocumentSnapshot[] =
+                ( await getDocs( packageMaintenanceQuery ) ).docs
+            ,
+            packageMaintenanceDataMap: PackageMaintenanceDataMap = {}
+        ;
+        for( let snapshot of snapshotList ) {
+
+            const
+                data = await PackageMaintenanceUtils.getPackageMaintenanceData( snapshot ),
+                { id } = data.package
+            ;
+            if( !( id in packageMaintenanceDataMap ) ) packageMaintenanceDataMap[ id ] = data;
+
+        }
+        return packageMaintenanceDataMap;
+
+    }
+
+    public static async getPackageMaintenanceDataMapByPackage(
         by: documentId | DocumentReference | DocumentSnapshot
     ): Promise< PackageMaintenanceDataMap > {
     

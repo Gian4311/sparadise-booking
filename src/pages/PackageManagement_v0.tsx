@@ -215,12 +215,10 @@ export default function PackageManagement(): JSX.Element {
             ;
             delete packageMaintenanceDataMap[ packageMaintenanceId ];
             packageMaintenanceDataMap[ packageMaintenanceIdNew ] = packageMaintenanceData;
-            packageMaintenanceDefaultDataMap[ packageMaintenanceIdNew ] =
-                DataMapUtils.clone( packageMaintenanceData )
-            ;
             packageMaintenanceDateKeyMap[ dateKey ] = packageMaintenanceIdNew;
 
         }
+        pageData.packageMaintenanceDefaultDataMap = DataMapUtils.clone( packageMaintenanceDataMap );
 
     }
 
@@ -401,7 +399,7 @@ export default function PackageManagement(): JSX.Element {
 
         if( !documentId ) return;
         pageData.packageMaintenanceDataMap =
-            await PackageMaintenanceUtils.getPackageMaintenanceListByPackage( documentId )
+            await PackageMaintenanceUtils.getPackageMaintenanceDataMapByPackage( documentId )
         ;
         const { packageMaintenanceDataMap, packageMaintenanceDateKeyMap } = pageData;
         pageData.packageMaintenanceDefaultDataMap = DataMapUtils.clone( packageMaintenanceDataMap );
@@ -435,7 +433,7 @@ export default function PackageManagement(): JSX.Element {
     async function loadPageData(): Promise< void > {
 
         if( !documentId ) return;
-        pageData.serviceDataMap = await ServiceUtils.getServiceListAll();
+        pageData.serviceDataMap = await ServiceUtils.getServiceDataMapAll();
         if( isEditMode ) await loadPackage();
         pageData.loaded = true;
         reloadPageData();
@@ -517,9 +515,7 @@ export default function PackageManagement(): JSX.Element {
                 packageMaintenanceId, packageMaintenanceData
             );
             delete updateMap[ packageMaintenanceId ];
-            packageMaintenanceDefaultDataMap[ packageMaintenanceId ] = DataMapUtils.clone(
-                packageMaintenanceData
-            );
+            packageMaintenanceDefaultDataMap[ packageMaintenanceId ] = { ...packageMaintenanceData };
 
         }
 

@@ -120,7 +120,7 @@ export default class VoucherUtils {
 
     }
 
-    public static async getVoucherListAll(): Promise< VoucherDataMap > {
+    public static async getVoucherDataMapAll(): Promise< VoucherDataMap > {
     
         const
             voucherCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(

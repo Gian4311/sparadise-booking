@@ -105,7 +105,7 @@ export default class JobServiceUtils {
 
     }
 
-    public static async getJobServiceListByJob(
+    public static async getJobServiceDataMapByJob(
         by: documentId | DocumentReference | DocumentSnapshot
     ): Promise< JobServiceDataMap > {
     

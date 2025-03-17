@@ -105,7 +105,7 @@ export default class VoucherServiceUtils {
 
     }
 
-    public static async getVoucherServiceListByVoucher(
+    public static async getVoucherServiceDataMapByVoucher(
         by: documentId | DocumentReference | DocumentSnapshot
     ): Promise< VoucherServiceDataMap > {
     

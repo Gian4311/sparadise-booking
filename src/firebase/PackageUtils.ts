@@ -118,7 +118,7 @@ export default class PackageUtils {
 
     }
 
-    public static async getPackageListAll(): Promise< PackageDataMap > {
+    public static async getPackageDataMapAll(): Promise< PackageDataMap > {
     
         const
             packageCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(

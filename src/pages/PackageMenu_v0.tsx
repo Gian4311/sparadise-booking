@@ -26,7 +26,7 @@ export default function PackageMenu(): JSX.Element {
 
     async function loadPageData(): Promise< void > {
 
-        pageData.packageDataMap = await PackageUtils.getPackageListAll();
+        pageData.packageDataMap = await PackageUtils.getPackageDataMapAll();
         pageData.loaded = true;
         reloadPageData();
 

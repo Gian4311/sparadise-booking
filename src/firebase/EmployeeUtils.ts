@@ -139,7 +139,7 @@ export default class EmployeeUtils {
 
     }
 
-    public static async getEmployeeListAll(): Promise< EmployeeDataMap > {
+    public static async getEmployeeDataMapAll(): Promise< EmployeeDataMap > {
     
         const
         employeeCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(

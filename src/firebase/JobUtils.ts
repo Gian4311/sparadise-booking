@@ -118,7 +118,7 @@ export default class JobUtils {
 
     }
 
-    public static async getJobListAll(): Promise< JobDataMap > {
+    public static async getJobDataMapAll(): Promise< JobDataMap > {
     
         const
             jobCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(

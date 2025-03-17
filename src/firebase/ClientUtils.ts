@@ -120,7 +120,7 @@ export default class ClientUtils {
 
     }
 
-    public static async getClientListAll(): Promise< ClientDataMap > {
+    public static async getClientDataMapAll(): Promise< ClientDataMap > {
     
         const
             accountCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(

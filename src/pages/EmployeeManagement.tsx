@@ -1,5 +1,3 @@
-import DataMapUtils from "../utils/DataMapUtils";
-import DateUtils from "../utils/DateUtils";
 import { DocumentReference } from "firebase/firestore/lite";
 import {
     EmployeeData,
@@ -17,15 +15,9 @@ import {
     useState
 } from "react";
 import FormEntitySelect from "../components/FormEntitySelect";
-import FormMoneyInput from "../components/FormMoneyInput";
-import FormNaturalNumberInput from "../components/FormNaturalNumberInput";
-import FormPercentageInput from "../components/FormPercentageInput";
 import FormSelect from "../components/FormSelect";
-import FormTextArea from "../components/FormTextArea";
 import FormTinyTextInput from "../components/FormTinyTextInput";
 import JobUtils from "../firebase/JobUtils";
-import NumberUtils from "../utils/NumberUtils";
-import ObjectUtils from "../utils/ObjectUtils";
 import PersonUtils from "../utils/PersonUtils";
 import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
@@ -141,7 +133,7 @@ export default function EmployeeManagement(): JSX.Element {
     async function loadPageData(): Promise< void > {
     
         if( !documentId ) return;
-        pageData.jobDataMap = await JobUtils.getJobListAll();
+        pageData.jobDataMap = await JobUtils.getJobDataMapAll();
         if( isEditMode ) await loadEmployee();
         pageData.loaded = true;
         reloadPageData();

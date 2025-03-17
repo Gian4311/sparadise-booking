@@ -10,6 +10,7 @@ import {
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
+import StringUtils from "../utils/StringUtils";
 
 interface NameMap {
 
@@ -141,7 +142,7 @@ export default function FormEntitySelect< T extends SpaRadiseDocumentData >(
         { children }
         {
             Object.keys( nameMap ).sort( ( documentId1, documentId2 ) =>
-                ( nameMap[ documentId1 ] > nameMap[ documentId2 ] ? 1 : -1 )
+                StringUtils.compare( nameMap[ documentId1 ], nameMap[ documentId2 ] )
             ).map( documentId => <option key={ documentId } value={ documentId }>{
                 nameMap[ documentId ]
             }</option> )

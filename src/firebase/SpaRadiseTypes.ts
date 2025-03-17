@@ -13,7 +13,7 @@ export interface AccountData extends SpaRadiseDocumentData {
 
 }
 
-export interface AccountDataMap {
+export interface AccountDataMap extends SpaRadiseDataMap< AccountData > {
 
     [ accountId: string ]: AccountData
 
@@ -29,7 +29,7 @@ export interface BookingData extends SpaRadiseDocumentData {
 
 }
 
-export interface BookingDataMap {
+export interface BookingDataMap extends SpaRadiseDataMap< BookingData > {
 
     [ bookingId: string ]: BookingData
 
@@ -44,7 +44,7 @@ export interface ClientData extends SpaRadiseDocumentData {
 
 }
 
-export interface ClientDataMap {
+export interface ClientDataMap extends SpaRadiseDataMap< ClientData > {
 
     [ clientId: string ]: ClientData
 
@@ -75,7 +75,7 @@ export interface EmployeeData extends SpaRadiseDocumentData {
 
 }
 
-export interface EmployeeDataMap {
+export interface EmployeeDataMap extends SpaRadiseDataMap< EmployeeData > {
 
     [ employeeId: string ]: EmployeeData
 
@@ -88,7 +88,7 @@ export interface JobData extends SpaRadiseDocumentData {
 
 }
 
-export interface JobDataMap {
+export interface JobDataMap extends SpaRadiseDataMap< JobData > {
 
     [ jobId: string ]: JobData
 
@@ -101,7 +101,7 @@ export interface JobServiceData extends SpaRadiseDocumentData {
 
 }
 
-export interface JobServiceDataMap {
+export interface JobServiceDataMap extends SpaRadiseDataMap< JobServiceData > {
 
     [ jobServiceId: string | number ]: JobServiceData
 
@@ -114,7 +114,7 @@ export interface PackageData extends SpaRadiseDocumentData {
 
 }
 
-export interface PackageDataMap {
+export interface PackageDataMap extends SpaRadiseDataMap< PackageData > {
 
     [ packageId: string ]: PackageData
 
@@ -129,7 +129,7 @@ export interface PackageMaintenanceData extends SpaRadiseDocumentData {
 
 }
 
-export interface PackageMaintenanceDataMap {
+export interface PackageMaintenanceDataMap extends SpaRadiseDataMap< PackageMaintenanceData > {
 
     [ packageMaintenanceId: string | number ]: PackageMaintenanceData
 
@@ -142,7 +142,7 @@ export interface PackageServiceData extends SpaRadiseDocumentData {
 
 }
 
-export interface PackageServiceDataMap {
+export interface PackageServiceDataMap extends SpaRadiseDataMap< PackageServiceData > {
 
     [ packageServiceId: string | number ]: PackageServiceData
 
@@ -159,7 +159,7 @@ export interface ServiceData extends SpaRadiseDocumentData {
 
 }
 
-export interface ServiceDataMap {
+export interface ServiceDataMap extends SpaRadiseDataMap< ServiceData > {
 
     [ serviceId: string ]: ServiceData
 
@@ -175,7 +175,7 @@ export interface ServiceMaintenanceData extends SpaRadiseDocumentData {
 
 }
 
-export interface ServiceMaintenanceDataMap {
+export interface ServiceMaintenanceDataMap extends SpaRadiseDataMap< ServiceMaintenanceData > {
 
     [ serviceMaintenanceId: string | number ]: ServiceMaintenanceData
 
@@ -196,9 +196,15 @@ export interface ServiceTransactionData extends SpaRadiseDocumentData {
 
 }
 
-export interface ServiceTransactionDataMap {
+export interface ServiceTransactionDataMap extends SpaRadiseDataMap< ServiceTransactionData > {
 
     [ serviceTransactionId: string | number ]: ServiceTransactionData
+
+}
+
+export interface SpaRadiseDataMap< T extends SpaRadiseDocumentData > {
+
+    [ documentId: objectKeyName ]: T
 
 }
 
@@ -228,7 +234,7 @@ export interface VoucherData extends SpaRadiseDocumentData {
 
 }
 
-export interface VoucherDataMap {
+export interface VoucherDataMap extends SpaRadiseDataMap< VoucherData > {
 
     [ voucherId: string ]: VoucherData
 
@@ -241,7 +247,7 @@ export interface VoucherPackageData extends SpaRadiseDocumentData {
 
 }
 
-export interface VoucherPackageDataMap {
+export interface VoucherPackageDataMap extends SpaRadiseDataMap< VoucherPackageData > {
 
     [ voucherPackageId: string | number ]: VoucherPackageData
 
@@ -254,7 +260,7 @@ export interface VoucherServiceData extends SpaRadiseDocumentData {
 
 }
 
-export interface VoucherServiceDataMap {
+export interface VoucherServiceDataMap extends SpaRadiseDataMap< VoucherServiceData > {
 
     [ voucherServiceId: string | number ]: VoucherServiceData
 

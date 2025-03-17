@@ -27,7 +27,7 @@ export default function EmployeeMenu(): JSX.Element {
 
     async function loadPageData(): Promise<void> {
 
-        pageData.employeeDataMap = await EmployeeUtils.getEmployeeListAll();
+        pageData.employeeDataMap = await EmployeeUtils.getEmployeeDataMapAll();
         pageData.loaded = true;
         reloadPageData();
 

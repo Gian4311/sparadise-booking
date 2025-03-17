@@ -1,5 +1,31 @@
 export default class StringUtils {
 
+    public static compare( string1: string, string2: string, ascending: boolean = true ): number {
+
+        const sign: number = ascending ? 1 : -1;
+        return sign * ( ( string1 > string2 ) ? 1 : -1 );
+
+    }
+
+    public static has(
+        string: string,
+        substring: string,
+        caseInsensitive: boolean = true,
+        trim: boolean = true
+    ): boolean {
+
+        if( caseInsensitive ) {
+
+            string = string.toLowerCase();
+            substring = substring.toLowerCase();
+
+        }
+        if( trim ) substring = substring.trim();
+        if( !substring ) return true;
+        return string.includes( substring );
+
+    }
+
     public static isTinyText( string: string ): boolean {
 
         return string.length <= 2**8 - 1;

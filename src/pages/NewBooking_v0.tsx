@@ -29,9 +29,10 @@ import PackageUtils from "../firebase/PackageUtils";
 import PersonUtils from "../utils/PersonUtils";
 import ServiceTransactionUtils from "../firebase/ServiceTransactionUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
-import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
-import { useParams } from "react-router-dom";
 import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
+import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
+import StringUtils from "../utils/StringUtils";
+import { useParams } from "react-router-dom";
 
 import "../styles/NewBooking_v0.css"
 
@@ -152,9 +153,9 @@ export default function NewBooking(): JSX.Element {
 
     async function loadServiceData(): Promise< void > {
 
-        pageData.serviceDataMap = await ServiceUtils.getServiceListAll();
-        pageData.packageDataMap = await PackageUtils.getPackageListAll();
-        pageData.packageServiceDataMap = await PackageServiceUtils.getPackageServiceListAll();
+        pageData.serviceDataMap = await ServiceUtils.getServiceDataMapAll();
+        pageData.packageDataMap = await PackageUtils.getPackageDataMapAll();
+        pageData.packageServiceDataMap = await PackageServiceUtils.getPackageServiceDataMapAll();
         const { packageDataMap, packageServiceDataMap, packageServiceKeyMap } = pageData;
         for( let packageId in packageDataMap ) packageServiceKeyMap[ packageId ] = {};
         for( let packageServiceId in packageServiceDataMap ) {
@@ -516,15 +517,10 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
                     <p>{ description }</p>
                     <ul>{
                         Object.keys( serviceKeyMap ).map( packageServiceId => serviceKeyMap[ packageServiceId ] ).sort(
-                            ( serviceId1, serviceId2 ) => {
-
-                                const
-                                    { name: name1 } = serviceDataMap[ serviceId1 ],
-                                    { name: name2 } = serviceDataMap[ serviceId2 ]
-                                ;
-                                return ( name1 > name2 ) ? 1 : -1;
-
-                            }
+                            ( serviceId1, serviceId2 ) => StringUtils.compare(
+                                serviceDataMap[ serviceId1 ].name,
+                                serviceDataMap[ serviceId2 ].name
+                            )
                         ).map(
                             serviceId => {
 

@@ -26,7 +26,7 @@ export default function ServiceMenu(): JSX.Element {
 
     async function loadPageData(): Promise< void > {
     
-        pageData.serviceDataMap = await ServiceUtils.getServiceListAll();
+        pageData.serviceDataMap = await ServiceUtils.getServiceDataMapAll();
         pageData.loaded = true;
         reloadPageData();
 

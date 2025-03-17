@@ -334,8 +334,8 @@ export default function VoucherManagement(): JSX.Element {
     async function loadPageData(): Promise< void > {
 
         if( !documentId ) return;
-        pageData.serviceDataMap = await ServiceUtils.getServiceListAll();
-        pageData.packageDataMap = await PackageUtils.getPackageListAll();
+        pageData.serviceDataMap = await ServiceUtils.getServiceDataMapAll();
+        pageData.packageDataMap = await PackageUtils.getPackageDataMapAll();
         if( isEditMode ) await loadVoucher();
         pageData.loaded = true;
         reloadPageData();
@@ -359,7 +359,7 @@ export default function VoucherManagement(): JSX.Element {
 
         if( !documentId ) return;
         pageData.voucherPackageDataMap =
-            await VoucherPackageUtils.getVoucherPackageListByVoucher( documentId )
+            await VoucherPackageUtils.getVoucherPackageDataMapByVoucher( documentId )
         ;
         const { voucherPackageDataMap, voucherPackageIncludedMap } = pageData;
         for( let voucherPackageId in voucherPackageDataMap ) {
@@ -375,7 +375,7 @@ export default function VoucherManagement(): JSX.Element {
 
         if( !documentId ) return;
         pageData.voucherServiceDataMap =
-            await VoucherServiceUtils.getVoucherServiceListByVoucher( documentId )
+            await VoucherServiceUtils.getVoucherServiceDataMapByVoucher( documentId )
         ;
         const { voucherServiceDataMap, voucherServiceIncludedMap } = pageData;
         for( let voucherServiceId in voucherServiceDataMap ) {

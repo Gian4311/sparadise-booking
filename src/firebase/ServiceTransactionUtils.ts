@@ -123,7 +123,7 @@ export default class ServiceTransactionUtils {
 
     }
 
-    public static async getServiceTransactionListByClient(
+    public static async getServiceTransactionDataMapByClient(
         by: documentId | DocumentReference | DocumentSnapshot
     ): Promise< ServiceTransactionDataMap > {
     
@@ -151,7 +151,7 @@ export default class ServiceTransactionUtils {
 
     }
 
-    public static async getServiceTransactionListByService(
+    public static async getServiceTransactionDataMapByService(
         by: documentId | DocumentReference | DocumentSnapshot
     ): Promise< ServiceTransactionDataMap > {
     

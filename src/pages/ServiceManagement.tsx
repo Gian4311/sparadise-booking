@@ -177,12 +177,10 @@ export default function ServiceManagement(): JSX.Element {
             ;
             delete serviceMaintenanceDataMap[ serviceMaintenanceId ];
             serviceMaintenanceDataMap[ serviceMaintenanceIdNew ] = serviceMaintenanceData;
-            serviceMaintenanceDefaultDataMap[ serviceMaintenanceIdNew ] =
-                DataMapUtils.clone( serviceMaintenanceData )
-            ;
             serviceMaintenanceDateKeyMap[ dateKey ] = serviceMaintenanceIdNew;
 
         }
+        pageData.serviceMaintenanceDefaultDataMap = DataMapUtils.clone( serviceMaintenanceDataMap );
 
     }
 
@@ -295,7 +293,7 @@ export default function ServiceManagement(): JSX.Element {
 
         if( !documentId ) return;
         pageData.serviceMaintenanceDataMap =
-            await ServiceMaintenanceUtils.getServiceMaintenanceListByService( documentId )
+            await ServiceMaintenanceUtils.getServiceMaintenanceDataMapByService( documentId )
         ;
         const { serviceMaintenanceDataMap, serviceMaintenanceDateKeyMap } = pageData;
         pageData.serviceMaintenanceDefaultDataMap = DataMapUtils.clone( serviceMaintenanceDataMap );
@@ -377,9 +375,7 @@ export default function ServiceManagement(): JSX.Element {
                 serviceMaintenanceId, serviceMaintenanceData
             );
             delete updateMap[ serviceMaintenanceId ];
-            serviceMaintenanceDefaultDataMap[ serviceMaintenanceId ] = DataMapUtils.clone(
-                serviceMaintenanceData
-            );
+            serviceMaintenanceDefaultDataMap[ serviceMaintenanceId ] = { ...serviceMaintenanceData };
 
         }
 

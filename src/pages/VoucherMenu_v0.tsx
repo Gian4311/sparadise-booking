@@ -26,7 +26,7 @@ export default function VoucherMenu(): JSX.Element {
 
     async function loadPageData(): Promise< void > {
     
-        pageData.voucherDataMap = await VoucherUtils.getVoucherListAll();
+        pageData.voucherDataMap = await VoucherUtils.getVoucherDataMapAll();
         pageData.loaded = true;
         reloadPageData();
 

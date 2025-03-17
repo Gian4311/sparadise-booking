@@ -26,7 +26,7 @@ export default function JobMenu(): JSX.Element {
 
     async function loadPageData(): Promise< void > {
 
-        pageData.jobDataMap = await JobUtils.getJobListAll();
+        pageData.jobDataMap = await JobUtils.getJobDataMapAll();
         pageData.loaded = true;
         reloadPageData();
 
