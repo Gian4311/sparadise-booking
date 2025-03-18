@@ -14,8 +14,11 @@ import {
 } from "firebase/firestore/lite";
 import {
     JobData,
-    JobDataMap
+    JobDataMap,
+    JobServiceDataMap
 } from "./SpaRadiseTypes";
+import JobServiceUtils from "./JobServiceUtils";
+import NumberUtils from "../utils/NumberUtils";
 import SpaRadiseEnv from "./SpaRadiseEnv";
 import SpaRadiseFirestore from "./SpaRadiseFirestore";
 
@@ -81,7 +84,8 @@ export default class JobUtils {
     }
 
     public static async deleteJob(
-        by: documentId | DocumentReference | DocumentSnapshot
+        by: documentId | DocumentReference | DocumentSnapshot,
+        jobServiceDataMap: JobServiceDataMap
     ): Promise< boolean > {
 
         // note: check for dependent entities
@@ -90,6 +94,9 @@ export default class JobUtils {
         );
         try {
 
+            for( let jobServiceId in jobServiceDataMap )
+                if( !NumberUtils.isNumeric( jobServiceId ) )
+                    await JobServiceUtils.deleteJobService( jobServiceId );
             await deleteDoc( documentReference );
             return true;
 
@@ -98,7 +105,6 @@ export default class JobUtils {
             throw error;
 
         }
-
 
     }
 

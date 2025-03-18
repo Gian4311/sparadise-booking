@@ -27,10 +27,10 @@ interface JobManagementPageData extends SpaRadisePageData {
     jobDefaultData: JobData,
     jobDocumentReference?: DocumentReference,
     jobServiceDataMap: JobServiceDataMap,
-    jobServiceIncludedMap: { [ serviceId: documentId ]: documentId | number },
     jobServiceIndex: number,
     jobServiceToDeleteMap: { [ jobServiceId: documentId ]: boolean },
-    serviceDataMap: ServiceDataMap
+    serviceDataMap: ServiceDataMap,
+    serviceIncludedMap: { [ serviceId: documentId ]: documentId | number }
 
 }
 
@@ -44,11 +44,11 @@ export default function JobManagement(): JSX.Element {
             },
             jobDefaultData: {} as JobData,
             jobServiceDataMap: {},
-            jobServiceIncludedMap: {},
             jobServiceIndex: 0,
             jobServiceToDeleteMap: {},
             loaded: false,
             serviceDataMap: {},
+            serviceIncludedMap: {},
             updateMap: {}
         } ),
         documentId: string | undefined = useParams().id,
@@ -59,8 +59,8 @@ export default function JobManagement(): JSX.Element {
     async function addJobService( serviceId: string ): Promise< void > {
 
         const
-            { jobServiceIncludedMap, jobServiceToDeleteMap } = pageData,
-            jobServiceId = jobServiceIncludedMap[ serviceId ] as string
+            { serviceIncludedMap, jobServiceToDeleteMap } = pageData,
+            jobServiceId = serviceIncludedMap[ serviceId ] as string
         ;
         if( jobServiceId in jobServiceToDeleteMap ) {
 
@@ -81,7 +81,7 @@ export default function JobManagement(): JSX.Element {
             )
         };
         pageData.jobServiceIndex++;
-        jobServiceIncludedMap[ serviceId ] = jobServiceIndex;
+        serviceIncludedMap[ serviceId ] = jobServiceIndex;
         reloadPageData();
 
     }
@@ -96,14 +96,14 @@ export default function JobManagement(): JSX.Element {
     
         const {
             jobData,
-            jobServiceIncludedMap,
+            serviceIncludedMap,
             jobServiceToDeleteMap
         } = pageData;
         if( jobData.name === "New Job" )
             throw new Error( `Job name cannot be "New Job"!` );
         // check if duplicate name
         const noServices: number =
-            ObjectUtils.keyLength( jobServiceIncludedMap )
+            ObjectUtils.keyLength( serviceIncludedMap )
             - ObjectUtils.keyLength( jobServiceToDeleteMap )
         ;
         if( noServices < 1 )
@@ -132,7 +132,7 @@ export default function JobManagement(): JSX.Element {
         const {
             jobDocumentReference,
             jobServiceDataMap,
-            jobServiceIncludedMap
+            serviceIncludedMap
         } = pageData;
         if( !jobDocumentReference ) return;
         for( let jobServiceId in jobServiceDataMap ) {
@@ -150,7 +150,7 @@ export default function JobManagement(): JSX.Element {
             ;
             delete jobServiceDataMap[ jobServiceId ];
             jobServiceDataMap[ jobServiceIdNew ] = jobServiceData;
-            jobServiceIncludedMap[ serviceId ] = jobServiceIdNew;
+            serviceIncludedMap[ serviceId ] = jobServiceIdNew;
 
         }
 
@@ -159,13 +159,7 @@ export default function JobManagement(): JSX.Element {
     async function deleteJob(): Promise< void > {
 
         if( !isEditMode || !documentId ) return;
-        const {
-            jobServiceDataMap, jobServiceIncludedMap
-        } = pageData;
-        for( let jobServiceId in jobServiceDataMap )
-            await deleteJobService( jobServiceIncludedMap[ jobServiceId ] as string );
-        await updateJobServiceList();
-        await JobUtils.deleteJob( documentId );
+        await JobUtils.deleteJob( documentId, pageData.jobServiceDataMap );
         alert( `Deleted!` ); // note: remove later
         window.open( `/management/jobs/menu`, `_self`);
 
@@ -176,16 +170,16 @@ export default function JobManagement(): JSX.Element {
         const
             {
                 jobServiceDataMap,
-                jobServiceIncludedMap,
+                serviceIncludedMap,
                 jobServiceToDeleteMap
             } = pageData,
-            jobServiceId: string | number = jobServiceIncludedMap[ serviceId ],
+            jobServiceId: string | number = serviceIncludedMap[ serviceId ],
             isNewJobService: boolean =  NumberUtils.isNumeric( jobServiceId )
         ;
         if( isNewJobService ) {
 
             delete jobServiceDataMap[ jobServiceId ];
-            delete jobServiceIncludedMap[ serviceId ];
+            delete serviceIncludedMap[ serviceId ];
 
         } else
             jobServiceToDeleteMap[ jobServiceId ] = true;
@@ -197,7 +191,7 @@ export default function JobManagement(): JSX.Element {
 
         const {
             jobServiceDataMap,
-            jobServiceIncludedMap,
+            serviceIncludedMap,
             jobServiceToDeleteMap
         } = pageData;
         for( let jobServiceId in jobServiceToDeleteMap ) {
@@ -205,7 +199,7 @@ export default function JobManagement(): JSX.Element {
             const serviceId: string = jobServiceDataMap[ jobServiceId ].service.id;
             await JobServiceUtils.deleteJobService( jobServiceId );
             delete jobServiceDataMap[ jobServiceId ];
-            delete jobServiceIncludedMap[ serviceId ];
+            delete serviceIncludedMap[ serviceId ];
             delete jobServiceToDeleteMap[ jobServiceId ];
 
         }
@@ -230,11 +224,11 @@ export default function JobManagement(): JSX.Element {
         pageData.jobServiceDataMap =
             await JobServiceUtils.getJobServiceDataMapByJob( documentId )
         ;
-        const { jobServiceDataMap, jobServiceIncludedMap } = pageData;
+        const { jobServiceDataMap, serviceIncludedMap } = pageData;
         for( let jobServiceId in jobServiceDataMap ) {
 
             const serviceId: string = jobServiceDataMap[ jobServiceId ].service.id;
-            jobServiceIncludedMap[ serviceId ] = jobServiceId;
+            serviceIncludedMap[ serviceId ] = jobServiceId;
 
         }
 
@@ -318,13 +312,13 @@ export default function JobManagement(): JSX.Element {
 
                     const
                         service = pageData.serviceDataMap[ serviceId ],
-                        jobServiceId: string | number = pageData.jobServiceIncludedMap[ serviceId ]
+                        jobServiceId: string | number = pageData.serviceIncludedMap[ serviceId ]
                     ;
                     return <div key={ key }>
                         { service.name }
                         {
                             (
-                                !( serviceId in pageData.jobServiceIncludedMap )
+                                !( serviceId in pageData.serviceIncludedMap )
                                 || ( jobServiceId in pageData.jobServiceToDeleteMap )
                             ) ? (
                                 <button type="button" onClick={ () => addJobService( serviceId ) }>Add</button>

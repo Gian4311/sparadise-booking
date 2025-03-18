@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { EmployeeDataMap } from "../firebase/SpaRadiseTypes";
 import EmployeeUtils from "../firebase/EmployeeUtils";
+import ObjectUtils from "../utils/ObjectUtils";
 import PersonUtils from "../utils/PersonUtils";
 import { SpaRadisePageData } from "../firebase/SpaRadiseTypes";
 import {
@@ -17,13 +18,13 @@ interface EmployeeMenuPageData extends SpaRadisePageData {
 export default function EmployeeMenu(): JSX.Element {
 
     const
-        [pageData, setPageData] = useState<EmployeeMenuPageData>({
-            loaded: false,
+        [ pageData, setPageData ] = useState< EmployeeMenuPageData >( {
             employeeDataMap: {},
+            loaded: false,
             updateMap: {}
-        }),
+        } ),
         { employeeDataMap } = pageData
-        ;
+    ;
 
     async function loadPageData(): Promise<void> {
 
@@ -35,13 +36,22 @@ export default function EmployeeMenu(): JSX.Element {
 
     function reloadPageData(): void {
 
-        setPageData({ ...pageData });
+        setPageData( { ...pageData } );
 
     }
 
-    useEffect(() => { loadPageData(); }, []);
+    useEffect( () => { loadPageData(); }, [] );
 
     return <>
+        <div>
+            <h4>Statistics</h4>
+            <ul>
+                <li>Total: { ObjectUtils.keyLength( employeeDataMap ) }</li>
+                <li>Active: { ObjectUtils.keyLength( employeeDataMap ) }</li>
+                <li>On-Leave: { ObjectUtils.keyLength( employeeDataMap ) }</li>
+                <li>Inactive: { ObjectUtils.keyLength( employeeDataMap ) }</li>
+            </ul>
+        </div>
         <Link to="/management/employees/new">
             <h1>New</h1>
         </Link>

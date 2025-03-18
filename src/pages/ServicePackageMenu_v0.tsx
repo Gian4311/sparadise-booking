@@ -115,7 +115,6 @@ export default function ServicePackageMenu(): JSX.Element {
         setPageData( { ...pageData } );
 
     }
-
     function toggleSortMode(): void {
 
         const newSortMode: sortMode = ( sortMode === "ascending" ) ? "descending" : "ascending";

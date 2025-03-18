@@ -71,7 +71,6 @@ export default class JobServiceUtils {
         by: documentId | DocumentReference | DocumentSnapshot
     ): Promise< boolean > {
 
-        // note: check for dependent entities
         const documentReference: DocumentReference = SpaRadiseFirestore.getDocumentReference(
             by, SpaRadiseEnv.JOB_SERVICE_COLLECTION
         );
