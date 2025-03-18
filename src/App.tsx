@@ -2,8 +2,8 @@ import NewBooking from "./pages/NewBooking_v0";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DayPlannner from "./experiments/DayPlanner";
 import DevMenu from "./pages/DevMenu";
-import EmployeeManagement from "./pages/EmployeeManagement";
-import JobManagement from "./pages/JobManagement";
+import EmployeeManagement from "./pages/EmployeeManagement_v0";
+import JobManagement from "./pages/JobManagement_v0";
 import JobMenu from "./pages/JobMenu_v0";
 import MyAccount from "./pages/MyAccount_v0";
 import PackageManagement from "./pages/PackageManagement_v0";
@@ -13,7 +13,7 @@ import ServiceMenu from "./pages/ServiceMenu_v0";
 import ServicePackageMenu from "./pages/ServicePackageMenu_v0";
 import VoucherManagement from "./pages/VoucherManagement_v0";
 import VoucherMenu from "./pages/VoucherMenu_v0";
-import EmployeeMenu from "./pages/EmployeeMenu";
+import EmployeeMenu from "./pages/EmployeeMenu_v0";
 
 function App() {
 
