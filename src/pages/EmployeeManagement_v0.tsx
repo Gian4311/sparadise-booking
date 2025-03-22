@@ -1,5 +1,6 @@
+
+import ConfirmationModal from "../components/ConfirmationModal";
 import { DocumentReference } from "firebase/firestore/lite";
-import { useNavigate} from "react-router-dom";
 import {
     EmployeeData,
     JobData,
@@ -22,6 +23,7 @@ import JobUtils from "../firebase/JobUtils";
 import PersonUtils from "../utils/PersonUtils";
 import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
+import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
 import "../styles/EmployeeEmployeeManagement.css";
@@ -61,10 +63,10 @@ export default function EmployeeManagement(): JSX.Element {
                 city: null as unknown as string,
                 province: null as unknown as string,
                 region: null as unknown as string,
-                postalCode: null as unknown as string,
+                zipCode: null as unknown as string,
                 job: null as unknown as DocumentReference,
-                jobStatus: null as unknown as jobStatus,
-                hireDate: null,
+                jobStatus: "active",
+                hireDate: new Date(),
                 unemploymentDate: null,
                 unemploymentReason: null
             },
@@ -76,14 +78,9 @@ export default function EmployeeManagement(): JSX.Element {
         } ),
         documentId: string | undefined = useParams().id,
         isNewMode: boolean = (documentId === "new"),
-        isEditMode: boolean = (documentId !== undefined && !isNewMode)
+        isEditMode: boolean = (documentId !== undefined && !isNewMode),
+        navigate = useNavigate()
     ;
-
-    async function cancelEmployeeForm(): Promise< void > {
-
-        window.open(`/management/employees/menu`, `_self`);
-
-    }
 
     async function checkFormValidity(): Promise< boolean > {
 
@@ -96,6 +93,33 @@ export default function EmployeeManagement(): JSX.Element {
 
     }
 
+    async function confirmMarkActive(): Promise< void > {
+
+        const { employeeData } = pageData;
+        pageData.confirmData = {
+            message: "Are you sure you would like to mark this employee as active again?",
+            noText: "Cancel",
+            yesText: "Yes",
+            yes: () => { employeeData.jobStatus = "active"; }
+        };
+        // pag
+        reloadPageData();
+
+    }
+
+    async function confirmMarkInactive(): Promise< void > {
+
+        pageData.confirmData = {
+            message: "Are you sure you would like to mark this employee as inactive?",
+            noText: "Cancel",
+            yesText: "Yes",
+            yes: () => { pageData.employeeData.jobStatus = "inactive"; }
+        };
+
+        reloadPageData();
+
+    }
+
     async function createEmployee(): Promise< void > {
 
         if (!isNewMode || !documentId) return;
@@ -105,7 +129,7 @@ export default function EmployeeManagement(): JSX.Element {
         );
         pageData.employeeDocumentReference = documentReference;
         alert(`Created!`); // note: remove later
-        window.open(`/management/employees/${documentReference.id}`, `_self`);
+        navigate( `/management/employees/${documentReference.id}` );
 
     }
 
@@ -114,7 +138,7 @@ export default function EmployeeManagement(): JSX.Element {
         if (!isEditMode || !documentId) return;
         await EmployeeUtils.deleteEmployee(documentId);
         alert(`Deleted!`); // note: remove later
-        window.open(`/management/employees/menu`, `_self`);
+        navigate( `/management/employees/menu` );
 
     }
 
@@ -126,8 +150,7 @@ export default function EmployeeManagement(): JSX.Element {
         );
         pageData.employeeData = await EmployeeUtils.getEmployeeData( documentId );
         pageData.employeeDefaultData = { ...pageData.employeeData };
-        const { lastName, firstName, middleName } = pageData.employeeDefaultData;
-        pageData.employeeName = PersonUtils.format( firstName, middleName, lastName, "f mi l" );
+        pageData.employeeName = PersonUtils.format( pageData.employeeDefaultData, "f mi l" );
 
     }
 
@@ -166,8 +189,7 @@ export default function EmployeeManagement(): JSX.Element {
 
             await EmployeeUtils.updateEmployee(documentId, employeeData);
             pageData.employeeDefaultData = { ...pageData.employeeData };
-            const { lastName, firstName, middleName } = pageData.employeeDefaultData;
-            pageData.employeeName = PersonUtils.format( firstName, middleName, lastName, "f mi l" );
+            pageData.employeeName = PersonUtils.format( pageData.employeeDefaultData, "f mi l" );
 
         }
         delete updateMap[documentId];
@@ -179,7 +201,7 @@ export default function EmployeeManagement(): JSX.Element {
     useEffect( () => { loadPageData(); }, [] );
 
     return <>
-
+        <ConfirmationModal pageData={ pageData } reloadPageData={ reloadPageData }/>
         <form onSubmit={submit}>
             <div className="sidebar">
                 <div className="sidebar-logo">
@@ -197,7 +219,7 @@ export default function EmployeeManagement(): JSX.Element {
                 </ul>
             </div>
             <div className="employee-main-content">
-                <label htmlFor="employee-main-content" className="employee-management-location">Employees - {PersonUtils.format(pageData.employeeDefaultData.firstName, pageData.employeeDefaultData.middleName, pageData.employeeDefaultData.lastName, "f mi l" )}</label>
+                <label htmlFor="employee-main-content" className="employee-management-location">Employees - {PersonUtils.format(pageData.employeeDefaultData, "f mi l" )}</label>
                 <div className="employee-form-section">
                     <div className="employee-header">
                         <a href="#" className="employee-back-arrow" aria-label="Back">
@@ -268,17 +290,17 @@ export default function EmployeeManagement(): JSX.Element {
                         </div>
                         <div className="employee-form-row">
                             <label htmlFor="employee-barangay">Barangay</label>
-                            <FormTinyTextInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="barangay" name="employee-barangay" pageData={pageData} />
+                            <FormTinyTextInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="barangay" name="employee-barangay" pageData={pageData} required={ true }/>
                         </div>
                     </div>
                     <div className="employee-form-row-group">
                         <div className="employee-form-row">
                             <label htmlFor="employee-city">City/Municipality</label>
-                            <FormTinyTextInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="city" name="employee-city" pageData={pageData} />
+                            <FormTinyTextInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="city" name="employee-city" pageData={pageData}/>
                         </div>
                         <div className="employee-form-row">
                             <label htmlFor="employee-province">Province</label>
-                            <FormTinyTextInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="province" name="employee-province" pageData={pageData} />
+                            <FormTinyTextInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="province" name="employee-province" pageData={pageData} required={ true }/>
                         </div>
                         <div className="employee-form-row">
                             <label htmlFor="employee-region">Region</label>
@@ -305,7 +327,7 @@ export default function EmployeeManagement(): JSX.Element {
                         </div>
                         <div className="employee-form-row">
                             <label htmlFor="employee-postal">Postal Code</label>
-                            <FormTinyTextInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="postalCode" name="employee-postalCode" pageData={pageData} required={true} />
+                            <FormTinyTextInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="zipCode" name="employee-zipCode" pageData={pageData} required={true} />
                         </div>
                     </div>
 
@@ -330,7 +352,14 @@ export default function EmployeeManagement(): JSX.Element {
                         <label htmlFor="employee-hire-date">Date Hired</label>
                         <FormDateInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="hireDate" name="employee-hireDate" pageData={pageData} required={true} />
                     </div>
+                    <button type="button">Open Leaves</button>
+                    {
+                        ( pageData.employeeData.jobStatus === "active" ) ? <button type="button" onClick={ confirmMarkInactive }>Mark as Inactive</button>
+                        : <button type="button" onClick={ confirmMarkActive }>Mark as Active</button>
+                    }
+                    
                 </div>
+
                 {/* <div className="employee-form-row-group">
                     <div className="employee-form-row">
                         <label htmlFor="employee-leave-from">Leave From</label>
@@ -382,7 +411,7 @@ export default function EmployeeManagement(): JSX.Element {
                             : undefined
 
                     }
-                    <button className="employee-cancel-btn" type="button" onClick={cancelEmployeeForm}>Cancel</button>
+                    <button className="employee-cancel-btn" type="button" onClick={ () => navigate( `/management/employees/menu` ) }>Cancel</button>
                     <button className="employee-save-btn" type="submit">{isNewMode ? "Create" : "Save Changes"}</button>
                 </div>
             </div>

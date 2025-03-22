@@ -6,14 +6,10 @@ import {
 import { Link } from "react-router-dom";
 import ObjectUtils from "../utils/ObjectUtils";
 import {
-    PackageData,
     PackageDataMap,
     PackageMaintenanceData,
-    PackageMaintenanceDataMap,
-    ServiceData,
     ServiceDataMap,
-    ServiceMaintenanceData,
-    ServiceMaintenanceDataMap
+    ServiceMaintenanceData
 } from "../firebase/SpaRadiseTypes";
 import PackageMaintenanceUtils from "../firebase/PackageMaintenanceUtils";
 import PackageUtils from "../firebase/PackageUtils";
@@ -21,13 +17,15 @@ import ServiceMaintenanceUtils from "../firebase/ServiceMaintenanceUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
 import { SpaRadisePageData } from "../firebase/SpaRadiseTypes";
 import StringUtils from "../utils/StringUtils";
+import { useNavigate } from "react-router-dom";
+
 import "../styles/EmployeeServiceMenu.css";
 import "../styles/Sidebar.css";
 
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 
 type rowType = "package" | "service";
-type showMode = "" | rowType;
+type showMode = "all" | rowType;
 type sortMode = "ascending" | "descending";
 
 interface ServicePackageMenuPageData extends SpaRadisePageData {
@@ -52,9 +50,10 @@ export default function ServicePackageMenu(): JSX.Element {
         }),
         { maintenanceDataMap, packageDataMap, rowTypeMap, serviceDataMap } = pageData,
         [search, setSearch] = useState<string>(""),
-        [showMode, setShowMode] = useState<showMode>(""),
-        [sortMode, setSortMode] = useState<sortMode>("ascending")
-        ;
+        [showMode, setShowMode] = useState<showMode>( "all" ),
+        [sortMode, setSortMode] = useState<sortMode>("ascending"),
+        navigate = useNavigate()
+    ;
 
     function getDataMap(documentId: string): PackageDataMap | ServiceDataMap {
 
@@ -102,23 +101,12 @@ export default function ServicePackageMenu(): JSX.Element {
 
     }
 
-    function openPackage(packageId: string): void {
-
-        window.open(`/management/packages/${packageId}`, `_self`);
-
-    }
-
-    function openService(serviceId: string): void {
-
-        window.open(`/management/services/${serviceId}`, `_self`);
-
-    }
-
     function reloadPageData(): void {
 
         setPageData({ ...pageData });
 
     }
+
     function toggleSortMode(): void {
 
         const newSortMode: sortMode = (sortMode === "ascending") ? "descending" : "ascending";
@@ -213,14 +201,14 @@ export default function ServicePackageMenu(): JSX.Element {
                                     statusName = (maintenanceData.status === "active") ? "Active" : "Inactive",
                                     commissionPercentage = (rowType === "service") ? `${maintenanceData.commissionPercentage as number}%` : `-`,
                                     show: boolean = (
-                                        (showMode === "" || showMode === rowType)
+                                        (showMode === "all" || showMode === rowType)
                                         && StringUtils.has(
                                             `${count}\t${name}\t${rowTypeName}\t${price}\t${statusName}\t${commissionPercentage}`
                                             , search
                                         )
                                     )
                                     ;
-                                return show ? <tr key={documentId} onClick={() => (rowType === "package") ? openPackage(documentId) : openService(documentId)}>
+                                return show ? <tr key={documentId} onClick={ () => navigate( `/management/${ rowType }s/${ documentId }` ) }>
                                     <td>{count}</td>
                                     <td>{name}</td>
                                     <td>{rowTypeName}</td>

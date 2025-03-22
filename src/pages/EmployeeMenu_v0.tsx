@@ -1,17 +1,29 @@
-import { Link } from "react-router-dom";
-import { EmployeeDataMap } from "../firebase/SpaRadiseTypes";
-import EmployeeUtils from "../firebase/EmployeeUtils";
-import ObjectUtils from "../utils/ObjectUtils";
-import PersonUtils from "../utils/PersonUtils";
-import { SpaRadisePageData } from "../firebase/SpaRadiseTypes";
 import {
+    ChangeEvent,
     useEffect,
     useState
 } from "react";
+import DateUtils from "../utils/DateUtils";
+import {
+    EmployeeDataMap,
+    JobDataMap
+} from "../firebase/SpaRadiseTypes";
+import EmployeeUtils from "../firebase/EmployeeUtils";
+import JobUtils from "../firebase/JobUtils";
+import { Link } from "react-router-dom";
+import ObjectUtils from "../utils/ObjectUtils";
+import PersonUtils from "../utils/PersonUtils";
+import { SpaRadisePageData } from "../firebase/SpaRadiseTypes";
+import StringUtils from "../utils/StringUtils";
+import { useNavigate } from "react-router-dom";
+
+type showMode = "active" | "all" | "inactive" | "onLeave";
+type sortMode = "ascending" | "descending";
 
 interface EmployeeMenuPageData extends SpaRadisePageData {
 
-    employeeDataMap: EmployeeDataMap
+    employeeDataMap: EmployeeDataMap,
+    jobDataMap: JobDataMap
 
 }
 
@@ -20,15 +32,28 @@ export default function EmployeeMenu(): JSX.Element {
     const
         [ pageData, setPageData ] = useState< EmployeeMenuPageData >( {
             employeeDataMap: {},
+            jobDataMap: {},
             loaded: false,
             updateMap: {}
         } ),
-        { employeeDataMap } = pageData
+        { employeeDataMap, jobDataMap } = pageData,
+        [ search, setSearch ] = useState< string >( "" ),
+        [ showMode, setShowMode ] = useState< showMode >( "all" ),
+        [ sortMode, setSortMode ] = useState< sortMode >("ascending"),
+        navigate = useNavigate()
     ;
+
+    function handleChangeSearch(event: ChangeEvent<HTMLInputElement>): void {
+    
+        const { value } = event.target;
+        setSearch(value);
+
+    }
 
     async function loadPageData(): Promise<void> {
 
         pageData.employeeDataMap = await EmployeeUtils.getEmployeeDataMapAll();
+        pageData.jobDataMap = await JobUtils.getJobDataMapAll();
         pageData.loaded = true;
         reloadPageData();
 
@@ -40,19 +65,25 @@ export default function EmployeeMenu(): JSX.Element {
 
     }
 
+    function toggleSortMode(): void {
+
+        const newSortMode: sortMode = (sortMode === "ascending") ? "descending" : "ascending";
+        setSortMode(newSortMode);
+
+    }
+
     useEffect( () => { loadPageData(); }, [] );
 
     return <>
         <div>
             <h4>Statistics</h4>
             <ul>
-                <li>Total: { ObjectUtils.keyLength( employeeDataMap ) }</li>
-                <li>Active: { ObjectUtils.keyLength( employeeDataMap ) }</li>
-                <li>On-Leave: { ObjectUtils.keyLength( employeeDataMap ) }</li>
-                <li>Inactive: { ObjectUtils.keyLength( employeeDataMap ) }</li>
+                <li>Active: ?</li>
+                <li>On-Leave: ?</li>
+                <li>Inactive: ?</li>
             </ul>
         </div>
-        <Link to="/management/employees/new">
+        {/* <Link to="/management/employees/new">
             <h1>New</h1>
         </Link>
         {
@@ -65,7 +96,53 @@ export default function EmployeeMenu(): JSX.Element {
                 </Link>
 
             }) : undefined
-        }
+        } */}
+        Search:
+        <input value={ search } onChange={ event => handleChangeSearch( event ) } />
+        <button type="button" value={ sortMode } onClick={ toggleSortMode }>{
+            ( sortMode === "ascending" ) ? "A - Z" : "Z - A"
+        }</button>
+        <Link to="/management/employees/new"><button type="button">+ Add new employee</button></Link>
+        <table>
+            <thead><tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Job</th>
+                <th>Status</th>
+                <th>Date Hired</th>
+            </tr></thead>
+            <tbody>{
+                Object.keys( employeeDataMap ).sort( ( documentId1, documentId2 ) => StringUtils.compare(
+                    PersonUtils.format( employeeDataMap[ documentId1 ], "f mi l" ),
+                    PersonUtils.format( employeeDataMap[ documentId2 ], "f mi l" ),
+                    ( sortMode === "ascending" )
+                ) ).map( ( documentId, index ) => {
+
+                    const
+                        count: string = ( index + 1 ).toString(),
+                        { hireDate, job: { id: jobId } } = employeeDataMap[ documentId ],
+                        name: string = PersonUtils.format( employeeDataMap[ documentId ], "f mi l" ),
+                        { name: jobName } = jobDataMap[ jobId ],
+                        hireDateText = DateUtils.toString( hireDate, "dd Mmmm yyyy" ),
+                        show: boolean = (
+                            StringUtils.has(
+                                `${ count }\t${ name }\t${ jobName }\t${ hireDateText }`
+                                , search
+                            )
+                        )
+                    ;
+                    return show ? <tr key={ documentId } onClick={ () => navigate( `/management/employees/${ documentId }` ) }>
+                        <td>{ count }</td>
+                        <td>{ name }</td>
+                        <td>{ jobName }</td>
+                        <td></td>
+                        <td>{ hireDateText }</td>
+                    </tr> : undefined;
+
+                })
+            }</tbody>
+        </table>
+        <button type="button" onClick={ () => console.log( pageData ) }>Log page date</button>
     </>;
 
 }

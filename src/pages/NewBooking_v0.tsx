@@ -119,10 +119,10 @@ export default function NewBooking(): JSX.Element {
 
     async function loadFirstClient(): Promise< void > {
 
-        const { accountData: { birthDate, firstName, middleName, lastName } } = pageData;
+        const { accountData, accountData: { birthDate } } = pageData;
         pageData.clientDataMap[ -1 ] = {
             booking: null as unknown as DocumentReference,
-            name: PersonUtils.format( firstName, middleName, lastName, "f mi l" ),
+            name: PersonUtils.format( accountData, "f mi l" ),
             birthDate,
             notes: null
         };

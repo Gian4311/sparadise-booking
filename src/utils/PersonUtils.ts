@@ -1,14 +1,21 @@
 type nameFormat = "f mi l";
 
+interface PersonData {
+
+    lastName: string,
+    firstName: string,
+    middleName: string | null
+
+}
+
 export default class PersonUtils {
 
     public static format(
-        firstName: string,
-        middleName: string | null,
-        lastName: string,
+        personData: PersonData,
         format: nameFormat
     ): string {
 
+        const { lastName, firstName, middleName } = personData;
         let middleInitial: string | null;
         switch( format ) {
 

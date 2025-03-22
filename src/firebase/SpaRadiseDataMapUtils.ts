@@ -1,4 +1,4 @@
-import { SpaRadiseDataMap, SpaRadiseDocumentData } from "../firebase/SpaRadiseTypes";
+import { SpaRadiseDataMap, SpaRadiseDocumentData } from "./SpaRadiseTypes";
 
 export default class SpaRadiseDataMapUtils {
 

@@ -66,10 +66,10 @@ export interface EmployeeData extends SpaRadiseDocumentData {
     city: string,
     province: string,
     region: string,
-    postalCode: string,
+    zipCode: string,
     job: DocumentReference,
     jobStatus: jobStatus,
-    hireDate:  Date | null,
+    hireDate: Date,
     unemploymentDate: Date | null,
     unemploymentReason: string | null
 
@@ -216,6 +216,13 @@ export interface SpaRadiseDocumentData {
 
 export interface SpaRadisePageData {
 
+    confirmData?: {
+        message: string,
+        noText: string,
+        yesText: string,
+        yes?: () => void | Promise< void >,
+        no?: () => void | Promise< void >
+    },
     loaded: boolean,
     updateMap: {
         [ documentId: string ]: {

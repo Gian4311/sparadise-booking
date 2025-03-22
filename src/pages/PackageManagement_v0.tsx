@@ -1,4 +1,4 @@
-import DataMapUtils from "../utils/DataMapUtils";
+import DataMapUtils from "../firebase/SpaRadiseDataMapUtils";
 import DateUtils from "../utils/DateUtils";
 import { DocumentReference } from "firebase/firestore/lite";
 import FormDateInput from "../components/FormDateInput";

@@ -1,6 +1,6 @@
 type dateFormat =
-    "hhmm" | "hh:mm" | "Mmm dd, yyyy" | "Mmm dd, yyyy - hh:mm" | "mmddyyyy" | "yyyy-mm-dd" | "yyyymmdd"
-    | "yyyy-mm-ddThh:mm"
+    "dd Mmmm yyyy" | "hhmm" | "hh:mm" | "Mmmm dd, yyyy" | "Mmmm dd, yyyy - hh:mm" | "mmddyyyy"
+    | "yyyy-mm-dd" | "yyyymmdd" | "yyyy-mm-ddThh:mm"
 ;
 
 export default class DateUtils {
@@ -104,6 +104,12 @@ export default class DateUtils {
         let year: string, month: string, day: string, hours: string, minutes: string;
         switch( format ) {
 
+            case "dd Mmmm yyyy":
+                month = date.toLocaleString( "default", { month: "long" } );
+                day = date.getDate().toString().padStart( 2, "0" );
+                year = date.getFullYear().toString();
+                return `${ day } ${ month } ${ year }`;
+
             case "hhmm":
                 hours = date.getHours().toString().padStart( 2, "0" );
                 minutes = date.getMinutes().toString().padStart( 2, "0" );
@@ -114,13 +120,13 @@ export default class DateUtils {
                 minutes = date.getMinutes().toString().padStart( 2, "0" );
                 return `${ hours }:${ minutes }`;
 
-            case "Mmm dd, yyyy":
+            case "Mmmm dd, yyyy":
                 month = date.toLocaleString( "default", { month: "long" } );
                 day = date.getDate().toString().padStart( 2, "0" );
                 year = date.getFullYear().toString();
                 return `${ month } ${ day }, ${ year }`;
             
-            case "Mmm dd, yyyy - hh:mm":
+            case "Mmmm dd, yyyy - hh:mm":
                 month = date.toLocaleString( "default", { month: "long" } );
                 day = date.getDate().toString().padStart( 2, "0" );
                 year = date.getFullYear().toString();

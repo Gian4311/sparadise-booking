@@ -27,7 +27,7 @@ export default class EmployeeUtils {
     
         const
             {
-                lastName, firstName, middleName, sex, email, contactNumber, contactNumberAlternate, buildingNumber, street, barangay, city, provincee, region, postalCode, jobStatus, hireDate, unemploymentDate, unemploymentReason
+                lastName, firstName, middleName, sex, email, contactNumber, contactNumberAlternate, buildingNumber, street, barangay, city, provincee, region, zipCode, jobStatus, hireDate, unemploymentDate, unemploymentReason
             } = employeeData
         ;
 
@@ -129,7 +129,7 @@ export default class EmployeeUtils {
             city: data.city,
             province: data.province,
             region: data.region,
-            postalCode: data.postalCode,
+            zipCode: data.zipCode,
             job: data.job,
             jobStatus: data.jobStatus,
             hireDate: SpaRadiseFirestore.getDateFromSnapshot( snapshot, "hireDate" ),
