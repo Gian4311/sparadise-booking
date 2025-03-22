@@ -12,9 +12,9 @@ import {
 
 type main = Date;
 
-const DATE_FORMAT = "yyyy-mm-dd";
+const DATE_FORMAT = "yyyy-mm-ddThh:mm";
 
-export default function FormDateInput(
+export default function FormDateTimeInput(
     {
         documentData, documentDefaultData, documentId, keyName, max, min,
         name = keyName.toString(),
@@ -60,7 +60,7 @@ export default function FormDateInput(
         const
             { updateMap } = pageData,
             dateDefault = documentDefaultData[ keyName ] as Date | null,
-            isDefault: boolean = ( dateDefault && parsedValue ) ? DateUtils.areSameDay(
+            isDefault: boolean = ( dateDefault && parsedValue ) ? DateUtils.areSameMinute(
                 dateDefault, parsedValue
             ) : !parsedValue,
             hasUpdateRecord: boolean = ( documentId in updateMap )
@@ -109,7 +109,7 @@ export default function FormDateInput(
         placeholder={ placeholder }
         readOnly={ readOnly }
         required={ required }
-        type="date"
+        type="datetime-local"
         value={ unparsedValue }
         onChange={ event => handleChange( event ) }
     />;

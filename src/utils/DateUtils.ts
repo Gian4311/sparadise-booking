@@ -7,14 +7,16 @@ export default class DateUtils {
 
     public static addTime(
         date: Date,
-        { days, minutes }: {
+        { days, hours, minutes }: {
             days?: number,
+            hours?: number,
             minutes?: number
         }
     ): Date {
 
         const newDate: Date = new Date( date );
         if( days ) newDate.setDate( date.getDate() + days );
+        if( hours ) newDate.setDate( date.getHours() + hours );
         if( minutes ) newDate.setMinutes( date.getMinutes() + minutes );
         return newDate;
 
@@ -37,6 +39,27 @@ export default class DateUtils {
             day2: number = date2.getDate()
         ;
         return ( year1 === year2 && month1 === month2 && year1 === year2 && day1 === day2 );
+
+    }
+
+    public static areSameMinute( date1: Date, date2: Date ): boolean {
+
+        const
+            year1: number = date1.getFullYear(),
+            month1: number = date1.getMonth(),
+            day1: number = date1.getDate(),
+            hours1: number = date1.getHours(),
+            minutes1: number = date1.getMinutes(),
+            year2: number = date2.getFullYear(),
+            month2: number = date2.getMonth(),
+            day2: number = date2.getDate(),
+            hours2: number = date2.getHours(),
+            minutes2: number = date2.getMinutes()
+        ;
+        return (
+            year1 === year2 && month1 === month2 && year1 === year2 && day1 === day2
+            && hours1 === hours2 && minutes1 === minutes2
+        );
 
     }
 
