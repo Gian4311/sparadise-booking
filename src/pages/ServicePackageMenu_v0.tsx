@@ -129,13 +129,14 @@ export default function ServicePackageMenu(): JSX.Element {
                     <img src={SpaRadiseLogo} alt="SpaRadise Logo" />
                 </div>
                 <ul className="sidebar-menu">
-                    <li><a href="#">Dashboard</a></li>
-                    <li><a href="#">Bookings</a></li>
-                    <li><a href="#">Clients</a></li>
-                    <li><a href="../pages/EmployeeEmployeeManagement.html" >Employees</a></li>
-                    <li><a href="../pages/EmployeeEmployeePackageMenu.html" className="active">Services & Packages</a></li>
-                    <li><a href="#">Vouchers</a></li>
-                    <li><a href="#">Rooms & Chairs</a></li>
+                    <li><Link to="../management/dashboard" >Dashboard</Link></li>
+                    <li><Link to="../management/bookings/menu" >Bookings</Link></li>
+                    <li><Link to="../management/clients/menu" >Clients</Link></li>
+                    <li><Link to="/management/employees/menu" >Employees</Link></li>
+                    <li><Link to="../management/servicesAndPackages/menu"className="active" >Services & Packages</Link></li>
+                    <li><Link to="../management/vouchers/menu" >Vouchers</Link></li>
+                    <li><Link to="../management/roomsAndChairs/menu" >Rooms & Chairs</Link></li>
+                    <li><Link to="../management/commissions/menu" >Commissions</Link></li>
                     <li><a href="#">Log Out</a></li>
                 </ul>
             </div>

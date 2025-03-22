@@ -30,6 +30,7 @@ body {
     border-radius: 10px;
     margin-bottom: 30px;
     margin-top: 1.5%;
+    width: 200%;
 }
 
 .menu-item:hover,

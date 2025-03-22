@@ -1,0 +1,194 @@
+/* General Reset */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #f8dedd;
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    min-width: 0;
+}
+
+/* Container Layout */
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+.navbar {
+    background-color: #54204d;
+    color: white;
+    display: flex;
+    padding: 15px 20px;
+    flex-direction: column;
+    width: 200px;
+    height:calc(100vh - 30px);
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    flex-direction: column;
+    padding: 0;
+}
+/* Sidebar Styling */
+.sidebar {
+    width: 250px;
+    background-color: #541c50;
+    color: white;
+    padding: 20px;
+}
+
+.logo img {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.nav-links li {
+    display: inline;
+    margin: 10px 0px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* Main Content */
+.payment-container {
+    background-color: #EDB3B4;
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    max-width: 100%;
+    height: calc(100% - 120px);
+    margin: auto;
+}
+
+.content {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+.header {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+/* Payment Card */
+.payment-card {
+    background-color: #EDB3B4;
+    padding: 25px;
+    border-radius: 10px;
+    width: 100%;
+    height: calc(100% - 50px);
+    margin: auto;
+}
+
+.back-btn {
+    text-decoration: none;
+    font-size: 35px;
+    color: black;
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.highlight {
+    text-decoration: underline;
+}
+
+/* Form Fields */
+label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+.input-group {
+    display: flex;
+    margin-top: 5px;
+}
+
+input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: #e0e0e0;
+    color: #777;
+}
+
+.apply-btn {
+    background-color: #2d6a2d;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    margin-left: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Mark as Payed Button */
+.mark-paid-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #2d6a2d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.alert-message {
+    background-color: #2d6a2d; /* Dark Green */
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    font-weight: bold;
+    position: absolute;
+    top: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 300px;
+}
+
+.close-alert {
+    margin-left: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.mark-paid-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    background-color: #2d6a2d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.mark-paid-btn:hover {
+    background-color: #1f4e1f;
+}
+
+.clientIndex-Logo img{
+    width: 200px; 
+}
