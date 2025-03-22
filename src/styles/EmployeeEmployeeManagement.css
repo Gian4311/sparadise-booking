@@ -1,0 +1,210 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: sparadiseMainFont;
+  }
+  
+  @font-face {
+    font-family: sparadiseMainFont;
+    src: url(Product\ Sans\ Regular.ttf);
+  }
+
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    color: black;
+  }
+  
+  .employee-management-location {
+    color: black;
+  }
+
+  .employee-main-content {
+    margin-left: 270px;
+    padding: 30px;
+    background-color: #FDF9FE;
+    min-height: 100vh;
+  }
+
+  .employee-header {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Adds spacing between the arrow and the header */
+  }
+  
+  .employee-header .back-arrow {
+    text-decoration: none;
+    font-size: 1.5em;
+    color: black;
+    cursor: pointer;
+  }
+
+  .employee-back-arrow{
+    text-decoration: none;
+    font-size: 40px;
+    padding-bottom: 25px;
+    color: black;
+  }
+  
+  .employee-header h1 {
+    margin: 0; /* Ensures the header aligns vertically with the arrow */
+  }
+  
+  
+  .employee-header h1 {
+    font-size: 2.2em;
+    color: black;
+    margin-bottom: 20px;
+  }
+  
+  .employee-form-section {
+    background-color: #FDE9EE;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    margin-top: 1.5%;
+  }
+  
+  .employee-form-row {
+    display: flex;
+    flex-direction: column;
+
+  }
+
+  
+  .employee-form-row label {
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
+  /* Grouping input fields */
+.employee-form-row-group {
+    display: flex;
+    gap: 20px; /* Space between grouped fields */
+    margin-bottom: 20px; /* Space between groups */
+  }
+  
+  .employee-form-row-group .employee-form-row {
+    flex: 1; /* Makes the fields in the group equally wide */
+  }
+  
+  .employee-form-row textarea {
+    resize: none; /* Allow resizing only vertically */
+  }
+  
+  
+  input, textarea, select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5pxs;
+    font-size: 1em;
+  }
+  
+  .employee-gap-row {
+    border-bottom: black solid 2px;
+    margin-bottom: 20px;
+  }
+  textarea {
+    height: 80px;
+  }
+  
+  .employee-history-label{
+    margin-bottom: 1%;
+
+  }
+  .employee-history {
+    margin-top: 1%;
+  }
+  
+  .employee-history-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .employee-history-table th, 
+  .employee-history-table td {
+    padding: 15px;
+    text-align: center;
+  }
+
+  .employee-history-table th{
+    background-color: #6B009E;
+    color: white;
+  }
+
+  
+  .employee-maintenance-delete-btn {
+    background-color: #9E1A24;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.9em;
+  }
+  
+  .employee-form-actions {
+    text-align: right;
+    margin-top: 5%;
+  }
+  
+  .employee-cancel-btn {
+    background-color: #6B009E;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    margin-right: 10px;
+    width: 20%;
+  }
+
+  .employee-delete-btn {
+    background-color: #9E1A24;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    margin-right: 10px;
+    float: left;
+    width: 20%;
+  }
+  
+  .employee-save-btn {
+    background-color: green;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    width: 20%;
+  }
+  
+  .employee-maintenance{
+    background-color: #FDE9EE;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    margin-top: 1.5%;
+  }
+
+  .employee-maintenance-label{
+    font-size: 2rem;
+    font-weight: bold;
+  }
+
+  .employee-maintenance .employee-form-row-group{
+    padding-top: 2%;
+    color: black;
+  }
+
+  .employee-inactive-btn{
+    background-color: #9E1A24;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    margin-right: 10px;
+    float: left;
+    width: auto;
+    align-items: center;
+  }

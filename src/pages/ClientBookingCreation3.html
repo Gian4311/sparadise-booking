@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create a Booking</title>
+    <link rel="stylesheet" href="../styles/ClientIndex.css">
+    <link rel="stylesheet" href="../styles/ClientBookingCreation2.css">
+</head>
+
+<body>
+    <header class="clientIndex-header">
+        <div class="clientIndex-logo">
+            <img src="../images/SpaRadise Logo.png" alt="SpaRadise Logo">
+        </div>
+        <nav class="clientIndex-nav">
+            <ul class="clientIndex-navList">
+                <li class="clientIndex-navItem"><a href="../pages/ClientIndex.html" class="clientIndex-link">Home</a>
+                </li>
+                <li class="clientIndex-navItem"><a href="../pages/ClientBookingList.html"
+                        class="clientIndex-link clientIndex-linkActive">Bookings</a></li>
+                <li class="clientIndex-navItem"><a href="../pages/ClientAccount.html"
+                        class="clientIndex-link">Account</a></li>
+                <li class="clientIndex-navItem"><a href="#" class="clientIndex-link">Log-out</a></li>
+            </ul>
+            <div class="clientIndex-notification">
+                <a href="../pages/ClientNotification.html">
+                    <img src="../images/Notification Symbol.png">
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="booking-container">
+        <section class="form-section client-date-section">
+            <div class="date-input">
+                <label for="booking-summary-label" class="input-label">Booking Summary</label>
+            </div>
+        </section>
+
+
+        <!-- Time Slot Selection -->
+        <section class="form-section booking-summary-section">
+            <table class="booking-summary-table">
+                <thead>
+                    <tr>
+                        <th>Service/Package</th>
+                        <th>Time</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Back Massage</td>
+                        <td>9:00 - 9:30 AM</td>
+                        <td>₱400</td>
+                    </tr>
+                    <tr>
+                        <td>Full Eyelash Extension</td>
+                        <td>9:00 - 9:30 AM</td>
+                        <td>₱400</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+
+        <!-- Voucher Code Section -->
+         <section class="form-section voucher-summary-section">
+            <div class="section-label">Voucher Codes:</div>
+            <table class="voucher-summary-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Discount</th>
+                    </tr>
+                </thead>
+                <tr>
+                    <td>
+                        <textarea id="voucher-code" class="input-field" placeholder="Enter voucher code..."
+                            ></textarea>
+                    </td>
+                </tr>
+            </table>
+         </section>
+        <!-- Navigation Buttons -->
+        <section class="action-buttons">
+            <button onclick="history.back()" class="back-btn">Back</button>
+            <button class="proceed-btn">Proceed (3/4)</button>
+        </section>
+    </main>
+
+</body>
+
+</html>

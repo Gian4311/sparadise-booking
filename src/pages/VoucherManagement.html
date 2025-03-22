@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voucher Management</title>
+    <link rel="stylesheet" href="../styles/VoucherManagement.css">
+    <link rel="stylesheet" href="../styles/Sidebar.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="../images/SpaRadise Logo.png" alt="SpaRadise Logo">
+        </div>
+        <ul class="voucher-menu">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Bookings</a></li>
+            <li><a href="#">Clients</a></li>
+            <li><a href="../pages/EmployeeEmployeeManagement.html">Employees</a></li>
+            <li><a href="../pages/EmployeeServiceManagement.html">Services & Packages</a></li>
+            <li><a href="../pages/VoucherManagement.html"class="voucher-active">Vouchers</a></li>
+            <li><a href="#">Rooms & Chairs</a></li>
+            <li><a href="#">Log Out</a></li>
+        </ul>
+    </div>
+    
+    <div class ="voucher-main-content">
+        <h2 id="title">Vouchers</h2>
+        <div class="container" id="main-page">
+            <!-- search bar -->
+            <input type="text" id="search-bar" placeholder="Search Vouchers..." onkeyup="filterVouchers()">
+            <!-- A to Z Dropdown -->
+            <div class="dropdown">
+                <button class="dropbtn">A to Z<i class="fa fa-caret-down"></i></button>
+                <div class="dropdown-content">
+                    <a href="#" onclick="sortTable(1, 'asc')">A to Z</a>
+                    <a href="#" onclick="sortTable(1, 'desc')">Z to A</a>
+                </div>
+            </div>
+            <!-- Filter Dropdown -->
+            <div class="dropdown">
+                <button class="dropbtn">All<i class="fa fa-caret-down"></i></button>
+                <div class="dropdown-content">
+                    <a href="#" onclick="filterBy('all')">All</a>
+                    <a href="#" onclick="filterBy('discount')">Discount Vouchers</a>
+                    <a href="#" onclick="filterBy('package')">Package Vouchers</a>
+                </div>
+            </div>
+
+            <button class="add-voucher" onclick="showPage('add-voucher');">+ Add New Voucher</button>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Code</th>
+                        <th>Service/Package</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="voucher-table-body"></tbody>
+            </table>
+        </div>
+        
+        <div class="container" id="add-voucher" style="display: none;">
+            <h1>Add New Voucher</h1>
+            <form id="voucher-form">
+                <label for="voucher-name">Name:</label>
+                <input type="text" id="voucher-name" required>
+                
+                <label for="voucher-code">Code:</label>
+                <input type="text" id="voucher-code" required>
+                
+                <label for="voucher-service">Service/Package:</label>
+                <input type="text" id="voucher-service" required>
+                
+                <label for="voucher-type">Amount Type:</label>
+                <select id="voucher-type" onchange="toggleAmountLabel();">
+                    <option value="percent">Percent</option>
+                    <option value="amount">PHP</option>
+                </select>
+                
+                <label for="voucher-amount" id="amount-label">Amount (%):</label>
+                <input type="number" id="voucher-amount" required min="1" max="90">
+                
+                <button type="button" onclick="showPage('main-page');">Cancel</button>
+                <button type="submit">Save</button>
+            </form>
+        </div>
+        
+        <script>
+            function filterVouchers() {
+                let input = document.getElementById('search-bar').value.toLowerCase();
+                let rows = document.querySelectorAll('#voucher-table-body tr');
+            
+                rows.forEach(row => {
+                    let text = row.innerText.toLowerCase();
+                    row.style.display = text.includes(input) ? '' : 'none';
+                });
+            }
+
+            function sortTable(columnIndex, order) {
+                let table = document.querySelector("table tbody");
+                let rows = Array.from(table.rows);
+            
+                rows.sort((a, b) => {
+                    let textA = a.cells[columnIndex].innerText.toLowerCase();
+                    let textB = b.cells[columnIndex].innerText.toLowerCase();
+                    return order === 'asc' ? textA.localeCompare(textB) : textB.localeCompare(textA);
+                });
+            
+                rows.forEach(row => table.appendChild(row));
+            }
+            
+            function filterBy(type) {
+                let rows = document.querySelectorAll("#voucher-table-body tr");
+            
+                rows.forEach(row => {
+                    let category = row.cells[3].innerText.toLowerCase();
+                    row.style.display = (type === 'all' || category.includes(type)) ? '' : 'none';
+                });
+            }
+            
+
+            function showPage(pageId) {
+                document.querySelectorAll('.container').forEach(page => {
+                    page.style.display = 'none';
+                });
+                document.getElementById(pageId).style.display = 'block';
+            }
+    
+            function toggleAmountLabel() {
+                const type = document.getElementById('voucher-type').value;
+                const label = document.getElementById('amount-label');
+                const amountInput = document.getElementById('voucher-amount');
+                
+                if (type === 'percent') {
+                    label.textContent = 'Amount (%):';
+                    amountInput.setAttribute('max', '90');
+                    amountInput.setAttribute('placeholder', 'Max 90%');
+                } else {
+                    label.textContent = 'Amount (PHP):';
+                    amountInput.removeAttribute('max');
+                    amountInput.setAttribute('placeholder', 'Enter PHP amount');
+                }
+            }
+    
+            document.getElementById('voucher-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                const name = document.getElementById('voucher-name').value;
+                const code = document.getElementById('voucher-code').value;
+                const service = document.getElementById('voucher-service').value;
+                const type = document.getElementById('voucher-type').value;
+                const amountValue = document.getElementById('voucher-amount').value;
+                const amount = type === 'percent' ? `${amountValue}%` : `PHP ${amountValue}`;
+                
+                const tableBody = document.getElementById('voucher-table-body');
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${tableBody.children.length + 1}</td><td>${name}</td><td>${code}</td><td>${service}</td><td>${amount}</td>`;
+                row.addEventListener('click', function() {
+                    showEditPage(this, name, code, service, amountValue, type);
+                });
+                tableBody.appendChild(row);
+                
+                showPage('main-page');
+            });
+    
+            function showEditPage(row, name, code, service, amount, type) {
+                document.getElementById('edit-name').value = name;
+                document.getElementById('edit-code').value = code;
+                document.getElementById('edit-service').value = service;
+                document.getElementById('edit-type').value = type;
+                document.getElementById('edit-amount').value = amount;
+                document.getElementById('edit-voucher-form').onsubmit = function(event) {
+                    event.preventDefault();
+                    row.cells[1].textContent = document.getElementById('edit-name').value;
+                    row.cells[2].textContent = document.getElementById('edit-code').value;
+                    row.cells[3].textContent = document.getElementById('edit-service').value;
+                    row.cells[4].textContent = type === 'percent' ? `${document.getElementById('edit-amount').value}%` : `PHP ${document.getElementById('edit-amount').value}`;
+                    showPage('main-page');
+                };
+                showPage('edit-voucher');
+            }
+        </script>
+    
+        <div class="container" id="edit-voucher" style="display: none;">
+            <h1>Edit Voucher</h1>
+            <form id="edit-voucher-form">
+                <label for="edit-name">Name:</label>
+                <input type="text" id="edit-name" required>
+                
+                <label for="edit-code">Code:</label>
+                <input type="text" id="edit-code" required>
+                
+                <label for="edit-service">Service/Package:</label>
+                <input type="text" id="edit-service" required>
+                
+                <label for="edit-type">Amount Type:</label>
+                <select id="edit-type" disabled>
+                    <option value="percent">Percent</option>
+                    <option value="amount">PHP</option>
+                </select>
+                
+                <label for="edit-amount">Amount:</label>
+                <input type="number" id="edit-amount" required>
+                
+                <button type="button" onclick="showPage('main-page');">Cancel</button>
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>  
+    </div>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services & Packages</title>
+    <link rel="stylesheet" href="../styles/EmployeeEmployeeManagement.css">
+    <link rel="stylesheet" href="../styles/Sidebar.css">
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="../images/SpaRadise Logo.png" alt="SpaRadise Logo">
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Bookings</a></li>
+            <li><a href="#">Clients</a></li>
+            <li><a href="../pages/EmployeeEmployeeManagement.html" class="active">Employees</a></li>
+            <li><a href="../pages/EmployeeServicePackageMenu.html">Services & Packages</a></li>
+            <li><a href="#">Vouchers</a></li>
+            <li><a href="#">Rooms & Chairs</a></li>
+            <li><a href="#">Log Out</a></li>
+        </ul>
+    </div>
+    <div class="employee-main-content">
+        <label for="employee-main-content" class="employee-management-location">Employees - Cabangbang, R-Man Rey
+            S.</label>
+        <div class="employee-form-section">
+            <div class="employee-header">
+                <a href="#" class="employee-back-arrow" aria-label="Back">
+                    &#8592;
+                </a>
+                <h1>Cabangbang, R-Man Rey S.</h1>
+            </div>
+            <form>
+                <!-- Group 1: Basic Details -->
+                <div class="employee-form-row-group">
+                    <div class="employee-form-row">
+                        <label for="employee-name">Last Name</label>
+                        <input type="text" id="employee-lastname" name="employee-lastname" value="Cabangbang">
+                    </div>
+                    <div class="employee-form-row">
+                        <label for="employee-name">First Name</label>
+                        <input type="text" id="employee-firstname" name="employee-firstname" value="R-Man Rey">
+                    </div>
+                    <div class="employee-form-row">
+                        <label for="employee-middle-name">Middle Name</label>
+                        <input type="text" id="employee-middlename" name="employee-middlename" value="Sim">
+                    </div>
+                </div>
+
+                <!-- Group 3: Service Type and Room Type -->
+                <div class="employee-form-row-group">
+                    <div class="employee-form-row">
+                        <label for="employee-sex">Sex</label>
+                        <select id="employee-sex" name="employee-sex">
+                            <option selected>Male</option>
+                            <option>Female</option>
+                        </select>
+                    </div>
+                    <div class="employee-form-row">
+                        <label for="employee-birthdate">Birthdate</label>
+                        <input id="employee-birthdate" type="date" name="employee-birthdate">
+                    </div>
+                </div>
+
+                <!-- Group 4: Status and Age Limit -->
+                <div class="employee-gap-row">
+                </div>
+
+                <div class="employee-form-row-group">
+                    <div class="employee-form-row">
+                        <label for="employee-email">Email</label>
+                        <input type="text" id="employee-email" name="employee-email" value="rmanrey26@gmail.com">
+                    </div>
+                    <div class="employee-form-row">
+                        <label for="employee-contact-number">Contact Number</label>
+                        <input type="text" id="employee-contact-number" name="employee-contact-number"
+                            value="09123456789">
+                    </div>
+                    <div class="employee-form-row">
+                        <label for="employee-alter-contact-number">Alternate Contact Number</label>
+                        <input type="text" id="employee-alter-contact-number" name="employee-alter-contact-number"
+                            value=" ">
+                    </div>
+                </div>
+
+                <div class="employee-gap-row">
+                </div>
+
+                <div class="employee-form-row-group">
+                    <div class="employee-form-row">
+                        <label for="employee-building">Building Number</label>
+                        <input type="text" id="employee-building" name="employee-building" value="123 Apartment">
+                    </div>
+                    <div class="employee-form-row">
+                        <label for="employee-street">Street Name</label>
+                        <input type="text" id="employee-street" name="employee-street" value="Blue Street">
+                    </div>
+                    <div class="employee-form-row">
+                        <label for="employee-barangay">Barangay</label>
+                        <input type="text" id="employee-barangay" name="employee-barangay" value="Barangay Spaghetti">
+                    </div>
+                </div>
+                <div class="employee-form-row-group">
+                    <div class="employee-form-row">
+                        <label for="employee-city">City/Municipality</label>
+                        <input type="text" id="employee-city" name="employee-city" value="Davao City">
+                    </div>
+                    <div class="employee-form-row">
+                        <label for="employee-province">Province</label>
+                        <input type="text" id="employee-province" name="employee-province" value="Davao del Sur">
+                    </div>
+                    <div class="employee-form-row">
+                        <label for="employee-region">Region</label>
+                        <select id="employee-region" name="employee-region">
+                            <option selected>Davao Region (XI)</option>
+                            <option>Metro Manila (NCR)</option>
+                            <option>Ilocos Region (I)</option>
+                            <option>Cagayan Valley (II)</option>
+                            <option>Central Luzon (III)</option>
+                            <option>CALABARZON (IV-A)</option>
+                            <option>MIMAROPA (IV-B)</option>
+                            <option>Bicol Region (V)</option>
+                            <option>Western Visayas (VI)</option>
+                            <option>Central Visayas (VII)</option>
+                            <option>Eastern Visayas (VIII)</option>
+                            <option>Zamboanga Peninsula (IX)</option>
+                            <option>Northern Mindanao (X)</option>
+                            <option>SOCCSKSARGEN (XII)</option>
+                            <option>Caraga (XIII)</option>
+                            <option>Cordillera Administrative Region (CAR)</option>
+                            <option>Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)</option>
+                        </select>
+                    </div>
+                    <div class="employee-form-row">
+                        <label for="employee-postal">Postal Code</label>
+                        <input type="text" id="employee-postal" name="employee-postal" value="8000">
+                    </div>
+                </div>
+
+                <div class="employee-gap-row">
+                </div>
+
+                <div class="employee-form-row-group">
+                    <div class="employee-form-row">
+                        <label for="employee-job">Job</label>
+                        <select id="employee-job" name="employee-job">
+                            <option selected>Eyelash Technician</option>
+                            <option>Nail Technician</option>
+                        </select>
+                    </div>
+                    <div class="employee-form-row">
+                        <label for="employee-status">Status</label>
+                        <select id="employee-status" name="employee-status">
+                            <option selected>Active</option>
+                            <option>Inactive</option>
+                        </select>
+                    </div>
+                    <div class="employee-form-row">
+                        <label for="employee-hire-date">Date Hired</label>
+                        <input type="date" id="employee-hire-date" name="employee-hire-date">
+                    </div>
+                </div>
+                <div class="employee-form-row-group">
+                    <div class="employee-form-row">
+                        <label for="employee-leave-from">Leave From</label>
+                        <input type="date" id="employee-leave-from" name="employee-leave-from">
+                    </div>
+                    <div class="employee-form-row">
+                        <label for="employee-leave-to">Leave To</label>
+                        <input type="date" id="employee-leave-to" name="employee-leave-to">
+                    </div>
+                    <div class="employee-form-row">
+                        <label for="employee-leave-status">Leave Status</label>
+                        <select id="employee-leave-status" name="employee-leave-status">
+                            <option selected> </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="employee-form-row-group">
+                    <div class="employee-form-row">
+                        <label for="employee-leave-reason">Leave Reason:</label>
+                        <textarea id="employee-leave-reason" name="employee-leave-reason">
+                    </textarea>
+                    </div>
+                </div>
+
+                <div class="employee-gap-row">
+                </div>
+                <div class="employee-form-row-group">
+                    <div class="employee-form-row">
+                        <label></label>
+                        <button class="employee-inactive-btn">Mark Employee as Inactive</button>
+                    </div>
+                </div>
+
+                <div class="employee-form-row-group">
+                    <div class="employee-form-row">
+                        <label for="employee-unemployment-date">Unemployment Date</label>
+                        <input type="date" id="employee-unemployment-date" name="employee-unemployment-date">
+                    </div>
+                    <div class="employee-form-row">
+                        <label for="employee-unemployment-date">Unemployment Reason</label>
+                        <textarea id="employee-leave-reason" name="employee-leave-reason">
+                        </textarea>
+                    </div>
+                </div>
+
+
+                <div class="employee-form-actions">
+                    <button class="employee-delete-btn">Delete</button>
+                    <button class="employee-cancel-btn">Cancel</button>
+                    <button class="employee-save-btn">Save Changes</button>
+                </div>
+        </div>
+        </div>
+    </div>
+</body>
+
+</html>

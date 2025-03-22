@@ -11,7 +11,7 @@
   src: url(Product\ Sans\ Regular.ttf);
 }
 
-clientIndexody {
+clientIndexbody {
   background: url('../images/indexbackground.jpg') no-repeat center center/cover;
   height: 100vh;
   display: flex;
@@ -63,28 +63,15 @@ clientIndexody {
 }
 
 /* Notification Bell */
+.clientIndex-notification img{
+  height: 30px; /* Adjust the distance from the right edge */
+  padding-left: 120px;
+}
+
+
 .clientIndex-notification {
-  position: absolute; /* Position relative to navbar */
-  right: 30px; /* Adjust the distance from the right edge */
+  height: 50px;
 }
-
-.clientIndex-bell {
-  font-size: 1.5rem;
-  color: white;
-  position: relative;
-}
-
-.clientIndex-badge {
-  position: absolute;
-  top: -5px;
-  right: -8px;
-  background: #F44336;
-  color: white;
-  border-radius: 50%;
-  padding: 2px 5px;
-  font-size: 0.7em;
-}
-
 
 /* Hero Section */
 .clientIndex-hero {

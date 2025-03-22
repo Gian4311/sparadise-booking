@@ -1,37 +1,20 @@
 import {
-    addDoc,
     CollectionReference,
     collection,
+    DocumentReference,
+    DocumentSnapshot,
+    doc,
     Firestore,
-    getDocs,
-    getFirestore,
-    QueryDocumentSnapshot
+    getDoc,
+    getFirestore
 } from "firebase/firestore/lite";
-import { Service, ServiceData } from "./SpaRadiseTypes";
 import SpaRadiseApp from "./SpaRadiseApp";
-import SpaRadiseCollections from "./SpaRadiseCollections";
 
 export default class SpaRadiseFirestore {
 
     private static firestore: Firestore = getFirestore( SpaRadiseApp );
 
-    // add use cases
-    public static async addService( serviceData: ServiceData ): Promise< Service > {
-
-        const
-            serviceCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
-                SpaRadiseCollections.SERVICE_COLLECTION
-            ),
-            documentReference = await addDoc( serviceCollection, serviceData )
-        ;
-        return {
-            id: documentReference.id,
-            ...serviceData
-        };
-
-    }
-
-    private static getCollectionReference( collectionName: string ): CollectionReference {
+    public static getCollectionReference( collectionName: string ): CollectionReference {
 
         const
             firestore: Firestore = SpaRadiseFirestore.getFirestore(),
@@ -41,37 +24,50 @@ export default class SpaRadiseFirestore {
 
     }
 
-    private static getFirestore(): Firestore {
+    public static getDateFromSnapshot( snapshot: DocumentSnapshot, key: string ): Date {
 
-        return SpaRadiseFirestore.firestore;
+        const data = snapshot.get( key );
+        return data ? new Date( data.seconds * 1000 ) : ( null as unknown as Date );
 
     }
 
-    public static async getServiceListAll(): Promise< Service[] > {
+    public static getDocumentId( by: documentId | DocumentReference | DocumentSnapshot ): string {
 
-        const
-            serviceCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
-                SpaRadiseCollections.SERVICE_COLLECTION
-            ),
-            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( serviceCollection ) ).docs,
-            serviceList: Service[] = []
-        ;
-        for( let snapshot of snapshotList ) {
+        if( by instanceof DocumentReference || by instanceof DocumentSnapshot ) by = by.id;
+        return by;
 
-            if( !snapshot.exists() ) throw new Error( "Error in getting snapshot list!" );
-            const data = snapshot.data();
-            serviceList.push( {
-                id: snapshot.id,
-                name: data.name,
-                description: data.description,
-                serviceType: data.serviceType,
-                roomType: data.roomType,
-                ageLimit: data.ageLimit,
-                durationMin: data.durationMin
-            } );
+    }
 
-        }
-        return serviceList;
+    public static getDocumentReference(
+        by: documentId | DocumentReference | DocumentSnapshot, collectonName?: string
+    ): DocumentReference {
+
+        if( typeof by === "string" ) {
+
+            if( !collectonName ) throw `Collection name must be given.`;
+            return doc( SpaRadiseFirestore.getFirestore(), collectonName, by );
+
+        } else if( by instanceof DocumentSnapshot )
+            return by.ref;
+        else
+            return by;
+
+    }
+
+    public static async getDocumentSnapshot(
+        by: documentId | DocumentReference | DocumentSnapshot, collectonName?: string
+    ): Promise< DocumentSnapshot > {
+
+        const documentReference: DocumentReference = SpaRadiseFirestore.getDocumentReference(
+            by, collectonName
+        );
+        return getDoc( documentReference );
+
+    }
+
+    public static getFirestore(): Firestore {
+
+        return SpaRadiseFirestore.firestore;
 
     }
 

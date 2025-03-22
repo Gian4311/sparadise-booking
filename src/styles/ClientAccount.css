@@ -36,9 +36,10 @@
   
   .account-input, .account-select {
     padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    border: none;
+    border-radius: 10px;
     font-size: 14px;
+    background-color: rgba(255,255,255, .7);
   }
   
   .account-input:focus, .account-select:focus {
@@ -48,7 +49,7 @@
   
   .divider {
     border: none;
-    border-top: 1px solid #ddd;
+    border-top: 2px solid black;
     margin: 20px 0;
   }
   
@@ -59,9 +60,10 @@
   }
   
   .delete-account-btn, .save-changes-btn {
+    margin-top: 60px;
     padding: 10px 20px;
     border: none;
-    border-radius: 6px;
+    border-radius: 10px;
     font-size: 14px;
     cursor: pointer;
   }
@@ -84,3 +86,39 @@
     background-color: #371f40;
   }
   
+  .notification-container {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 600px;
+
+    position: absolute;
+    top: 21%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+}
+
+.notification-card {
+    background-color: #fde8e8;
+    padding: 15px;
+    border-radius: 15px;
+    width: 800px;
+    padding: 5%;
+}
+
+.notification-card p{
+  font-size: 20px;
+}
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.notification-time {
+    font-size: 30px;
+    font-weight: bold;
+}

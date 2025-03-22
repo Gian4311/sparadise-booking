@@ -1,0 +1,242 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: sparadiseMainFont, Arial, sans-serif;
+}
+
+@font-face {
+  font-family: sparadiseMainFont;
+  src: url(Product\ Sans\ Regular.ttf);
+}
+
+body {
+  background-color: #f4f4f4;
+  color: black;
+  display: flex;
+}
+
+.voucher-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.voucher-menu li {
+  margin: 20px 0;
+}
+
+.voucher-menu li a {
+  text-decoration: none;
+  color: white;
+  font-size: 1.2em;
+}
+
+.voucher-menu li a.voucher-active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* Main Content */
+.voucher-main-content {
+  margin-left: 250px;
+  width: calc(100% - 250px); /* Ensures content fits beside the sidebar */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
+  background-color: #FDF9FE;
+}
+
+/* Voucher Header */
+.voucher-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.voucher-header .back-arrow {
+  text-decoration: none;
+  font-size: 1.5em;
+  color: black;
+  cursor: pointer;
+}
+
+.voucher-back-arrow{
+  text-decoration: none;
+  font-size: 40px;
+  padding-bottom: 25px;
+  color: black;
+}
+
+.voucher-header h2 {
+  font-size: 2.2em;
+  color: black;
+  margin: 0;
+}
+
+/* Table & Buttons */
+.container {
+  width: 95vw; /* Adjusted width to fit properly */
+  max-width: calc(100% - 30px); /* Ensures table does not overlap sidebar */
+  height: 85vh;
+  background: #FDE9EE;
+  padding: 20px;
+  border-radius: 10px;
+  margin: 20px auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Add Voucher Button */
+.add-voucher {
+  background-color: #6B009E;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 10px; /* Rounded button */
+  cursor: pointer;
+  font-size: 1em;
+  position: absolute;
+  right: 20px;
+  top: 20px;
+}
+
+.add-voucher:hover {
+  background-color: #58007D;
+}
+
+/* Search Bar */
+#search-bar {
+  width: 300px;
+  padding: 10px;
+  border: 2px solid #BFBFBF;
+  border-radius: 20px;
+  outline: none;
+  font-size: 1em;
+  background: white;
+  padding-left: 40px;
+  background-image: url('../images/search-icon.png'); /* Placeholder for search icon */
+  background-position: 10px center;
+  background-repeat: no-repeat;
+}
+
+.search-icon {
+  margin-right: 8px;
+  font-size: 18px;
+  color: gray;
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 16px;
+}
+
+/* Dropdown Buttons */
+.dropbtn {
+  background-color: #BFBFBF;
+  color: black;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Dropdown container */
+.dropdown {
+  position: relative;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+/* Button styling */
+.dropbtn {
+  background-color: #BFBFBF;
+  color: black;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  border-radius: 20px;
+  font-size: 1em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Dropdown content (hidden by default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: white;
+  min-width: 120px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+/* Links inside dropdown */
+.dropdown-content a {
+  color: black;
+  padding: 10px;
+  text-decoration: none;
+  display: block;
+}
+
+/* Show dropdown on hover */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Buttons Alignment */
+.buttons-container {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start; /* Aligns buttons horizontally to the left */
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+/* Table */
+table {
+  width: 100%;
+  flex-grow: 1;
+  border-collapse: collapse;
+  margin-top: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Table Header */
+thead {
+  background-color: #6B009E;
+  color: white;
+  border-radius: 10px;
+  border: none; /* Remove lines */
+}
+
+thead th {
+  padding: 15px;
+  text-align: center;
+  border: none; /* Ensures no lines appear */
+}
+
+/* Table Rows */
+th, td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Remove Row Hover Effect */
+tr:hover {
+  background: none;
+  cursor: default;
+}

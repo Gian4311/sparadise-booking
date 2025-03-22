@@ -1,0 +1,110 @@
+import {
+    ChangeEvent,
+    useEffect,
+    useState
+} from "react";
+import ObjectUtils from "../utils/ObjectUtils";
+import {
+    SpaRadiseDocumentData,
+    SpaRadisePageData
+} from "../firebase/SpaRadiseTypes";
+
+type main = string;
+
+const EMAIL_REGEX = "/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/";
+
+export default function FormEmailInput(
+    {
+        documentData, documentDefaultData, documentId, keyName,
+        name = keyName.toString(),
+        pageData, placeholder, readOnly, required,
+        onChange, validate
+    }: {
+        documentData: SpaRadiseDocumentData,
+        documentDefaultData?: SpaRadiseDocumentData,
+        documentId?: string,
+        keyName: string,
+        name?: string,
+        pageData: SpaRadisePageData,
+        placeholder?: string,
+        readOnly?: boolean,
+        required?: boolean,
+        onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
+        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >
+    }
+): JSX.Element {
+
+    const [ unparsedValue, setUnparsedValue ] = useState< string >( "" );
+
+    async function handleChange( event: ChangeEvent< HTMLInputElement > ): Promise< void > {
+
+        const
+            unparsedValue: string = event.target.value,
+            parsedValue: main | null = await parseValue( unparsedValue ),
+            old = documentData[ keyName ] as main | null
+        ;
+        if( validate ) if( !( await validate( parsedValue, unparsedValue, old ) ) ) return;
+        setUnparsedValue( unparsedValue );
+        documentData[ keyName ] = parsedValue;
+        await handleDefault( parsedValue );
+        if( onChange ) await onChange( parsedValue, unparsedValue, old );
+
+    }
+
+    async function handleDefault( parsedValue: main | null ): Promise< void > {
+
+        if( !documentDefaultData || !documentId ) return;
+        const
+            { updateMap } = pageData,
+            isDefault: boolean = ( documentDefaultData[ keyName ] === parsedValue ),
+            hasUpdateRecord: boolean = ( documentId in updateMap )
+        ;
+        if( isDefault ) {
+
+            if( hasUpdateRecord ) delete updateMap[ documentId ][ keyName ];
+            if( !ObjectUtils.hasKeys( updateMap[ documentId ] ) ) delete updateMap[ documentId ];
+
+        } else {
+
+            if( !hasUpdateRecord ) updateMap[ documentId ] = {};
+            updateMap[ documentId ][ keyName ] = true;
+
+        }
+
+    }
+
+    async function parseValue( unparsedValue: string ): Promise< main | null > {
+
+        return unparsedValue ? unparsedValue : null;
+
+    }
+
+    async function unparseValue( parsedValue: main | null ): Promise< string > {
+
+        return parsedValue ?? "";
+
+    }
+
+    useEffect( () => { ( async() => {
+
+        if( !documentData ) return;
+        if( documentData[ keyName ] === undefined )
+            throw new Error( `Key name "${ keyName }" does not exist.` );
+        const parsedValue: main = documentData[ keyName ] as main;
+        setUnparsedValue( await unparseValue( parsedValue ) );
+
+    } )() }, [ pageData ] );
+
+    return <input
+        id={ name }
+        name={ name }
+        pattern={ EMAIL_REGEX }
+        placeholder={ placeholder }
+        readOnly={ readOnly }
+        required={ required }
+        type="email"
+        value={ unparsedValue }
+        onChange={ event => handleChange( event ) }
+    />;
+
+}

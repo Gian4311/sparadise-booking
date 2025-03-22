@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Management</title>
+    <link rel="stylesheet" href="../styles/ClientManagement.css">
+    <link rel="stylesheet" href="../styles/Sidebar.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="../images/SpaRadise Logo.png" alt="SpaRadise Logo">
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Bookings</a></li>
+            <li><a href="#" class="active">Clients</a></li>
+            <li><a href="#">Employees</a></li>
+            <li><a href="#">Services & Packages</a></li>
+            <li><a href="#">Vouchers</a></li>
+            <li><a href="#">Rooms & Chairs</a></li>
+            <li><a href="#">Log Out</a></li>
+        </ul>
+    </div>
+    
+    <div class="client-main-content">
+        <h2>Clients</h2>
+
+        <div class="container" id="main-page">
+            <div class="statistics">
+                <div class="stat-item">
+                    <h3>Clients</h3>
+                    <p id="total-clients">0</p>
+                </div>
+                <div class="stat-item">
+                    <h3>New clients this month</h3>
+                    <p id="new-clients">0</p>
+                </div>
+            </div>
+            <div class="search-sort-container">
+                <input type="text" id="search-bar" placeholder="Search Clients..." onkeyup="searchClients()">
+                
+                <div class="dropdown">
+                    <button class="dropbtn">A-Z<i class="fa fa-caret-down"></i></button>
+                    <div class="dropdown-content">
+                        <a href="#" onclick="sortClients('asc')">A to Z</a>
+                        <a href="#" onclick="sortClients('desc')">Z to A</a>
+                    </div>
+                </div>
+                
+                <div class="dropdown">
+                    <div class="add-button-container">
+                        <button class="dropbtn">All Clients<i class="fa fa-caret-down"></i></button>
+                    </div>
+                    <div class="dropdown-content">
+                        <a href="#" onclick="filterClients('all')">All</a>
+                        <a href="#" onclick="filterClients('male')">Male</a>
+                        <a href="#" onclick="filterClients('female')">Female</a>
+                    </div>
+                </div>
+                
+                <button class="add-client" onclick="showPage('add-client');">+ Add New Client</button>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Sex</th>
+                        <th>Birthdate</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody id="client-table"></tbody>
+            </table>
+        </div>
+
+        <div class="container" id="add-client" style="display: none;">
+            <h1>Add New Client</h1>
+            <form id="client-form">
+                <label for="last-name">Last Name:</label>
+                <input type="text" id="last-name" required>
+
+                <label for="first-name">First Name:</label>
+                <input type="text" id="first-name" required>
+
+                <label for="middle-name">Middle Name:</label>
+                <input type="text" id="middle-name">
+
+                <label for="sex">Sex:</label>
+                <select id="sex" required>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+
+                <label for="birthdate">Birthdate:</label>
+                <input type="date" id="birthdate" required>
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+
+                <label for="contact">Contact Number:</label>
+                <input type="text" id="contact" required>
+
+                <label for="alt-contact">Alternate Contact Number (Optional):</label>
+                <input type="text" id="alt-contact">
+                
+                <button type="button" onclick="showPage('main-page');">Cancel</button>
+                <button type="submit">Save Changes</button>
+                <button type="button" onclick="deleteClient();">Delete Client</button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        function updateClientStatistics() {
+            let totalClients = document.querySelectorAll('#client-table tr').length;
+            let newClients = 5; // Placeholder for new clients this month, replace with actual logic
+            document.getElementById('total-clients').innerText = totalClients;
+            document.getElementById('new-clients').innerText = newClients;
+        }
+
+        function searchClients() {
+            let input = document.getElementById('search-bar').value.toLowerCase();
+            let rows = document.querySelectorAll('#client-table tr');
+            rows.forEach(row => {
+                let text = row.innerText.toLowerCase();
+                row.style.display = text.includes(input) ? '' : 'none';
+            });
+        }
+
+        function sortClients(order) {
+            let table = document.getElementById("client-table");
+            let rows = Array.from(table.rows);
+            rows.sort((a, b) => {
+                let textA = a.cells[1].innerText.toLowerCase();
+                let textB = b.cells[1].innerText.toLowerCase();
+                return order === 'asc' ? textA.localeCompare(textB) : textB.localeCompare(textA);
+            });
+            rows.forEach(row => table.appendChild(row));
+        }
+
+        function filterClients(gender) {
+            let rows = document.querySelectorAll('#client-table tr');
+            rows.forEach(row => {
+                let sex = row.cells[2].innerText.toLowerCase();
+                row.style.display = (gender === 'all' || sex === gender) ? '' : 'none';
+            });
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.container').forEach(page => {
+                page.style.display = 'none';
+            });
+            document.getElementById(pageId).style.display = 'block';
+        }
+
+        function deleteClient() {
+            if (confirm("Are you sure you want to delete this client?")) {
+                showPage('main-page');
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", updateClientStatistics);
+    </script>
+</body>
+</html>
