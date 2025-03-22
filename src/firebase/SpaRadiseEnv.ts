@@ -7,9 +7,10 @@ export default class SpaRadiseEnv {
     public static CLIENT_COLLECTION = "clients";
     public static EMPLOYEE_COLLECTION = "employees";
     public static EMPLOYEE_LEAVE_COLLECTION = "employeeLeaves";
+    public static EMPLOYEE_LEAVE_STATUS_LIST = [ "approved", "canceled", "pending" ];
     public static JOB_COLLECTION = "jobs";
     public static JOB_SERVICE_COLLECTION = "jobServices";
-    public static JOB_STATUS = [ "active", "inactive" ];
+    public static JOB_STATUS_LIST: jobStatus[] = [ "active", "inactive" ];
     public static MIN_AGE_LIMIT = 12;
     public static MIN_DENOMINATION = 30;
     public static PACKAGE_COLLECTION = "packages";
