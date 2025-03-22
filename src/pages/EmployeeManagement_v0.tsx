@@ -17,9 +17,13 @@ import {
     useState
 } from "react";
 import FormEntitySelect from "../components/FormEntitySelect";
+import FormMarkButton from "../components/FormMarkButton";
 import FormSelect from "../components/FormSelect";
+import FormTextArea from "../components/FormTextArea";
 import FormTinyTextInput from "../components/FormTinyTextInput";
 import JobUtils from "../firebase/JobUtils";
+import { Link } from "react-router-dom";
+import ObjectUtils from "../utils/ObjectUtils";
 import PersonUtils from "../utils/PersonUtils";
 import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
@@ -79,6 +83,7 @@ export default function EmployeeManagement(): JSX.Element {
         documentId: string | undefined = useParams().id,
         isNewMode: boolean = (documentId === "new"),
         isEditMode: boolean = (documentId !== undefined && !isNewMode),
+        isActive: boolean = ( pageData.employeeData.jobStatus === "active" ),
         navigate = useNavigate()
     ;
 
@@ -90,33 +95,6 @@ export default function EmployeeManagement(): JSX.Element {
         if (employeeData.name === "New Employee")
             throw new Error(`Employee name cannot be "New Employee"!`);
         return true;
-
-    }
-
-    async function confirmMarkActive(): Promise< void > {
-
-        const { employeeData } = pageData;
-        pageData.confirmData = {
-            message: "Are you sure you would like to mark this employee as active again?",
-            noText: "Cancel",
-            yesText: "Yes",
-            yes: () => { employeeData.jobStatus = "active"; }
-        };
-        // pag
-        reloadPageData();
-
-    }
-
-    async function confirmMarkInactive(): Promise< void > {
-
-        pageData.confirmData = {
-            message: "Are you sure you would like to mark this employee as inactive?",
-            noText: "Cancel",
-            yesText: "Yes",
-            yes: () => { pageData.employeeData.jobStatus = "inactive"; }
-        };
-
-        reloadPageData();
 
     }
 
@@ -139,6 +117,39 @@ export default function EmployeeManagement(): JSX.Element {
         await EmployeeUtils.deleteEmployee(documentId);
         alert(`Deleted!`); // note: remove later
         navigate( `/management/employees/menu` );
+
+    }
+
+    async function handleMarkActive(): Promise< void > {
+
+        if( !documentId ) return;
+        const
+            {
+                employeeData,
+                employeeDefaultData: { unemploymentDate, unemploymentReason },
+                updateMap
+            } = pageData,
+            updateUnemploymentDate: boolean = ( unemploymentDate !== null ),
+            updateUnemploymentReason: boolean = ( unemploymentReason !== null )
+        ;
+        employeeData.unemploymentDate = null;
+        employeeData.unemploymentReason = null;
+        if( updateUnemploymentDate || updateUnemploymentReason ) {
+
+            if( !( documentId in updateMap ) ) updateMap[ documentId ] = {};
+            const employeeUpdateMap = updateMap[ documentId ];
+            if( updateUnemploymentDate ) employeeUpdateMap.unemploymentDate = true;
+            if( updateUnemploymentReason ) employeeUpdateMap.unemploymentReason = true;
+
+        } else {
+
+            const employeeUpdateMap = updateMap[ documentId ];
+            if( !employeeUpdateMap ) return;
+            delete employeeUpdateMap.unemploymentDate;
+            delete employeeUpdateMap.unemploymentReason;
+            if( !ObjectUtils.hasKeys( employeeUpdateMap ) ) delete updateMap[ documentId ];
+
+        }
 
     }
 
@@ -352,12 +363,27 @@ export default function EmployeeManagement(): JSX.Element {
                         <label htmlFor="employee-hire-date">Date Hired</label>
                         <FormDateInput documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} keyName="hireDate" name="employee-hireDate" pageData={pageData} required={true} />
                     </div>
-                    <button type="button">Open Leaves</button>
+                    <button type="button"><Link to={ `/management/employeeLeaves/menu/${ documentId }` }>Open Leaves</Link></button>
                     {
-                        ( pageData.employeeData.jobStatus === "active" ) ? <button type="button" onClick={ confirmMarkInactive }>Mark as Inactive</button>
-                        : <button type="button" onClick={ confirmMarkActive }>Mark as Active</button>
+                        ( pageData.employeeData.jobStatus === "active" ) ? <>
+                            <FormMarkButton< jobStatus >
+                                confirmMessage="Are you sure you would like to mark this employee as inactive?"
+                                documentData={ pageData.employeeData } documentDefaultData={ pageData.employeeDefaultData } documentId={ documentId }
+                                keyName="jobStatus" pageData={ pageData } value="inactive" reloadPageData={ reloadPageData }
+                            >Mark as Inactive</FormMarkButton>
+                        </>
+                        : <>
+                            <FormMarkButton< jobStatus >
+                                confirmMessage="Are you sure you would like to mark this employee as active again?"
+                                documentData={ pageData.employeeData } documentDefaultData={ pageData.employeeDefaultData } documentId={ documentId }
+                                keyName="jobStatus" pageData={ pageData } value="active" reloadPageData={ reloadPageData } yes={ handleMarkActive }
+                            >Mark as Active</FormMarkButton>
+                        </>
                     }
-                    
+                    <label>Unemployment Date</label>
+                    <FormDateInput documentData={ pageData.employeeData } documentDefaultData={ pageData.employeeDefaultData } documentId={documentId} keyName="unemploymentDate" pageData={ pageData } readOnly={ isActive } required={ !isActive }/>
+                    <label>Unemployment Reason</label>
+                    <FormTextArea documentData={ pageData.employeeData } documentDefaultData={ pageData.employeeDefaultData } documentId={documentId} keyName="unemploymentReason" pageData={ pageData } readOnly={ isActive }/>
                 </div>
 
                 {/* <div className="employee-form-row-group">

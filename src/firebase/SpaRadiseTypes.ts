@@ -81,6 +81,22 @@ export interface EmployeeDataMap extends SpaRadiseDataMap< EmployeeData > {
 
 }
 
+export interface EmployeeLeaveData extends SpaRadiseDocumentData {
+
+    employee: DocumentReference,
+    fromDateTime: Date,
+    toDateTime: Date,
+    status: leaveStatus,
+    reason: string
+
+}
+
+export interface EmployeeLeaveDataMap extends SpaRadiseDataMap< EmployeeLeaveData > {
+
+    [ employeeLeaveId: string ]: EmployeeLeaveData
+
+}
+
 export interface JobData extends SpaRadiseDocumentData {
 
     name: string,
@@ -202,6 +218,16 @@ export interface ServiceTransactionDataMap extends SpaRadiseDataMap< ServiceTran
 
 }
 
+export interface SpaRadiseConfirmData {
+
+    message: string,
+    noText: string,
+    yesText: string,
+    yes?: () => void | Promise< void >,
+    no?: () => void | Promise< void >
+
+}
+
 export interface SpaRadiseDataMap< T extends SpaRadiseDocumentData > {
 
     [ documentId: objectKeyName ]: T
@@ -216,13 +242,7 @@ export interface SpaRadiseDocumentData {
 
 export interface SpaRadisePageData {
 
-    confirmData?: {
-        message: string,
-        noText: string,
-        yesText: string,
-        yes?: () => void | Promise< void >,
-        no?: () => void | Promise< void >
-    },
+    confirmData?: SpaRadiseConfirmData,
     loaded: boolean,
     updateMap: {
         [ documentId: string ]: {

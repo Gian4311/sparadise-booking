@@ -6,6 +6,7 @@ export default class SpaRadiseEnv {
     public static BOOKING_COLLECTION = "bookings";
     public static CLIENT_COLLECTION = "clients";
     public static EMPLOYEE_COLLECTION = "employees";
+    public static EMPLOYEE_LEAVE_COLLECTION = "employeeLeaves";
     public static JOB_COLLECTION = "jobs";
     public static JOB_SERVICE_COLLECTION = "jobServices";
     public static JOB_STATUS = [ "active", "inactive" ];
