@@ -113,8 +113,8 @@ export default function VoucherMenu(): JSX.Element {
                     <li><Link to="../management/bookings/menu" >Bookings</Link></li>
                     <li><Link to="../management/clients/menu" >Clients</Link></li>
                     <li><Link to="/management/employees/menu" >Employees</Link></li>
-                    <li><Link to="../management/servicesAndPackages/menu" className="active" >Services & Packages</Link></li>
-                    <li><Link to="../management/vouchers/menu" >Vouchers</Link></li>
+                    <li><Link to="../management/servicesAndPackages/menu">Services & Packages</Link></li>
+                    <li><Link to="../management/vouchers/menu" className="active"  >Vouchers</Link></li>
                     <li><Link to="../management/roomsAndChairs/menu" >Rooms & Chairs</Link></li>
                     <li><Link to="../management/commissions/menu" >Commissions</Link></li>
                     <li><a href="#">Log Out</a></li>
@@ -123,12 +123,13 @@ export default function VoucherMenu(): JSX.Element {
             <div className="service-menu-main-content">
                 <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">Vouchers
                 </label>
+                <Link to="/management/vouchers/new">
+
+
+                    <h1>New</h1>
+                </Link>
             </div>
-            <Link to="/management/vouchers/new">
 
-
-                <h1>New</h1>
-            </Link>
 
             {
 
