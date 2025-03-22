@@ -92,4 +92,5 @@ body {
     border: 0;
     background: none;
     font-size: 35px;
+    display:flex;
 }

@@ -153,3 +153,10 @@ div {
     width: 200px; 
 }
 
+.arrowbutton{
+    outline: 0;
+    border: 0;
+    background: none;
+    font-size: 35px;
+    display:flex;
+}

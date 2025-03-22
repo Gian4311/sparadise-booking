@@ -154,14 +154,14 @@ h2 {
 
 .payment-details {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
+    justify-content: center;
+    margin-bottom: 10px;
 }
 .services, .total-cost {
     font-size: 18px;
 }
 .payment-options {
-    display: flex;
+    display: center;
     gap: 20px;
 }
 .payment-options button {
@@ -172,4 +172,13 @@ h2 {
     font-size: 18px;
     border-radius: 10px;
     cursor: pointer;
+    align-items: center;
+}
+
+.arrowbutton {
+    outline: 0;
+    border: 0;
+    background: none;
+    font-size: 35px;
+    display:flex;
 }
