@@ -28,6 +28,7 @@ export default function DevMenu(): JSX.Element {
         <Link to="management/services/menu"><button>Service Menu</button></Link><br/>
         <Link to="management/servicesAndPackages/menu"><button>Services & Packages</button></Link><br/>
         <Link to="management/vouchers/menu"><button>Voucher Menu</button></Link><br/>
+        <Link to="Homepage"><button>Client Homepage</button></Link><br/>
     </>;
 
 }

@@ -15,7 +15,7 @@ body {
     margin-left: 270px;
     padding: 30px;
     background-color: #FDF9FE;
-    min-height: 100vh;
+    width: 100%;
 }
 
 .service-menu-main-content-location {
@@ -30,7 +30,6 @@ body {
     border-radius: 10px;
     margin-bottom: 30px;
     margin-top: 1.5%;
-    width: 200%;
 }
 
 .menu-item:hover,
