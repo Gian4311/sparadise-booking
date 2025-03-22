@@ -175,10 +175,15 @@ h2 {
     align-items: center;
 }
 
-.arrowbutton {
-    outline: 0;
-    border: 0;
+.back-btn {
     background: none;
-    font-size: 35px;
+    border: none;
+    padding: 0;
+    cursor: pointer;
     display:flex;
+    width:50px;
+}
+
+.back-btn img{
+    width: 50px;
 }

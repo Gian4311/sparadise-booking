@@ -69,7 +69,7 @@ body {
     font-size: 32px;
     margin-top: 20px;
 }
-.back-btn {
+.payment-btn {
     background-color: #2D6B22;
     color: white;
     padding: 12px 20px;
@@ -79,7 +79,7 @@ body {
     cursor: pointer;
     margin-top: 20px;
 }
-.back-btn:hover {
+.payment-btn:hover {
     background-color: #245A1C;
 }
 
@@ -87,10 +87,15 @@ body {
     width: 200px; 
 }
 
-.arrowbutton{
-    outline: 0;
-    border: 0;
+.back-btn {
     background: none;
-    font-size: 35px;
+    border: none;
+    padding: 0;
+    cursor: pointer;
     display:flex;
+    width:50px;
+}
+
+.back-btn img{
+    width: 50px;
 }
