@@ -26,7 +26,7 @@ import ServiceUtils from "../firebase/ServiceUtils";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import { useParams } from "react-router-dom";
 import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
-
+import { Link } from "react-router-dom";
 import "../styles/EmployeeServiceManagement.css";
 import "../styles/Sidebar.css";
 
@@ -401,14 +401,15 @@ export default function ServiceManagement(): JSX.Element {
                     <img src={ SpaRadiseLogo } alt="SpaRadise Logo"/>
                 </div>
                 <ul className="sidebar-menu">
-                    <li><a>Dashboard</a></li>
-                    <li><a>Bookings</a></li>
-                    <li><a>Clients</a></li>
-                    <li><a>Employees</a></li>
-                    <li><a className="active">Services & Packages</a></li>
-                    <li><a>Vouchers</a></li>
-                    <li><a>Rooms & Chairs</a></li>
-                    <li><a>Log Out</a></li>
+                    <li><Link to="../management/dashboard" >Dashboard</Link></li>
+                    <li><Link to="../management/bookings/menu" >Bookings</Link></li>
+                    <li><Link to="../management/clients/menu" >Clients</Link></li>
+                    <li><Link to="/management/employees/menu" >Employees</Link></li>
+                    <li><Link to="../management/servicesAndPackages/menu" className="active">Services & Packages</Link></li>
+                    <li><Link to="../management/vouchers/menu" >Vouchers</Link></li>
+                    <li><Link to="../management/roomsAndChairs/menu" >Rooms & Chairs</Link></li>
+                    <li><Link to="../management/commissions/menu" >Commissions</Link></li>
+                    <li><a href="#">Log Out</a></li>
                 </ul>
             </div>
             <div className="service-main-content">

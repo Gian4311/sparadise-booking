@@ -11,6 +11,7 @@ import EmployeeUtils from "../firebase/EmployeeUtils";
 import FormContactNumberInput from "../components/FormContactNumberInput";
 import FormDateInput from "../components/FormDateInput";
 import FormEmailInput from "../components/FormEmailInput";
+import { Link } from "react-router-dom";
 import {
     FormEvent,
     useEffect,
@@ -208,13 +209,14 @@ export default function EmployeeManagement(): JSX.Element {
                     <img src={SpaRadiseLogo} alt="SpaRadise Logo" />
                 </div>
                 <ul className="sidebar-menu">
-                    <li><a href="#">Dashboard</a></li>
-                    <li><a href="#">Bookings</a></li>
-                    <li><a href="#">Clients</a></li>
-                    <li><a href="../pages/EmployeeEmployeeManagement.html" className="active">Employees</a></li>
-                    <li><a href="../pages/EmployeeEmployeePackageMenu.html">Services & Packages</a></li>
-                    <li><a href="#">Vouchers</a></li>
-                    <li><a href="#">Rooms & Chairs</a></li>
+                    <li><Link to="../management/dashboard" >Dashboard</Link></li>
+                    <li><Link to="../management/bookings/menu" >Bookings</Link></li>
+                    <li><Link to="../management/clients/menu" >Clients</Link></li>
+                    <li><Link to="/management/employees/menu" className="active">Employees</Link></li>
+                    <li><Link to="../management/servicesAndPackages/menu" >Services & Packages</Link></li>
+                    <li><Link to="../management/vouchers/menu" >Vouchers</Link></li>
+                    <li><Link to="../management/roomsAndChairs/menu" >Rooms & Chairs</Link></li>
+                    <li><Link to="../management/commissions/menu" >Commissions</Link></li>
                     <li><a href="#">Log Out</a></li>
                 </ul>
             </div>
