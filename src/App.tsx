@@ -24,6 +24,7 @@ function App() {
         <BrowserRouter>
             <Routes>
                 <Route index element={ <DevMenu/> }/>
+                <Route path="home" element={ <Homepage/> }/>
                 <Route path="dayPlanner" element={ <DayPlannner/> }/>
                 <Route path="clients/:accountId/account" element={ <MyAccount/> }/>
                 <Route path="clients/:accountId/bookings/new" element={ <NewBooking/> }/>
@@ -42,7 +43,6 @@ function App() {
                 <Route path="management/vouchers/menu" element={ <VoucherMenu/> }/>
                 <Route path="management/vouchers/:id" element={ <VoucherManagement/> }/>
                 <Route path="management/employees/menu" element={ <EmployeeMenu/> }/>
-                <Route path="Homepage" element={ <Homepage/> }/>
             </Routes>
         </BrowserRouter>
     </>;
