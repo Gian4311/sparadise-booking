@@ -59,7 +59,7 @@ export default function EmployeeLeaveManagement(): JSX.Element {
                 employee: null as unknown as DocumentReference,
                 fromDateTime: null as unknown as Date,
                 toDateTime: null as unknown as Date,
-                status: null as unknown as leaveStatus,
+                status: "pending",
                 reason: null as unknown as string
             },
             employeeLeaveDefaultData: {} as EmployeeLeaveData,
@@ -69,6 +69,7 @@ export default function EmployeeLeaveManagement(): JSX.Element {
         documentId: string | undefined = useParams().id,
         isNewMode: boolean = (documentId === "new"),
         isEditMode: boolean = (documentId !== undefined && !isNewMode),
+        canceled: boolean = ( pageData.employeeLeaveData.status === "canceled" ),
         navigate = useNavigate()
     ;
 
@@ -184,31 +185,54 @@ export default function EmployeeLeaveManagement(): JSX.Element {
                 <label htmlFor="employee-main-content" className="employee-management-location">EmployeeLeaves - Name</label>
                 <div className="employee-form-section">
 
-                    <label>Employee</label>
-                    <FormEntitySelect< EmployeeData > collectionName={ SpaRadiseEnv.EMPLOYEE_COLLECTION } documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="employee" optionDataMap={ pageData.employeeDataMap } pageData={pageData} required={true} getDocumentName={ employeeData => PersonUtils.format( employeeData, "f mi l" ) }>
+                    <label>Employee: </label>
+                    <FormEntitySelect< EmployeeData > collectionName={ SpaRadiseEnv.EMPLOYEE_COLLECTION } documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="employee" optionDataMap={ pageData.employeeDataMap } pageData={pageData} readOnly={ canceled } required={true} getDocumentName={ employeeData => PersonUtils.format( employeeData, "f mi l" ) }>
                         <option value="" disabled>Select employee</option>
                     </FormEntitySelect>
-                    <label>From Date Time</label>
-                    <FormDateTimeInput documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="fromDateTime" pageData={pageData} required={true} />
-                    <label>To Date Time</label>
-                    <FormDateTimeInput documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="toDateTime" min={ DateUtils.addTime( pageData.employeeLeaveData.fromDateTime, { minutes: 20 } ) } pageData={pageData} required={true} />
-                    <label>Reason</label>
-                    <FormTextArea documentData={ pageData.employeeLeaveData } documentDefaultData={ pageData.employeeLeaveDefaultData } documentId={documentId} keyName="reason" pageData={ pageData } required={ true }/>
+                    <label>From Date Time: </label>
+                    <FormDateTimeInput documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="fromDateTime" pageData={pageData} readOnly={ canceled } required={true} />
+                    <label>To Date Time: </label>
+                    <FormDateTimeInput
+                        documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="toDateTime"
+                        min={ pageData.employeeLeaveData.fromDateTime ? DateUtils.addTime( pageData.employeeLeaveData.fromDateTime, { minutes: 20 } ) : undefined }
+                        pageData={pageData} readOnly={ canceled } required={true}
+                    />
+                    <label>Reason: </label>
+                    <FormTextArea documentData={ pageData.employeeLeaveData } documentDefaultData={ pageData.employeeLeaveDefaultData } documentId={documentId} keyName="reason" pageData={ pageData } readOnly={ canceled } required={ true }/>
+                    <label>Status: </label>
+                    {
+                        ( pageData.employeeLeaveData.status === "pending" ) ? <>
+                            <FormMarkButton< leaveStatus >
+                                confirmMessage="Would you like to approve this leave?"
+                                documentData={ pageData.employeeLeaveData } documentDefaultData={ pageData.employeeLeaveDefaultData } documentId={ documentId }
+                                keyName="status" pageData={ pageData } value="approved" reloadPageData={ reloadPageData }
+                            >Approve Leave</FormMarkButton>
+                        </> : <></>
+                    }
+                    {
+                        ( !canceled ) ? <>
+                            <FormMarkButton< leaveStatus >
+                                confirmMessage="Would you like to cancel this leave?"
+                                documentData={ pageData.employeeLeaveData } documentDefaultData={ pageData.employeeLeaveDefaultData } documentId={ documentId }
+                                keyName="status" pageData={ pageData } value="canceled" reloadPageData={ reloadPageData }
+                            >Cancel Leave</FormMarkButton>
+                        </> : <>Canceled</>
+                    }
                                     
                     {/* <button type="button"><Link to={ `/management/employeeLeaves/menu/${ documentId }` }>Open Leaves</Link></button>
                     {
-                        ( pageData.employeeLeaveData.jobStatus === "active" ) ? <>
-                            <FormMarkButton< jobStatus >
+                        ( pageData.employeeLeaveData.status === "active" ) ? <>
+                            <FormMarkButton< status >
                                 confirmMessage="Are you sure you would like to mark this employee as inactive?"
                                 documentData={ pageData.employeeLeaveData } documentDefaultData={ pageData.employeeLeaveDefaultData } documentId={ documentId }
-                                keyName="jobStatus" pageData={ pageData } value="inactive" reloadPageData={ reloadPageData }
+                                keyName="status" pageData={ pageData } value="inactive" reloadPageData={ reloadPageData }
                             >Mark as Inactive</FormMarkButton>
                         </>
                         : <>
-                            <FormMarkButton< jobStatus >
+                            <FormMarkButton< status >
                                 confirmMessage="Are you sure you would like to mark this employee as active again?"
                                 documentData={ pageData.employeeLeaveData } documentDefaultData={ pageData.employeeLeaveDefaultData } documentId={ documentId }
-                                keyName="jobStatus" pageData={ pageData } value="active" reloadPageData={ reloadPageData } yes={ handleMarkActive }
+                                keyName="status" pageData={ pageData } value="active" reloadPageData={ reloadPageData } yes={ handleMarkActive }
                             >Mark as Active</FormMarkButton>
                         </>
                     }
