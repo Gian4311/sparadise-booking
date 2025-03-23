@@ -8,10 +8,11 @@ type main = string;
 
 export default function FormTinyTextInput(
     {
-        documentDefaultData, documentData, documentId, keyName, name, pageData, pattern, placeholder,
-        readOnly, required,
+        className, documentDefaultData, documentData, documentId, keyName, name, pageData, pattern,
+        placeholder, readOnly, required,
         onChange, validate
     }: {
+        className?: string,
         defaultValue?: main,
         documentDefaultData?: SpaRadiseDocumentData,
         documentData: SpaRadiseDocumentData,
@@ -29,6 +30,7 @@ export default function FormTinyTextInput(
 ): JSX.Element {
 
     return <FormStringInput
+        className={ className }
         documentData={ documentData }
         documentDefaultData={ documentDefaultData }
         documentId={ documentId }

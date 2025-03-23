@@ -13,11 +13,12 @@ type main = number;
 
 export default function FormNumberInput(
     {
-        documentData, documentDefaultData, documentId, keyName, max, min,
+        className, documentData, documentDefaultData, documentId, keyName, max, min,
         name = keyName.toString(),
         pageData, placeholder, readOnly, required, step,
         onChange, validate
     }: {
+        className?: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
@@ -97,6 +98,7 @@ export default function FormNumberInput(
     } )() }, [ pageData ] );
 
     return <input
+        className={ className }
         id={ name }
         max={ max }
         min={ min }

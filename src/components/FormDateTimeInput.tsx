@@ -12,15 +12,16 @@ import {
 
 type main = Date;
 
-const DATE_FORMAT = "yyyy-mm-ddThh:mm";
+const DATETIME_FORMAT = "yyyy-mm-ddThh:mm";
 
 export default function FormDateTimeInput(
     {
-        documentData, documentDefaultData, documentId, keyName, max, min,
+        className,documentData, documentDefaultData, documentId, keyName, max, min,
         name = keyName.toString(),
         pageData, placeholder, readOnly, required,
         onChange, validate
     }: {
+        className?: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
@@ -60,7 +61,7 @@ export default function FormDateTimeInput(
         const
             { updateMap } = pageData,
             dateDefault = documentDefaultData[ keyName ] as Date | null,
-            isDefault: boolean = ( dateDefault && parsedValue ) ? DateUtils.areSameMinute(
+            isDefault: boolean = ( dateDefault && parsedValue ) ? DateUtils.areSameByMinute(
                 dateDefault, parsedValue
             ) : !parsedValue,
             hasUpdateRecord: boolean = ( documentId in updateMap )
@@ -87,7 +88,7 @@ export default function FormDateTimeInput(
 
     async function unparseValue( parsedValue: main | null ): Promise< string > {
 
-        return parsedValue ? DateUtils.toString( parsedValue, DATE_FORMAT ) : "";
+        return parsedValue ? DateUtils.toString( parsedValue, DATETIME_FORMAT ) : "";
 
     }
 
@@ -102,9 +103,10 @@ export default function FormDateTimeInput(
     } )() }, [ pageData ] );
 
     return <input
+        className={ className }
         id={ name }
-        max={ max ? DateUtils.toString( max, DATE_FORMAT ) : undefined }
-        min={ min ? DateUtils.toString( min, DATE_FORMAT ) : undefined }
+        max={ max ? DateUtils.toString( max, DATETIME_FORMAT ) : undefined }
+        min={ min ? DateUtils.toString( min, DATETIME_FORMAT ) : undefined }
         name={ name }
         placeholder={ placeholder }
         readOnly={ readOnly }

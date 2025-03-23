@@ -10,12 +10,13 @@ type main = string | boolean | number | null;
 
 export default function FormMarkButton< T extends main >(
     {
-        children, confirmMessage, documentData, documentDefaultData, documentId, keyName,
+        children, className, confirmMessage, documentData, documentDefaultData, documentId, keyName,
         name = keyName.toString(),
         noText = "Cancel", pageData, value, yesText = "Yes",
         no, reloadPageData, validate, yes
     }: {
         children: JSX.Element | JSX.Element[] | string,
+        className?: string,
         confirmMessage: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
@@ -128,6 +129,7 @@ export default function FormMarkButton< T extends main >(
     } )() }, [ pageData ] );
 
     return <button
+        className={ className }
         id={ name }
         name={ name }
         type="button"

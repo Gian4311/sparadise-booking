@@ -13,11 +13,12 @@ type main = string;
 
 export default function FormTextArea(
     {
-        documentData, documentDefaultData, documentId, keyName, maxLength,
+        className, documentData, documentDefaultData, documentId, keyName, maxLength,
         name = keyName.toString(),
         pageData, placeholder, readOnly, required,
         onChange, validate
     }: {
+        className?: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
@@ -95,6 +96,7 @@ export default function FormTextArea(
     } )() }, [ pageData ] );
 
     return <textarea
+        className={ className }
         id={ name }
         maxLength={ maxLength }
         name={ name }

@@ -18,9 +18,9 @@ export default class NumberUtils {
 
     }
 
-    public static isNumeric( value: string | number ): boolean {
+    public static isNumeric( value: unknown ): boolean {
 
-        return !isNaN( +value );
+        return !isNaN( +( value as number ) );
 
     }
 

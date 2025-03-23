@@ -6,14 +6,14 @@ import {
     EmployeeData,
     EmployeeDataMap,
     EmployeeLeaveData,
-    JobData,
-    JobDataMap,
+    EmployeeLeaveDataMap,
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
 import EmployeeLeaveUtils from "../firebase/EmployeeLeaveUtils";
 import EmployeeUtils from "../firebase/EmployeeUtils";
 import FormContactNumberInput from "../components/FormContactNumberInput";
 import FormDateInput from "../components/FormDateInput";
+import FormDateTime30MinStepInput from "../components/FormDateTime30MinStepInput";
 import FormDateTimeInput from "../components/FormDateTimeInput";
 import FormEmailInput from "../components/FormEmailInput";
 import FormEntitySelect from "../components/FormEntitySelect";
@@ -43,6 +43,7 @@ interface EmployeeLeaveManagementPageData extends SpaRadisePageData {
 
     employeeDataMap: EmployeeDataMap,
     employeeLeaveData: EmployeeLeaveData,
+    employeeLeaveDataMap: EmployeeLeaveDataMap,
     employeeLeaveDefaultData: EmployeeLeaveData,
     employeeLeaveDocumentReference?: DocumentReference
 
@@ -62,6 +63,7 @@ export default function EmployeeLeaveManagement(): JSX.Element {
                 status: "pending",
                 reason: null as unknown as string
             },
+            employeeLeaveDataMap: {},
             employeeLeaveDefaultData: {} as EmployeeLeaveData,
             loaded: false,
             updateMap: {}
@@ -112,7 +114,8 @@ export default function EmployeeLeaveManagement(): JSX.Element {
         pageData.employeeLeaveDocumentReference = SpaRadiseFirestore.getDocumentReference(
             documentId, SpaRadiseEnv.EMPLOYEE_COLLECTION
         );
-        pageData.employeeLeaveData = await EmployeeLeaveUtils.getEmployeeLeaveData( documentId );
+        pageData.employeeLeaveData = pageData.employeeLeaveDataMap[ documentId ];
+        delete pageData.employeeLeaveDataMap[ documentId ];
         pageData.employeeLeaveDefaultData = { ...pageData.employeeLeaveData };
 
     }
@@ -121,6 +124,7 @@ export default function EmployeeLeaveManagement(): JSX.Element {
     
         if( !documentId ) return;
         pageData.employeeDataMap = await EmployeeUtils.getEmployeeDataMapAll();
+        pageData.employeeLeaveDataMap = await EmployeeLeaveUtils.getEmployeeLeaveDataMapAll();
         if( isEditMode ) await loadEmployeeLeave();
         pageData.loaded = true;
         reloadPageData();
@@ -190,13 +194,19 @@ export default function EmployeeLeaveManagement(): JSX.Element {
                         <option value="" disabled>Select employee</option>
                     </FormEntitySelect>
                     <label>From Date Time: </label>
-                    <FormDateTimeInput documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="fromDateTime" pageData={pageData} readOnly={ canceled } required={true} />
+                    <FormDateTime30MinStepInput documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="fromDateTime" pageData={pageData} readOnly={ canceled } required={true} onChange={ reloadPageData }/>
                     <label>To Date Time: </label>
+                    <FormDateTime30MinStepInput
+                        documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="toDateTime"
+                        min={ pageData.employeeLeaveData.fromDateTime ? DateUtils.addTime( pageData.employeeLeaveData.fromDateTime, { minutes: 30 } ) : undefined }
+                        pageData={pageData} readOnly={ canceled } required={true}
+                    />
+                    {/* <label>To Date Time: </label>
                     <FormDateTimeInput
                         documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="toDateTime"
                         min={ pageData.employeeLeaveData.fromDateTime ? DateUtils.addTime( pageData.employeeLeaveData.fromDateTime, { minutes: 20 } ) : undefined }
                         pageData={pageData} readOnly={ canceled } required={true}
-                    />
+                    /> */}
                     <label>Reason: </label>
                     <FormTextArea documentData={ pageData.employeeLeaveData } documentDefaultData={ pageData.employeeLeaveDefaultData } documentId={documentId} keyName="reason" pageData={ pageData } readOnly={ canceled } required={ true }/>
                     <label>Status: </label>

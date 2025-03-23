@@ -16,11 +16,12 @@ const DATE_FORMAT = "yyyy-mm-dd";
 
 export default function FormDateInput(
     {
-        documentData, documentDefaultData, documentId, keyName, max, min,
+        className, documentData, documentDefaultData, documentId, keyName, max, min,
         name = keyName.toString(),
         pageData, placeholder, readOnly, required,
         onChange, validate
     }: {
+        className?: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
@@ -60,7 +61,7 @@ export default function FormDateInput(
         const
             { updateMap } = pageData,
             dateDefault = documentDefaultData[ keyName ] as Date | null,
-            isDefault: boolean = ( dateDefault && parsedValue ) ? DateUtils.areSameDay(
+            isDefault: boolean = ( dateDefault && parsedValue ) ? DateUtils.areSameByDay(
                 dateDefault, parsedValue
             ) : !parsedValue,
             hasUpdateRecord: boolean = ( documentId in updateMap )
@@ -102,6 +103,7 @@ export default function FormDateInput(
     } )() }, [ pageData ] );
 
     return <input
+        className={ className }
         id={ name }
         max={ max ? DateUtils.toString( max, DATE_FORMAT ) : undefined }
         min={ min ? DateUtils.toString( min, DATE_FORMAT ) : undefined }

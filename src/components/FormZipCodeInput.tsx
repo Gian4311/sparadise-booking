@@ -3,17 +3,17 @@ import {
     SpaRadiseDocumentData,
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
+import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 
 type main = string;
 
-const ZIP_CODE_REGEX = `^[0-9]{4}$`;
-
 export default function FormZipCodeInput(
     {
-        documentDefaultData, documentData, documentId, keyName, name, pageData, placeholder, readOnly,
-        required,
+        className, documentDefaultData, documentData, documentId, keyName, name, pageData, placeholder,
+        readOnly, required,
         onChange, validate
     }: {
+        className?: string,
         defaultValue?: main,
         documentDefaultData?: SpaRadiseDocumentData,
         documentData: SpaRadiseDocumentData,
@@ -30,13 +30,14 @@ export default function FormZipCodeInput(
 ): JSX.Element {
 
     return <FormStringInput
+        className={ className }
         documentData={ documentData }
         documentDefaultData={ documentDefaultData }
         documentId={ documentId }
         keyName={ keyName }
         name={ name }
         pageData={ pageData }
-        pattern={ ZIP_CODE_REGEX }
+        pattern={ SpaRadiseEnv.ZIP_CODE_REGEX }
         placeholder={ placeholder }
         readOnly={ readOnly }
         required={ required }

@@ -5,6 +5,16 @@ export default class SpaRadiseEnv {
     public static ACCOUNT_COLLECTION = "accounts";
     public static BOOKING_COLLECTION = "bookings";
     public static CLIENT_COLLECTION = "clients";
+    public static CONTACT_NUMBER_REGEX =
+        `(^09[0-9]{9}$)`
+        + `|(^09[0-9]{2} [0-9]{3} [0-9]{4}$)`
+        + `|(^09[0-9]{2}-[0-9]{3}-[0-9]{4}$)`
+        + `|(^[+]639[0-9]{9}$)`
+        + `|(^[+]639[0-9]{2} [0-9]{3} [0-9]{4}$)`
+        + `|(^[+]639[0-9]{2}-[0-9]{3}-[0-9]{4}$)`
+    ;
+    public static DATE_REGEX = /^[0-9]{4}-(0[1-9]|1[0-2])-[0-3][0-9]$/;
+    public static DATE_TIME_REGEX = /^[0-9]{4}-(0[1-9]|1[0-2])-[0-3][0-9]T[0-2][0-9]:[0-6][0-9]$/;
     public static EMPLOYEE_COLLECTION = "employees";
     public static EMPLOYEE_LEAVE_COLLECTION = "employeeLeaves";
     public static EMPLOYEE_LEAVE_STATUS_LIST = [ "approved", "canceled", "pending" ];
@@ -38,6 +48,7 @@ export default class SpaRadiseEnv {
     public static VOUCHER_COLLECTION = "vouchers";
     public static VOUCHER_PACKAGE_COLLECTION = "voucherPackages";
     public static VOUCHER_SERVICE_COLLECTION = "voucherServices";
+    public static ZIP_CODE_REGEX = `^[0-9]{4}$`;
 
     public static isRoomType( string: roomType ): boolean {
 

@@ -16,7 +16,7 @@ export default class DateUtils {
 
         const newDate: Date = new Date( date );
         if( days ) newDate.setDate( date.getDate() + days );
-        if( hours ) newDate.setDate( date.getHours() + hours );
+        if( hours ) newDate.setHours( date.getHours() + hours );
         if( minutes ) newDate.setMinutes( date.getMinutes() + minutes );
         return newDate;
 
@@ -28,7 +28,7 @@ export default class DateUtils {
 
     }
 
-    public static areSameDay( date1: Date, date2: Date ): boolean {
+    public static areSameByDay( date1: Date, date2: Date ): boolean {
 
         const
             year1: number = date1.getFullYear(),
@@ -42,7 +42,7 @@ export default class DateUtils {
 
     }
 
-    public static areSameMinute( date1: Date, date2: Date ): boolean {
+    public static areSameByMinute( date1: Date, date2: Date ): boolean {
 
         const
             year1: number = date1.getFullYear(),

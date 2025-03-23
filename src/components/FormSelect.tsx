@@ -3,22 +3,26 @@ import {
     useEffect,
     useState
 } from "react";
+import DateUtils from "../utils/DateUtils";
+import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
 import {
     SpaRadiseDocumentData,
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
+import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 
-type main = string | boolean | number | null;
+type main = string | boolean | Date | number | null;
 
 export default function FormSelect(
     {
-        children, documentData, documentDefaultData, documentId, keyName,
+        children, className, documentData, documentDefaultData, documentId, keyName,
         name = keyName.toString(),
         pageData, optionList, readOnly, required,
         onChange, validate
     }: {
         children: JSX.Element | JSX.Element[],
+        className?: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
@@ -85,16 +89,23 @@ export default function FormSelect(
     async function parseValue( unparsedValue: string ): Promise< main | null > {
 
         const
+            { DATE_TIME_REGEX } = SpaRadiseEnv,
             isTrue: boolean = ( unparsedValue === "true" ),
             isFalse: boolean = ( unparsedValue === "false" ),
             isNull: boolean = ( unparsedValue === "null" ),
-            isNumber: boolean = !isNaN( +unparsedValue ),
+            date: Date = new Date( unparsedValue ),
+            isDateTime: boolean = Boolean(
+                unparsedValue.match( DATE_TIME_REGEX )
+                && NumberUtils.isNumeric( date )
+            ),
+            isNumber: boolean = NumberUtils.isNumeric( unparsedValue ),
             isEmpty: boolean = ( unparsedValue.length === 0 )
         ;
         return (
             isTrue ? true
             : isFalse ? false
             : isNull ? null
+            : isDateTime ? date
             : isNumber ? +unparsedValue
             : isEmpty ? null
             : unparsedValue
@@ -104,7 +115,10 @@ export default function FormSelect(
 
     async function unparseValue( parsedValue: main | null ): Promise< string > {
 
-        return parsedValue?.toString() ?? "";
+        return (
+            ( parsedValue instanceof Date ) ? DateUtils.toString( parsedValue, "yyyy-mm-ddThh:mm" )
+            : ( parsedValue?.toString() ?? "" )
+        );
 
     }
 
@@ -119,6 +133,7 @@ export default function FormSelect(
     } )() }, [ pageData ] );
 
     return <select
+        className={ className }
         id={ name }
         name={ name }
         required={ required }

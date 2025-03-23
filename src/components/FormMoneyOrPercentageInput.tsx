@@ -16,8 +16,7 @@ type mode = "money" | "percentage";
 
 export default function FormMoneyOrPercentageInput(
     {
-        documentData, documentDefaultData, documentId,
-        name,
+        className, documentData, documentDefaultData, documentId, name,
         pageData, readOnly, required,
 
         keyNameMoney, maxMoney, minMoney = 0, placeholderMoney, stepMoney = 0.01,
@@ -25,6 +24,7 @@ export default function FormMoneyOrPercentageInput(
 
         onChange, validate
     }: {
+        className?: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
@@ -128,6 +128,7 @@ export default function FormMoneyOrPercentageInput(
         {
             ( mode === "money" ) ? <>
                 <FormMoneyInput
+                    className={ className }
                     documentData={ documentData }
                     documentDefaultData={ documentDefaultData }
                     documentId={ documentId }
@@ -145,6 +146,7 @@ export default function FormMoneyOrPercentageInput(
                 />
             </> : <>
                 <FormPercentageInput
+                    className={ className }
                     documentData={ documentData }
                     documentDefaultData={ documentDefaultData }
                     documentId={ documentId }
