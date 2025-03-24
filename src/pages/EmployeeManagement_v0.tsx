@@ -1,5 +1,4 @@
 
-import ConfirmationModal from "../components/ConfirmationModal";
 import { DocumentReference } from "firebase/firestore/lite";
 import {
     EmployeeData,
@@ -25,6 +24,7 @@ import JobUtils from "../firebase/JobUtils";
 import { Link } from "react-router-dom";
 import ObjectUtils from "../utils/ObjectUtils";
 import PersonUtils from "../utils/PersonUtils";
+import PopupModal from "../components/PopupModal";
 import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import { useNavigate } from "react-router-dom";
@@ -212,7 +212,7 @@ export default function EmployeeManagement(): JSX.Element {
     useEffect( () => { loadPageData(); }, [] );
 
     return <>
-        <ConfirmationModal pageData={ pageData } reloadPageData={ reloadPageData }/>
+        <PopupModal pageData={ pageData } reloadPageData={ reloadPageData }/>
         <form onSubmit={submit}>
             <div className="sidebar">
                 <div className="sidebar-logo">

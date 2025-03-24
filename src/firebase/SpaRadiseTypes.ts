@@ -218,16 +218,6 @@ export interface ServiceTransactionDataMap extends SpaRadiseDataMap< ServiceTran
 
 }
 
-export interface SpaRadiseConfirmData {
-
-    message: string,
-    noText: string,
-    yesText: string,
-    yes?: () => void | Promise< void >,
-    no?: () => void | Promise< void >
-
-}
-
 export interface SpaRadiseDataMap< T extends SpaRadiseDocumentData > {
 
     [ documentId: objectKeyName ]: T
@@ -242,13 +232,24 @@ export interface SpaRadiseDocumentData {
 
 export interface SpaRadisePageData {
 
-    confirmData?: SpaRadiseConfirmData,
     loaded: boolean,
+    popupData?: SpaRadisePopupData,
     updateMap: {
         [ documentId: string ]: {
             [ keyName: string ]: boolean
         }
     }
+
+}
+
+export interface SpaRadisePopupData {
+
+    children: JSX.Element | JSX.Element[] | string,
+    popupMode?: popupMode,
+    noText?: string,
+    yesText?: string,
+    no?(): Promise< void > | void,
+    yes?(): Promise< void > | void
 
 }
 

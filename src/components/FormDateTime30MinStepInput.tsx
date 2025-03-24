@@ -273,7 +273,7 @@ export default function FormDateTime30MinStepInput(
                 }
                 onChange={ event => handleMeridiemChange( event ) }
             >
-                <option value="" disabled></option>
+                <option value="" disabled>-</option>
                 <option value="am">a.m.</option>
                 <option value="pm">p.m.</option>
             </select>

@@ -1,5 +1,6 @@
 type dateFormat =
-    "dd Mmmm yyyy" | "hhmm" | "hh:mm" | "Mmmm dd, yyyy" | "Mmmm dd, yyyy - hh:mm" | "mmddyyyy"
+    "dd Mmmm yyyy" | "hhmm" | "hh:mm" | "Mmmm dd, yyyy" | "Mmmm dd, yyyy - hh:mm"
+    | "Mmmm dd, yyyy - hh:mm a.m." | "mmddyyyy"
     | "yyyy-mm-dd" | "yyyymmdd" | "yyyy-mm-ddThh:mm"
 ;
 
@@ -156,6 +157,16 @@ export default class DateUtils {
                 hours = date.getHours().toString().padStart( 2, "0" );
                 minutes = date.getMinutes().toString().padStart( 2, "0" );
                 return `${ month } ${ day }, ${ year } - ${ hours }:${ minutes }`;
+
+            case "Mmmm dd, yyyy - hh:mm a.m.":
+                month = date.toLocaleString( "default", { month: "long" } );
+                day = date.getDate().toString().padStart( 2, "0" );
+                year = date.getFullYear().toString();
+                const hoursValue = date.getHours();
+                hours = ( ( hoursValue + 11 ) % 12 + 1 ).toString().padStart( 2, "0" );
+                minutes = date.getMinutes().toString().padStart( 2, "0" );
+                const meridiem: string = `${ hoursValue < 12 ? `a` : `p` }.m.`;
+                return `${ month } ${ day }, ${ year } - ${ hours }:${ minutes } ${ meridiem }`;
             
             case "mmddyyyy":
                 year = date.getFullYear().toString();

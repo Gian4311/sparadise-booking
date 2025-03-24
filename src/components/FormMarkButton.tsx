@@ -1,8 +1,8 @@
 import ObjectUtils from "../utils/ObjectUtils";
 import {
-    SpaRadiseConfirmData,
     SpaRadiseDocumentData,
-    SpaRadisePageData
+    SpaRadisePageData,
+    SpaRadisePopupData
 } from "../firebase/SpaRadiseTypes";
 import { useEffect } from "react";
 
@@ -11,8 +11,7 @@ type main = string | boolean | number | null;
 export default function FormMarkButton< T extends main >(
     {
         children, className, confirmMessage, documentData, documentDefaultData, documentId, keyName,
-        name = keyName.toString(),
-        noText = "Cancel", pageData, value, yesText = "Yes",
+        name = keyName.toString(), noText = "Cancel", pageData, value, yesText = "Yes",
         no, reloadPageData, validate, yes
     }: {
         children: JSX.Element | JSX.Element[] | string,
@@ -36,13 +35,13 @@ export default function FormMarkButton< T extends main >(
 
     async function handleClick(): Promise< void > {
 
-        const confirmData: SpaRadiseConfirmData = {
-            message: confirmMessage,
+        const popupData: SpaRadisePopupData = {
+            children: confirmMessage,
             noText, yesText,
             yes: handleYes,
             no: handleNo
         }
-        pageData.confirmData = confirmData;
+        pageData.popupData = popupData;
         reloadPageData();
 
     }

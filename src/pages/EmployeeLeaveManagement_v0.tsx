@@ -1,5 +1,4 @@
 
-import ConfirmationModal from "../components/ConfirmationModal";
 import DateUtils from "../utils/DateUtils";
 import { DocumentReference } from "firebase/firestore/lite";
 import {
@@ -28,8 +27,10 @@ import FormTextArea from "../components/FormTextArea";
 import FormTinyTextInput from "../components/FormTinyTextInput";
 import JobUtils from "../firebase/JobUtils";
 import { Link } from "react-router-dom";
+import { NumberRange } from "../utils/NumberRange";
 import ObjectUtils from "../utils/ObjectUtils";
 import PersonUtils from "../utils/PersonUtils";
+import PopupModal from "../components/PopupModal";
 import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import { useNavigate } from "react-router-dom";
@@ -43,7 +44,6 @@ interface EmployeeLeaveManagementPageData extends SpaRadisePageData {
 
     employeeDataMap: EmployeeDataMap,
     employeeLeaveData: EmployeeLeaveData,
-    employeeLeaveDataMap: EmployeeLeaveDataMap,
     employeeLeaveDefaultData: EmployeeLeaveData,
     employeeLeaveDocumentReference?: DocumentReference
 
@@ -63,7 +63,6 @@ export default function EmployeeLeaveManagement(): JSX.Element {
                 status: "pending",
                 reason: null as unknown as string
             },
-            employeeLeaveDataMap: {},
             employeeLeaveDefaultData: {} as EmployeeLeaveData,
             loaded: false,
             updateMap: {}
@@ -77,18 +76,63 @@ export default function EmployeeLeaveManagement(): JSX.Element {
 
     async function checkFormValidity(): Promise< boolean > {
 
-        const {
-            employeeLeaveData,
-        } = pageData;
-        if (employeeLeaveData.name === "New EmployeeLeave")
-            throw new Error(`EmployeeLeave name cannot be "New EmployeeLeave"!`);
+        const errorList: string[] = [];
+
+        async function validateUniqueDateRange(): Promise< void > {
+
+            const
+                { employeeLeaveData: { employee, fromDateTime, toDateTime } } = pageData,
+                employeeLeaveDataMap =
+                    await EmployeeLeaveUtils.getApprovedEmployeeLeaveDataMapByEmployee( employee )
+                ,
+                numberRange1: NumberRange = new NumberRange(
+                    fromDateTime.getTime(), toDateTime.getTime()
+                ),
+                DATE_FORMAT = "Mmmm dd, yyyy - hh:mm a.m."
+            ;
+            for( let employeeLeaveId in employeeLeaveDataMap ) {
+
+                const
+                    { fromDateTime, toDateTime } = employeeLeaveDataMap[ employeeLeaveId ],
+                    numberRange2: NumberRange = new NumberRange(
+                        fromDateTime.getTime(), toDateTime.getTime()
+                    )
+                ;
+                if( numberRange1.overlapsWith( numberRange2 ) ) errorList.push(
+                    `The date range overlaps with an approved ${
+                        DateUtils.toString( fromDateTime, DATE_FORMAT )
+                    } - ${
+                        DateUtils.toString( toDateTime, DATE_FORMAT )
+                    } leave.`
+                );
+
+            }
+
+        }
+
+        await validateUniqueDateRange();
+
+        if( errorList.length > 0 ) {
+
+            pageData.popupData = {
+                children: <>
+                    <ul>{ errorList.map( ( error, index ) => <li key={ index }>{ error }</li> ) }</ul>
+                </>,
+                popupMode: "yesOnly",
+                yesText: "OK"
+            }
+            reloadPageData();
+            return false;
+
+        }
+
         return true;
 
     }
 
     async function createEmployeeLeave(): Promise< void > {
 
-        if (!isNewMode || !documentId) return;
+        if ( !isNewMode || !documentId || !( await checkFormValidity() ) ) return;
         await checkFormValidity();
         const documentReference: DocumentReference = await EmployeeLeaveUtils.createEmployeeLeave(
             pageData.employeeLeaveData
@@ -114,8 +158,7 @@ export default function EmployeeLeaveManagement(): JSX.Element {
         pageData.employeeLeaveDocumentReference = SpaRadiseFirestore.getDocumentReference(
             documentId, SpaRadiseEnv.EMPLOYEE_COLLECTION
         );
-        pageData.employeeLeaveData = pageData.employeeLeaveDataMap[ documentId ];
-        delete pageData.employeeLeaveDataMap[ documentId ];
+        pageData.employeeLeaveData = await EmployeeLeaveUtils.getEmployeeLeaveData( documentId );
         pageData.employeeLeaveDefaultData = { ...pageData.employeeLeaveData };
 
     }
@@ -124,7 +167,6 @@ export default function EmployeeLeaveManagement(): JSX.Element {
     
         if( !documentId ) return;
         pageData.employeeDataMap = await EmployeeUtils.getEmployeeDataMapAll();
-        pageData.employeeLeaveDataMap = await EmployeeLeaveUtils.getEmployeeLeaveDataMapAll();
         if( isEditMode ) await loadEmployeeLeave();
         pageData.loaded = true;
         reloadPageData();
@@ -149,8 +191,7 @@ export default function EmployeeLeaveManagement(): JSX.Element {
 
     async function updateEmployeeLeave(): Promise<void> {
 
-        if (!isEditMode || !documentId) return;
-        await checkFormValidity();
+        if ( !isEditMode || !documentId || !( await checkFormValidity() ) ) return;
         const { employeeLeaveData, updateMap } = pageData;
         if (documentId in updateMap) {
 
@@ -167,7 +208,7 @@ export default function EmployeeLeaveManagement(): JSX.Element {
     useEffect( () => { loadPageData(); }, [] );
 
     return <>
-        <ConfirmationModal pageData={ pageData } reloadPageData={ reloadPageData }/>
+        <PopupModal pageData={ pageData } reloadPageData={ reloadPageData } />
         <form onSubmit={submit}>
             <div className="sidebar">
                 <div className="sidebar-logo">
@@ -201,32 +242,30 @@ export default function EmployeeLeaveManagement(): JSX.Element {
                         min={ pageData.employeeLeaveData.fromDateTime ? DateUtils.addTime( pageData.employeeLeaveData.fromDateTime, { minutes: 30 } ) : undefined }
                         pageData={pageData} readOnly={ canceled } required={true}
                     />
-                    {/* <label>To Date Time: </label>
-                    <FormDateTimeInput
-                        documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="toDateTime"
-                        min={ pageData.employeeLeaveData.fromDateTime ? DateUtils.addTime( pageData.employeeLeaveData.fromDateTime, { minutes: 20 } ) : undefined }
-                        pageData={pageData} readOnly={ canceled } required={true}
-                    /> */}
                     <label>Reason: </label>
                     <FormTextArea documentData={ pageData.employeeLeaveData } documentDefaultData={ pageData.employeeLeaveDefaultData } documentId={documentId} keyName="reason" pageData={ pageData } readOnly={ canceled } required={ true }/>
-                    <label>Status: </label>
                     {
-                        ( pageData.employeeLeaveData.status === "pending" ) ? <>
-                            <FormMarkButton< leaveStatus >
-                                confirmMessage="Would you like to approve this leave?"
-                                documentData={ pageData.employeeLeaveData } documentDefaultData={ pageData.employeeLeaveDefaultData } documentId={ documentId }
-                                keyName="status" pageData={ pageData } value="approved" reloadPageData={ reloadPageData }
-                            >Approve Leave</FormMarkButton>
+                        isEditMode ? <>
+                            <label>Status: </label>
+                            {
+                                ( pageData.employeeLeaveData.status === "pending" ) ? <>
+                                    <FormMarkButton< leaveStatus >
+                                        confirmMessage="Would you like to approve this leave?"
+                                        documentData={ pageData.employeeLeaveData } documentDefaultData={ pageData.employeeLeaveDefaultData } documentId={ documentId }
+                                        keyName="status" pageData={ pageData } value="approved" reloadPageData={ reloadPageData }
+                                    >Approve Leave</FormMarkButton>
+                                </> : <></>
+                            }
+                            {
+                                ( !canceled ) ? <>
+                                    <FormMarkButton< leaveStatus >
+                                        confirmMessage="Would you like to cancel this leave?"
+                                        documentData={ pageData.employeeLeaveData } documentDefaultData={ pageData.employeeLeaveDefaultData } documentId={ documentId }
+                                        keyName="status" pageData={ pageData } value="canceled" reloadPageData={ reloadPageData }
+                                    >Cancel Leave</FormMarkButton>
+                                </> : <>Canceled</>
+                            }
                         </> : <></>
-                    }
-                    {
-                        ( !canceled ) ? <>
-                            <FormMarkButton< leaveStatus >
-                                confirmMessage="Would you like to cancel this leave?"
-                                documentData={ pageData.employeeLeaveData } documentDefaultData={ pageData.employeeLeaveDefaultData } documentId={ documentId }
-                                keyName="status" pageData={ pageData } value="canceled" reloadPageData={ reloadPageData }
-                            >Cancel Leave</FormMarkButton>
-                        </> : <>Canceled</>
                     }
                                     
                     {/* <button type="button"><Link to={ `/management/employeeLeaves/menu/${ documentId }` }>Open Leaves</Link></button>

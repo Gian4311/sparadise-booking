@@ -91,6 +91,35 @@ export default class EmployeeLeaveUtils {
 
     }
 
+    public static async getApprovedEmployeeLeaveDataMapByEmployee(
+        by: documentId | DocumentReference | DocumentSnapshot
+    ): Promise< EmployeeLeaveDataMap > {
+    
+        const
+            employeeLeaveCollection: CollectionReference =
+                SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.EMPLOYEE_LEAVE_COLLECTION )
+            ,
+            employeeReference: DocumentReference = SpaRadiseFirestore.getDocumentReference(
+                by, SpaRadiseEnv.EMPLOYEE_COLLECTION
+            ),
+            employeeLeaveQuery = query(
+                employeeLeaveCollection,
+                where( "employee", "==", employeeReference ),
+                where( "status", "==", "approved" )
+            ),
+            snapshotList: QueryDocumentSnapshot[] =
+                ( await getDocs( employeeLeaveQuery ) ).docs
+            ,
+            employeeLeaveDataMap: EmployeeLeaveDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            employeeLeaveDataMap[ snapshot.id ] =
+                await EmployeeLeaveUtils.getEmployeeLeaveData( snapshot )
+            ;
+        return employeeLeaveDataMap;
+
+    }
+
     public static async getEmployeeLeaveData(
         by: documentId | DocumentReference | DocumentSnapshot
     ): Promise< EmployeeLeaveData > {

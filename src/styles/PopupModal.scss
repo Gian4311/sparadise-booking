@@ -1,7 +1,7 @@
-.confirmation-modal-wrapper {
+.popup-modal-wrapper {
 
-    z-index: 2;
     display: flex;
+    z-index: 2;
     position: fixed;
     top: 0;
     left: 0;
@@ -11,7 +11,7 @@
     align-items: center;
     justify-content: center;
 
-    .confirmation-modal {
+    .popup-modal {
 
         height: 50%;
         background: white;
