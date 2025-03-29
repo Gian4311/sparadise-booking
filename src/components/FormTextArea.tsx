@@ -13,11 +13,12 @@ type main = string;
 
 export default function FormTextArea(
     {
-        documentData, documentDefaultData, documentId, keyName, maxLength,
+        className, documentData, documentDefaultData, documentId, keyName, maxLength,
         name = keyName.toString(),
         pageData, placeholder, readOnly, required,
         onChange, validate
     }: {
+        className?: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
@@ -29,7 +30,7 @@ export default function FormTextArea(
         readOnly?: boolean,
         required?: boolean,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
-        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >
+        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >
     }
 ): JSX.Element {
 
@@ -95,6 +96,7 @@ export default function FormTextArea(
     } )() }, [ pageData ] );
 
     return <textarea
+        className={ className }
         id={ name }
         maxLength={ maxLength }
         name={ name }

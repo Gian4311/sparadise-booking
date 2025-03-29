@@ -2,6 +2,8 @@ import NewBooking from "./pages/NewBooking_v0";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DayPlannner from "./experiments/DayPlanner";
 import DevMenu from "./pages/DevMenu";
+import EmployeeLeaveManagement from "./pages/EmployeeLeaveManagement_v0";
+import EmployeeLeaves from "./pages/EmployeeLeaveMenu_v0 copy";
 import EmployeeManagement from "./pages/EmployeeManagement_v0";
 import EmployeeMenu from "./pages/EmployeeMenu_v0";
 import JobManagement from "./pages/JobManagement_v0";
@@ -14,6 +16,7 @@ import ServiceMenu from "./pages/ServiceMenu_v0";
 import ServicePackageMenu from "./pages/ServicePackageMenu_v0";
 import VoucherManagement from "./pages/VoucherManagement_v0";
 import VoucherMenu from "./pages/VoucherMenu_v0";
+import Homepage from "./pages/ClientIndex";
 
 function App() {
 
@@ -21,11 +24,15 @@ function App() {
         <BrowserRouter>
             <Routes>
                 <Route index element={ <DevMenu/> }/>
+                <Route path="home" element={ <Homepage/> }/>
                 <Route path="dayPlanner" element={ <DayPlannner/> }/>
                 <Route path="clients/:accountId/account" element={ <MyAccount/> }/>
                 <Route path="clients/:accountId/bookings/new" element={ <NewBooking/> }/>
                 <Route path="management/employees/menu" element={ <EmployeeMenu/> }/>
                 <Route path="management/employees/:id" element={ <EmployeeManagement/> }/>
+                <Route path="management/employeeLeaves/menu" element={ <EmployeeLeaves/> }/>
+                <Route path="management/employeeLeaves/menu/:employeeId" element={ <EmployeeLeaves/> }/>
+                <Route path="management/employeeLeaves/:id" element={ <EmployeeLeaveManagement/> }/>
                 <Route path="management/jobs/menu" element={ <JobMenu/> }/>
                 <Route path="management/jobs/:id" element={ <JobManagement/> }/>
                 <Route path="management/packages/menu" element={ <PackageMenu/> }/>

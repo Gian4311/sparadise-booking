@@ -81,6 +81,22 @@ export interface EmployeeDataMap extends SpaRadiseDataMap< EmployeeData > {
 
 }
 
+export interface EmployeeLeaveData extends SpaRadiseDocumentData {
+
+    employee: DocumentReference,
+    fromDateTime: Date,
+    toDateTime: Date,
+    status: leaveStatus,
+    reason: string
+
+}
+
+export interface EmployeeLeaveDataMap extends SpaRadiseDataMap< EmployeeLeaveData > {
+
+    [ employeeLeaveId: string ]: EmployeeLeaveData
+
+}
+
 export interface JobData extends SpaRadiseDocumentData {
 
     name: string,
@@ -216,19 +232,24 @@ export interface SpaRadiseDocumentData {
 
 export interface SpaRadisePageData {
 
-    confirmData?: {
-        message: string,
-        noText: string,
-        yesText: string,
-        yes?: () => void | Promise< void >,
-        no?: () => void | Promise< void >
-    },
     loaded: boolean,
+    popupData?: SpaRadisePopupData,
     updateMap: {
         [ documentId: string ]: {
             [ keyName: string ]: boolean
         }
     }
+
+}
+
+export interface SpaRadisePopupData {
+
+    children: JSX.Element | JSX.Element[] | string,
+    popupMode?: popupMode,
+    noText?: string,
+    yesText?: string,
+    no?(): Promise< void > | void,
+    yes?(): Promise< void > | void
 
 }
 

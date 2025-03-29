@@ -8,11 +8,12 @@ type main = number;
 
 export default function FormNaturalNumberInput(
     {
-        documentData, documentDefaultData, documentId, keyName, max, min = 0,
+        className, documentData, documentDefaultData, documentId, keyName, max, min = 0,
         name = keyName.toString(),
         pageData, placeholder, readOnly, required, step = 1,
         onChange, validate
     }: {
+        className?: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
@@ -26,7 +27,7 @@ export default function FormNaturalNumberInput(
         required?: boolean,
         step?: number,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
-        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >
+        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >
     }
 ): JSX.Element {
 
@@ -36,6 +37,7 @@ export default function FormNaturalNumberInput(
         throw new Error( `Natural number input step must be a positive integer.` );
 
     return <FormNumberInput
+        className={ className }
         documentData={ documentData }
         documentDefaultData={ documentDefaultData }
         documentId={ documentId }

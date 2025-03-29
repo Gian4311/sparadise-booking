@@ -4,32 +4,33 @@ import {
     useState
 } from "react";
 import DateUtils from "../utils/DateUtils";
-import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
 import {
     SpaRadiseDocumentData,
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
-import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 
-type main = string | boolean | Date | number | null;
+type main = Date;
 
-export default function FormSelect(
+const DATETIME_FORMAT = "yyyy-mm-ddThh:mm";
+
+export default function FormDateTimeInput(
     {
-        children, className, documentData, documentDefaultData, documentId, keyName,
+        className,documentData, documentDefaultData, documentId, keyName, max, min,
         name = keyName.toString(),
-        pageData, optionList, readOnly, required,
+        pageData, placeholder, readOnly, required,
         onChange, validate
     }: {
-        children: JSX.Element | JSX.Element[],
         className?: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
         keyName: string,
+        max?: Date,
+        min?: Date,
         name?: string,
-        optionList: main[],
         pageData: SpaRadisePageData,
+        placeholder?: string,
         readOnly?: boolean,
         required?: boolean,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
@@ -39,23 +40,13 @@ export default function FormSelect(
 
     const [ unparsedValue, setUnparsedValue ] = useState< string >( "" );
 
-    async function handleChange( event: ChangeEvent< HTMLSelectElement > ): Promise< void > {
+    async function handleChange( event: ChangeEvent< HTMLInputElement > ): Promise< void > {
 
-        if( readOnly ) return;
         const
             unparsedValue: string = event.target.value,
             parsedValue: main | null = await parseValue( unparsedValue ),
             old = documentData[ keyName ] as main | null
         ;
-        if( !optionList.includes( parsedValue ) ) {
-
-            const
-                isString: boolean = ( typeof parsedValue === "string" ),
-                quote: string = ( isString ? `"` : `` )
-            ;
-            throw new Error( `${ quote }${ parsedValue?.toString() }${ quote } value is not in option list.` );
-
-        }    
         if( validate ) if( !( await validate( parsedValue, unparsedValue, old ) ) ) return;
         setUnparsedValue( unparsedValue );
         documentData[ keyName ] = parsedValue;
@@ -65,11 +56,14 @@ export default function FormSelect(
     }
 
     async function handleDefault( parsedValue: main | null ): Promise< void > {
-            
+        
         if( !documentDefaultData || !documentId ) return;
         const
             { updateMap } = pageData,
-            isDefault: boolean = ( documentDefaultData[ keyName ] === parsedValue ),
+            dateDefault = documentDefaultData[ keyName ] as Date | null,
+            isDefault: boolean = ( dateDefault && parsedValue ) ? DateUtils.areSameByMinute(
+                dateDefault, parsedValue
+            ) : !parsedValue,
             hasUpdateRecord: boolean = ( documentId in updateMap )
         ;
         if( isDefault ) {
@@ -88,37 +82,13 @@ export default function FormSelect(
 
     async function parseValue( unparsedValue: string ): Promise< main | null > {
 
-        const
-            { DATE_TIME_REGEX } = SpaRadiseEnv,
-            isTrue: boolean = ( unparsedValue === "true" ),
-            isFalse: boolean = ( unparsedValue === "false" ),
-            isNull: boolean = ( unparsedValue === "null" ),
-            date: Date = new Date( unparsedValue ),
-            isDateTime: boolean = Boolean(
-                unparsedValue.match( DATE_TIME_REGEX )
-                && NumberUtils.isNumeric( date )
-            ),
-            isNumber: boolean = NumberUtils.isNumeric( unparsedValue ),
-            isEmpty: boolean = ( unparsedValue.length === 0 )
-        ;
-        return (
-            isTrue ? true
-            : isFalse ? false
-            : isNull ? null
-            : isDateTime ? date
-            : isNumber ? +unparsedValue
-            : isEmpty ? null
-            : unparsedValue
-        );
+        return unparsedValue ? new Date( unparsedValue ) : null;
 
     }
 
     async function unparseValue( parsedValue: main | null ): Promise< string > {
 
-        return (
-            ( parsedValue instanceof Date ) ? DateUtils.toString( parsedValue, "yyyy-mm-ddThh:mm" )
-            : ( parsedValue?.toString() ?? "" )
-        );
+        return parsedValue ? DateUtils.toString( parsedValue, DATETIME_FORMAT ) : "";
 
     }
 
@@ -132,15 +102,18 @@ export default function FormSelect(
 
     } )() }, [ pageData ] );
 
-    return <select
+    return <input
         className={ className }
         id={ name }
+        max={ max ? DateUtils.toString( max, DATETIME_FORMAT ) : undefined }
+        min={ min ? DateUtils.toString( min, DATETIME_FORMAT ) : undefined }
         name={ name }
+        placeholder={ placeholder }
+        readOnly={ readOnly }
         required={ required }
+        type="datetime-local"
         value={ unparsedValue }
         onChange={ event => handleChange( event ) }
-    >{
-        children
-    }</select>;
+    />;
 
 }

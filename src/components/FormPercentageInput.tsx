@@ -8,11 +8,12 @@ type main = number;
 
 export default function FormPercentageInput(
     {
-        documentData, documentDefaultData, documentId, keyName, max = 100, min = 0,
+        className, documentData, documentDefaultData, documentId, keyName, max = 100, min = 0,
         name = keyName.toString(),
         pageData, placeholder, readOnly, required, step = 0.01,
         onChange, validate
     }: {
+        className?: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
@@ -26,7 +27,7 @@ export default function FormPercentageInput(
         required?: boolean,
         step?: number,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
-        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >
+        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >
     }
 ): JSX.Element {
 
@@ -38,6 +39,7 @@ export default function FormPercentageInput(
         throw new Error( `Percentage input step must more than 0.01.` );
 
     return <FormNumberInput
+        className={ className }
         documentData={ documentData }
         documentDefaultData={ documentDefaultData }
         documentId={ documentId }

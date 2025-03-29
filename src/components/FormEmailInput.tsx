@@ -15,11 +15,12 @@ const EMAIL_REGEX = "/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-
 
 export default function FormEmailInput(
     {
-        documentData, documentDefaultData, documentId, keyName,
+        className, documentData, documentDefaultData, documentId, keyName,
         name = keyName.toString(),
         pageData, placeholder, readOnly, required,
         onChange, validate
     }: {
+        className?: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
@@ -30,7 +31,7 @@ export default function FormEmailInput(
         readOnly?: boolean,
         required?: boolean,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
-        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >
+        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >
     }
 ): JSX.Element {
 
@@ -96,6 +97,7 @@ export default function FormEmailInput(
     } )() }, [ pageData ] );
 
     return <input
+        className={ className }
         id={ name }
         name={ name }
         pattern={ EMAIL_REGEX }

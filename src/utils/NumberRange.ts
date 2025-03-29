@@ -17,6 +17,18 @@ export class NumberRange {
 
     }
 
+    public getSetEnd(): number {
+
+        return this.end;
+
+    }
+
+    public getSetStart(): number {
+
+        return this.start;
+
+    }
+
     public getTrueEnd(): number {
 
         let { start, end, endInclusive, step } = this;
@@ -53,6 +65,18 @@ export class NumberRange {
 
         }
         return true;
+
+    }
+
+    public overlapsWith( numberRange: NumberRange ): boolean {
+
+        const
+            start1: number = this.getTrueStart(),
+            end1: number = this.getTrueEnd(),
+            start2: number = numberRange.getTrueStart(),
+            end2: number = numberRange.getTrueEnd()
+        ;
+        return ( end1 > start2 ) || ( end2 > start1 );
 
     }
 

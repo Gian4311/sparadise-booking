@@ -1,140 +1,138 @@
-import {
-    MouseEvent,
-    useEffect,
-    useState
-} from "react";
 import ObjectUtils from "../utils/ObjectUtils";
 import {
     SpaRadiseDocumentData,
-    SpaRadisePageData
+    SpaRadisePageData,
+    SpaRadisePopupData
 } from "../firebase/SpaRadiseTypes";
+import { useEffect } from "react";
 
 type main = string | boolean | number | null;
 
-export default function FormMarkButton(
+export default function FormMarkButton< T extends main >(
     {
-        children, documentData, documentDefaultData, documentId, keyName,
-        name = keyName.toString(),
-        pageData, readOnly, required,
-        onChange, validate
+        children, className, confirmMessage, documentData, documentDefaultData, documentId, keyName,
+        name = keyName.toString(), noText = "Cancel", pageData, value, yesText = "Yes",
+        no, reloadPageData, validate, yes
     }: {
-        children: JSX.Element | JSX.Element[],
+        children: JSX.Element | JSX.Element[] | string,
+        className?: string,
+        confirmMessage: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
         keyName: string,
         name?: string,
+        noText?: string,
         pageData: SpaRadisePageData,
-        readOnly?: boolean,
-        required?: boolean,
-        value: main,
-        onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
-        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >
+        value: T,
+        yesText?: string,
+        no?( parsedValue: main | null, unparsedValue: string, old: main | null ): void | Promise< void >,
+        reloadPageData: () => void,
+        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >,
+        yes?( parsedValue: main | null, unparsedValue: string, old: main | null ): void | Promise< void >
     }
 ): JSX.Element {
 
-    return <></>
+    async function handleClick(): Promise< void > {
 
-    // const [ unparsedValue, setUnparsedValue ] = useState< string >( "" );
+        const popupData: SpaRadisePopupData = {
+            children: confirmMessage,
+            noText, yesText,
+            yes: handleYes,
+            no: handleNo
+        }
+        pageData.popupData = popupData;
+        reloadPageData();
 
-    // async function handleClick( event: MouseEvent< HTMLButtonElement > ): Promise< void > {
+    }
 
-    //     if( readOnly ) return;
-    //     const
-    //         unparsedValue: string = event.target.value,
-    //         parsedValue: main | null = await parseValue( unparsedValue ),
-    //         old = documentData[ keyName ] as main | null
-    //     ;
-    //     if( !optionList.includes( parsedValue ) ) {
-
-    //         const
-    //             isString: boolean = ( typeof parsedValue === "string" ),
-    //             quote: string = ( isString ? `"` : `` )
-    //         ;
-    //         throw new Error( `${ quote }${ parsedValue?.toString() }${ quote } value is not in option list.` );
-
-    //     }    
-    //     if( validate ) if( !( await validate( parsedValue, unparsedValue, old ) ) ) return;
-    //     setUnparsedValue( unparsedValue );
-    //     documentData[ keyName ] = parsedValue;
-    //     await handleDefault( parsedValue );
-    //     if( onChange ) await onChange( parsedValue, unparsedValue, old );
-
-    // }
-
-    // async function handleDefault( parsedValue: main | null ): Promise< void > {
+    async function handleDefault( parsedValue: main | null ): Promise< void > {
             
-    //     if( !documentDefaultData || !documentId ) return;
-    //     const
-    //         { updateMap } = pageData,
-    //         isDefault: boolean = ( documentDefaultData[ keyName ] === parsedValue ),
-    //         hasUpdateRecord: boolean = ( documentId in updateMap )
-    //     ;
-    //     if( isDefault ) {
+        if( !documentDefaultData || !documentId ) return;
+        const
+            { updateMap } = pageData,
+            isDefault: boolean = ( documentDefaultData[ keyName ] === parsedValue ),
+            hasUpdateRecord: boolean = ( documentId in updateMap )
+        ;
+        if( isDefault ) {
 
-    //         if( hasUpdateRecord ) delete updateMap[ documentId ][ keyName ];
-    //         if( !ObjectUtils.hasKeys( updateMap[ documentId ] ) ) delete updateMap[ documentId ];
+            if( hasUpdateRecord ) delete updateMap[ documentId ][ keyName ];
+            if( !ObjectUtils.hasKeys( updateMap[ documentId ] ) ) delete updateMap[ documentId ];
 
-    //     } else {
+        } else {
 
-    //         if( !hasUpdateRecord ) updateMap[ documentId ] = {};
-    //         updateMap[ documentId ][ keyName ] = true;
+            if( !hasUpdateRecord ) updateMap[ documentId ] = {};
+            updateMap[ documentId ][ keyName ] = true;
 
-    //     }
+        }
 
-    // }
+    }
 
-    // async function parseValue( unparsedValue: string ): Promise< main | null > {
+    async function handleNo(): Promise< void > {
 
-    //     const
-    //         isTrue: boolean = ( unparsedValue === "true" ),
-    //         isFalse: boolean = ( unparsedValue === "false" ),
-    //         isNull: boolean = ( unparsedValue === "null" ),
-    //         isNumber: boolean = !isNaN( +unparsedValue ),
-    //         isEmpty: boolean = ( unparsedValue.length === 0 )
-    //     ;
-    //     return (
-    //         isTrue ? true
-    //         : isFalse ? false
-    //         : isNull ? null
-    //         : isNumber ? +unparsedValue
-    //         : isEmpty ? null
-    //         : unparsedValue
-    //     );
+        const
+            unparsedValue: string = await unparseValue( value ),
+            parsedValue: main | null = await parseValue( unparsedValue ),
+            old = documentData[ keyName ] as main | null
+        ;
+        if( no ) await no( parsedValue, unparsedValue, old );
 
-    // }
+    }
 
-    // async function unparseValue( parsedValue: main | null ): Promise< string > {
+    async function handleYes(): Promise< void > {
 
-    //     return parsedValue?.toString() ?? "";
+        const
+            unparsedValue: string = await unparseValue( value ),
+            parsedValue: main | null = await parseValue( unparsedValue ),
+            old = documentData[ keyName ] as main | null
+        ;
+        if( validate ) if( !( await validate( parsedValue, unparsedValue, old ) ) ) return;
+        documentData[ keyName ] = parsedValue;
+        await handleDefault( parsedValue );
+        if( yes ) await yes( parsedValue, unparsedValue, old );
 
-    // }
+    }
 
-    // useEffect( () => { ( async() => {
+    async function parseValue( unparsedValue: string ): Promise< main | null > {
 
-    //     if( !documentData ) return;
-    //     if( documentData[ keyName ] === undefined )
-    //         throw new Error( `Key name "${ keyName }" does not exist.` );
-    //     const parsedValue: main = documentData[ keyName ] as main;
-    //     setUnparsedValue( await unparseValue( parsedValue ) );
+        const
+            isTrue: boolean = ( unparsedValue === "true" ),
+            isFalse: boolean = ( unparsedValue === "false" ),
+            isNull: boolean = ( unparsedValue === "null" ),
+            isNumber: boolean = !isNaN( +unparsedValue ),
+            isEmpty: boolean = ( unparsedValue.length === 0 )
+        ;
+        return (
+            isTrue ? true
+            : isFalse ? false
+            : isNull ? null
+            : isNumber ? +unparsedValue
+            : isEmpty ? null
+            : unparsedValue
+        );
 
-    // } )() }, [ pageData ] );
+    }
 
-    // return <button
-    //     id={ name }
-    //     name={ name }
-    //     type="button"
-    //     onClick={ event => handleClick( event ) }
-    // >{ children }</button>;
+    async function unparseValue( parsedValue: main | null ): Promise< string > {
 
-    // return <select
-    //     id={ name }
-    //     name={ name }
-    //     required={ required }
-    //     value={ unparsedValue }
-    //     onChange={ event => handleChange( event ) }
-    // >{
-    //     children
-    // }</select>;
+        return parsedValue?.toString() ?? "";
+
+    }
+
+    useEffect( () => { ( async() => {
+    
+        if( !documentData ) return;
+        if( documentData[ keyName ] === undefined )
+            throw new Error( `Key name "${ keyName }" does not exist.` );
+
+    } )() }, [ pageData ] );
+
+    return <button
+        className={ className }
+        id={ name }
+        name={ name }
+        type="button"
+        onClick={ handleClick }
+    >{ children }</button>;
 
 }

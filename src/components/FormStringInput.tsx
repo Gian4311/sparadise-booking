@@ -13,11 +13,12 @@ type main = string;
 
 export default function FormStringInput(
     {
-        documentData, documentDefaultData, documentId, keyName, maxLength,
+        className, documentData, documentDefaultData, documentId, keyName, maxLength,
         name = keyName.toString(),
         pageData, pattern, placeholder, readOnly, required,
         onChange, validate
     }: {
+        className?: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
@@ -30,7 +31,7 @@ export default function FormStringInput(
         readOnly?: boolean,
         required?: boolean,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
-        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >
+        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >
     }
 ): JSX.Element {
 
@@ -96,6 +97,7 @@ export default function FormStringInput(
     } )() }, [ pageData ] );
 
     return <input
+        className={ className }
         id={ name }
         maxLength={ maxLength }
         name={ name }

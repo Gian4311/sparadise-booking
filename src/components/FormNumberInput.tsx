@@ -13,11 +13,12 @@ type main = number;
 
 export default function FormNumberInput(
     {
-        documentData, documentDefaultData, documentId, keyName, max, min,
+        className, documentData, documentDefaultData, documentId, keyName, max, min,
         name = keyName.toString(),
         pageData, placeholder, readOnly, required, step,
         onChange, validate
     }: {
+        className?: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
@@ -31,7 +32,7 @@ export default function FormNumberInput(
         required?: boolean,
         step?: number,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
-        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >
+        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >
     }
 ): JSX.Element {
 
@@ -97,6 +98,7 @@ export default function FormNumberInput(
     } )() }, [ pageData ] );
 
     return <input
+        className={ className }
         id={ name }
         max={ max }
         min={ min }

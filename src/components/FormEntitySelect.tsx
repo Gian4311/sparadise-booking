@@ -3,12 +3,15 @@ import {
     useEffect,
     useState
 } from "react";
+import DateUtils from "../utils/DateUtils";
 import { DocumentReference } from "firebase/firestore/lite";
+import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
 import {
     SpaRadiseDocumentData,
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
+import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import StringUtils from "../utils/StringUtils";
 
@@ -18,15 +21,16 @@ interface NameMap {
 
 }
 
-type main = DocumentReference | boolean | number | null;
+type main = DocumentReference | boolean | Date | number | null;
 
 export default function FormEntitySelect< T extends SpaRadiseDocumentData >(
     {
-        children, collectionName, documentData, documentDefaultData, documentId,
+        children, className, collectionName, documentData, documentDefaultData, documentId,
         keyName, name = keyName.toString(), pageData, optionDataMap, readOnly, required,
         getDocumentName, onChange, validate
     }: {
         children?: JSX.Element | JSX.Element[],
+        className?: string,
         collectionName: string,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
@@ -39,7 +43,7 @@ export default function FormEntitySelect< T extends SpaRadiseDocumentData >(
         required?: boolean,
         getDocumentName: ( document: T ) => Promise< string > | string,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
-        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >
+        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >
     }
 ): JSX.Element {
 
@@ -91,16 +95,23 @@ export default function FormEntitySelect< T extends SpaRadiseDocumentData >(
     async function parseValue( unparsedValue: string ): Promise< main | null > {
 
         const
+            { DATE_TIME_REGEX } = SpaRadiseEnv,
             isTrue: boolean = ( unparsedValue === "true" ),
             isFalse: boolean = ( unparsedValue === "false" ),
             isNull: boolean = ( unparsedValue === "null" ),
-            isNumber: boolean = !isNaN( +unparsedValue ),
+            date: Date = new Date( unparsedValue ),
+            isDateTime: boolean = Boolean(
+                unparsedValue.match( DATE_TIME_REGEX )
+                && NumberUtils.isNumeric( date )
+            ),
+            isNumber: boolean = NumberUtils.isNumeric( unparsedValue ),
             isEmpty: boolean = ( unparsedValue.length === 0 )
         ;
         return (
             isTrue ? true
             : isFalse ? false
             : isNull ? null
+            : isDateTime ? date
             : isNumber ? +unparsedValue
             : isEmpty ? null
             : SpaRadiseFirestore.getDocumentReference( unparsedValue, collectionName )
@@ -112,6 +123,7 @@ export default function FormEntitySelect< T extends SpaRadiseDocumentData >(
 
         return (
             ( parsedValue instanceof DocumentReference ) ? parsedValue.id
+            : ( parsedValue instanceof Date ) ? DateUtils.toString( parsedValue, "yyyy-mm-ddThh:mm" )
             : ( parsedValue?.toString() ?? "" )
         );
 
@@ -133,6 +145,7 @@ export default function FormEntitySelect< T extends SpaRadiseDocumentData >(
     } )() }, [ pageData ] );
 
     return <select
+        className={ className }
         id={ name }
         name={ name }
         required={ required }
