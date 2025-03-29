@@ -1,4 +1,4 @@
-
+import { DateRange } from "../utils/DateRange";
 import DateUtils from "../utils/DateUtils";
 import { DocumentReference } from "firebase/firestore/lite";
 import {
@@ -27,7 +27,6 @@ import FormTextArea from "../components/FormTextArea";
 import FormTinyTextInput from "../components/FormTinyTextInput";
 import JobUtils from "../firebase/JobUtils";
 import { Link } from "react-router-dom";
-import { NumberRange } from "../utils/NumberRange";
 import ObjectUtils from "../utils/ObjectUtils";
 import PersonUtils from "../utils/PersonUtils";
 import PopupModal from "../components/PopupModal";
@@ -85,20 +84,16 @@ export default function EmployeeLeaveManagement(): JSX.Element {
                 employeeLeaveDataMap =
                     await EmployeeLeaveUtils.getApprovedEmployeeLeaveDataMapByEmployee( employee )
                 ,
-                numberRange1: NumberRange = new NumberRange(
-                    fromDateTime.getTime(), toDateTime.getTime()
-                ),
+                dateRange1: DateRange = new DateRange( fromDateTime, toDateTime ),
                 DATE_FORMAT = "Mmmm dd, yyyy - hh:mm a.m."
             ;
             for( let employeeLeaveId in employeeLeaveDataMap ) {
 
                 const
                     { fromDateTime, toDateTime } = employeeLeaveDataMap[ employeeLeaveId ],
-                    numberRange2: NumberRange = new NumberRange(
-                        fromDateTime.getTime(), toDateTime.getTime()
-                    )
+                    dateRange2: DateRange = new DateRange( fromDateTime, toDateTime )
                 ;
-                if( numberRange1.overlapsWith( numberRange2 ) ) errorList.push(
+                if( dateRange1.overlapsWith( dateRange2 ) ) errorList.push(
                     `The date range overlaps with an approved ${
                         DateUtils.toString( fromDateTime, DATE_FORMAT )
                     } - ${
@@ -239,7 +234,7 @@ export default function EmployeeLeaveManagement(): JSX.Element {
                     <label>To Date Time: </label>
                     <FormDateTime30MinStepInput
                         documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="toDateTime"
-                        min={ pageData.employeeLeaveData.fromDateTime ? DateUtils.addTime( pageData.employeeLeaveData.fromDateTime, { minutes: 30 } ) : undefined }
+                        min={ pageData.employeeLeaveData.fromDateTime ? DateUtils.addTime( pageData.employeeLeaveData.fromDateTime, { min: 30 } ) : undefined }
                         pageData={pageData} readOnly={ canceled } required={true}
                     />
                     <label>Reason: </label>

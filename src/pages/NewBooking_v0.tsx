@@ -12,6 +12,7 @@ import {
 } from "../firebase/SpaRadiseTypes";
 import AccountUtils from "../firebase/AccountUtils";
 import BookingUtils from "../firebase/BookingUtils";
+import Bullet from "../components/Bullet";
 import DateUtils from "../utils/DateUtils";
 import { documentId, DocumentReference } from "firebase/firestore/lite";
 import FormDateInput from "../components/FormDateInput";
@@ -22,11 +23,13 @@ import {
 } from "react";
 import FormTextArea from "../components/FormTextArea";
 import FormTinyTextInput from "../components/FormTinyTextInput";
+import NewBookingDateInput from "../components/NewBookingDateInput";
 import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
 import PackageServiceUtils from "../firebase/PackageServiceUtils";
 import PackageUtils from "../firebase/PackageUtils";
 import PersonUtils from "../utils/PersonUtils";
+import ServiceTransactionTimeSlot from "../components/ServiceTransactionTimeSlot";
 import ServiceTransactionUtils from "../firebase/ServiceTransactionUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
 import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
@@ -36,7 +39,7 @@ import { useParams } from "react-router-dom";
 
 import "../styles/NewBooking_v0.css"
 
-interface NewBookingPageData extends SpaRadisePageData {
+export interface NewBookingPageData extends SpaRadisePageData {
     
     accountData: AccountData,
     bookingData: BookingData,
@@ -51,6 +54,7 @@ interface NewBookingPageData extends SpaRadisePageData {
         showServices: boolean,
         singleServiceIncluded: { [ serviceId: documentId ]: boolean }
     } },
+    date: Date,
     formIndex: number,
     packageDataMap: PackageDataMap,
     packageServiceDataMap: PackageServiceDataMap,
@@ -75,6 +79,7 @@ export default function NewBooking(): JSX.Element {
             clientDataMap: {} as ClientDataMap,
             clientIndex: 0,
             clientInfoMap: {},
+            date: DateUtils.toFloorByDay( DateUtils.addTime( new Date(), { day: 14 } ) ),
             formIndex: 0,
             loaded: false,
             packageDataMap: {} as PackageDataMap,
@@ -313,13 +318,24 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
 
     const
         {
-            clientDataMap, clientInfoMap, packageDataMap,  packageServiceKeyMap, serviceDataMap
+            clientDataMap, clientInfoMap, date, packageDataMap,  packageServiceKeyMap, serviceDataMap
         } = pageData,
         [ clientIndexActive, setClientIndexActive ] = useState< number >( getFirstClientIndex ),
         {
             packageIncluded, serviceIncludedMap, serviceTransactionDataMap, singleServiceIncluded,
             showPackages, showServices
-        } = clientInfoMap[ clientIndexActive ]
+        } = clientInfoMap[ clientIndexActive ],
+        weekDay: number = date.getDay(),
+        serviceTransactionMin = (
+            ( weekDay === 0 ) ? undefined
+            : ( weekDay === 6 ) ? DateUtils.setTime( date, { hr: 10, min: 0 } )
+            : DateUtils.setTime( date, { hr: 9, min: 0 } )
+        ),
+        serviceTransactionMax = (
+            ( weekDay === 0 ) ? undefined
+            : ( weekDay === 6 ) ? DateUtils.setTime( date, { hr: 20, min: 0 } )
+            : DateUtils.setTime( date, { hr: 18, min: 0 } )
+        )
     ;
 
     async function addPackage( packageId: documentId ): Promise< void > {
@@ -493,6 +509,8 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
     }
 
     return <>
+        <h1>Choose date</h1>
+        <NewBookingDateInput pageData={ pageData } reloadPageData={ reloadPageData }/>
         <h1>Choose services</h1>
         <ul>{
             Object.keys( clientDataMap ).sort().map( clientIndex => 
@@ -557,6 +575,53 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
 
             } )
         }</div>
+        <h1>Choose Time Slots</h1>
+        <p>
+            Services marked<Bullet color="#ffc100" size="12px" style={ { margin: "0 5px" } }/>
+            can be done together with<Bullet color="#6699ff" size="12px" style={ { margin: "0 5px" } }/>
+            or<Bullet color="#3bba23" size="12px" style={ { margin: "0 5px" } }/>.
+        </p>
+        <table>
+            <thead><tr>
+                <td></td>
+                <td>Service</td>
+                <td>Time Slot</td>
+                <td>Duration</td>
+            </tr></thead>
+            <tbody>{
+                Object.keys( pageData.clientInfoMap[ clientIndexActive ].serviceTransactionDataMap ).map( serviceTransactionId => {
+                    
+                    const
+                        serviceTransactionData = pageData
+                            .clientInfoMap[ clientIndexActive ]
+                            .serviceTransactionDataMap[ +serviceTransactionId ]
+                        ,
+                        { service: { id: serviceId } } = serviceTransactionData,
+                        { name, serviceType } = pageData.serviceDataMap[ serviceId ]
+                    ;
+                    return <tr key={ serviceTransactionId }>
+                        <td>{
+                            ( serviceType === "handsAndFeet" ) ? <Bullet color="#ffc100" size="12px" style={ { margin: "0 5px" } }/>
+                            : ( serviceType === "browsAndLashes" ) ? <Bullet color="#6699ff" size="12px" style={ { margin: "0 5px" } }/>
+                            : ( serviceType === "facial" ) ? <Bullet color="#3bba23" size="12px" style={ { margin: "0 5px" } }/>
+                            : <Bullet color="#cd8385" size="12px" style={ { margin: "0 5px" } }/>
+                        }</td>
+                        <td>{ name }</td>
+                        <td>
+                            <ServiceTransactionTimeSlot
+                                documentData={ serviceTransactionData }
+                                duration={ 30 }
+                                keyNameFrom="bookingFromDateTime" keyNameTo="bookingToDateTime" max={ serviceTransactionMax } min={ serviceTransactionMin } pageData={ pageData }
+                            >
+                                <option value="" disabled>Select time slot</option>
+                            </ServiceTransactionTimeSlot>
+                        </td>
+                        <td></td>
+                    </tr>;
+
+                } )
+            }</tbody>
+        </table>
         <button type="button" onClick={ previousPage }>Back</button>
         <button type="button" onClick={ nextPage }>Proceed (1/3)</button>
     </>;

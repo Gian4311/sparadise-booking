@@ -43,7 +43,7 @@ export default function FormEntitySelect< T extends SpaRadiseDocumentData >(
         required?: boolean,
         getDocumentName: ( document: T ) => Promise< string > | string,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
-        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >
+        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >
     }
 ): JSX.Element {
 

@@ -25,7 +25,7 @@ export default function FormZipCodeInput(
         readOnly?: boolean,
         required?: boolean,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
-        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >
+        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >
     }
 ): JSX.Element {
 

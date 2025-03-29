@@ -1,3 +1,10 @@
+type dateFormat =
+    "dd Mmmm yyyy" | "hhmm" | "hh:mm" | "h:mmAM" | "Mmmm dd, yyyy" | "Mmmm dd, yyyy - hh:mm"
+    | "Mmmm dd, yyyy - hh:mm a.m." | "mmddyyyy" | "yyyy-mm-dd" | "yyyymmdd" | "yyyy-mm-ddThh:mm"
+;
+type dateRangeFormat =
+    "h:mmAM-h:mmAM" | "hh:mm-hh:mm"
+;
 type documentId = string;
 type employeeStatus = "active" | "inactive";
 type jobStatus = "active" | "inactive";

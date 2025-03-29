@@ -1,24 +1,32 @@
-type dateFormat =
-    "dd Mmmm yyyy" | "hhmm" | "hh:mm" | "Mmmm dd, yyyy" | "Mmmm dd, yyyy - hh:mm"
-    | "Mmmm dd, yyyy - hh:mm a.m." | "mmddyyyy"
-    | "yyyy-mm-dd" | "yyyymmdd" | "yyyy-mm-ddThh:mm"
-;
+interface TimeData {
+
+    yr?: number,
+    mon?: number,
+    week?: number,
+    day?: number,
+    hr?: number,
+    min?: number,
+    sec?: number,
+    ms?: number
+
+}
 
 export default class DateUtils {
 
-    public static addTime(
-        date: Date,
-        { days, hours, minutes }: {
-            days?: number,
-            hours?: number,
-            minutes?: number
-        }
-    ): Date {
+    public static addTime( date: Date, timeData: TimeData ): Date {
 
-        const newDate: Date = new Date( date );
-        if( days ) newDate.setDate( date.getDate() + days );
-        if( hours ) newDate.setHours( date.getHours() + hours );
-        if( minutes ) newDate.setMinutes( date.getMinutes() + minutes );
+        const
+            { yr, mon, week, day, hr, min, sec, ms } = timeData,
+            newDate: Date = new Date( date )
+        ;
+        if( yr ) newDate.setFullYear( date.getFullYear() + yr );
+        if( mon ) newDate.setMonth( date.getMonth() + mon )
+        if( week ) newDate.setDate( date.getDate() + 7 * week );
+        if( day ) newDate.setDate( date.getDate() + day );
+        if( hr ) newDate.setHours( date.getHours() + hr );
+        if( min ) newDate.setMinutes( date.getMinutes() + min );
+        if( sec ) newDate.setSeconds( date.getSeconds() + sec );
+        if( ms ) newDate.setMilliseconds( date.getMilliseconds() + ms );
         return newDate;
 
     }
@@ -32,34 +40,34 @@ export default class DateUtils {
     public static areSameByDay( date1: Date, date2: Date ): boolean {
 
         const
-            year1: number = date1.getFullYear(),
-            month1: number = date1.getMonth(),
+            yr1: number = date1.getFullYear(),
+            mon1: number = date1.getMonth(),
             day1: number = date1.getDate(),
-            year2: number = date2.getFullYear(),
-            month2: number = date2.getMonth(),
+            yr2: number = date2.getFullYear(),
+            mon2: number = date2.getMonth(),
             day2: number = date2.getDate()
         ;
-        return ( year1 === year2 && month1 === month2 && year1 === year2 && day1 === day2 );
+        return ( yr1 === yr2 && mon1 === mon2 && yr1 === yr2 && day1 === day2 );
 
     }
 
     public static areSameByMinute( date1: Date, date2: Date ): boolean {
 
         const
-            year1: number = date1.getFullYear(),
-            month1: number = date1.getMonth(),
+            yr1: number = date1.getFullYear(),
+            mon1: number = date1.getMonth(),
             day1: number = date1.getDate(),
-            hours1: number = date1.getHours(),
-            minutes1: number = date1.getMinutes(),
-            year2: number = date2.getFullYear(),
-            month2: number = date2.getMonth(),
+            hr1: number = date1.getHours(),
+            min1: number = date1.getMinutes(),
+            yr2: number = date2.getFullYear(),
+            mon2: number = date2.getMonth(),
             day2: number = date2.getDate(),
-            hours2: number = date2.getHours(),
-            minutes2: number = date2.getMinutes()
+            hr2: number = date2.getHours(),
+            min2: number = date2.getMinutes()
         ;
         return (
-            year1 === year2 && month1 === month2 && year1 === year2 && day1 === day2
-            && hours1 === hours2 && minutes1 === minutes2
+            yr1 === yr2 && mon1 === mon2 && yr1 === yr2 && day1 === day2
+            && hr1 === hr2 && min1 === min2
         );
 
     }
@@ -68,41 +76,33 @@ export default class DateUtils {
 
         const
             today: Date = new Date(),
-            year1: number = today.getFullYear(),
-            month1: number = today.getMonth(),
+            yr1: number = today.getFullYear(),
+            mon1: number = today.getMonth(),
             day1: number = today.getDate(),
-            year2: number = date.getFullYear(),
-            month2: number = date.getMonth(),
+            yr2: number = date.getFullYear(),
+            mon2: number = date.getMonth(),
             day2: number = date.getDate()
         ;
-        let yearAge: number = year1 - year2;
-        if( ( month1 < month2 ) || ( month1 === month2 && day1 < day2 ) ) yearAge--;
-        return yearAge;
+        let yrAge: number = yr1 - yr2;
+        if( ( mon1 < mon2 ) || ( mon1 === mon2 && day1 < day2 ) ) yrAge--;
+        return yrAge;
 
     }
 
-    public static setTime(
-        date: Date,
-        {
-            year = date.getFullYear(),
-            month = date.getMonth(),
-            day = date.getDate(),
-            hours, minutes, seconds
-        }: {
-            year?: number,
-            month?: number,
-            day?: number,
-            hours?: number,
-            minutes?: number,
-            seconds?: number
-        }
-    ): Date {
+    public static setTime( date: Date, timeData: TimeData ): Date {
 
-        const newDate: Date = new Date( date );
-        newDate.setFullYear( year, month, day );
-        if( hours !== undefined ) newDate.setHours( hours );
-        if( minutes !== undefined ) newDate.setMinutes( minutes );
-        if( seconds !== undefined ) newDate.setSeconds( seconds );
+        const
+            { yr, mon, day, hr, min, sec, ms } = timeData,
+            newDate: Date = new Date( date )
+        ;
+        if( yr !== undefined ) newDate.setFullYear( yr );
+        if( mon !== undefined ) newDate.setMonth( mon );
+        // set week
+        if( day !== undefined ) newDate.setDate( day );
+        if( hr !== undefined ) newDate.setHours( hr );
+        if( min !== undefined ) newDate.setMinutes( min );
+        if( sec !== undefined ) newDate.setSeconds( sec );
+        if( ms !== undefined ) newDate.setMilliseconds( ms );
         return newDate;
 
     }
@@ -110,7 +110,18 @@ export default class DateUtils {
     public static toCeilByDay( date: Date ): Date {
 
         const newDate: Date = new Date( date );
-        newDate.setHours( 24, 0, 0 );
+        newDate.setHours( 24, 0, 0, 0 );
+        return newDate;
+
+    }
+
+    public static toCeilByMin( date: Date, ceilByMin: number ): Date {
+
+        const
+            newDate: Date = new Date( date ),
+            min: number = newDate.getMinutes()
+        ;
+        newDate.setMinutes( ceilByMin * Math.ceil( min / ceilByMin ) );
         return newDate;
 
     }
@@ -118,81 +129,91 @@ export default class DateUtils {
     public static toFloorByDay( date: Date ): Date {
 
         const newDate: Date = new Date( date );
-        newDate.setHours( 0, 0, 0 );
+        newDate.setHours( 0, 0, 0, 0 );
         return newDate;
 
     }
 
     public static toString( date: Date, format: dateFormat ): string {
 
-        let year: string, month: string, day: string, hours: string, minutes: string;
+        let
+            yr: string, mon: string, day: string, hr: string, min: string,
+            hrValue: number, meridiem: string
+        ;
         switch( format ) {
 
             case "dd Mmmm yyyy":
-                month = date.toLocaleString( "default", { month: "long" } );
+                mon = date.toLocaleString( "default", { month: "long" } );
                 day = date.getDate().toString().padStart( 2, "0" );
-                year = date.getFullYear().toString();
-                return `${ day } ${ month } ${ year }`;
+                yr = date.getFullYear().toString();
+                return `${ day } ${ mon } ${ yr }`;
 
             case "hhmm":
-                hours = date.getHours().toString().padStart( 2, "0" );
-                minutes = date.getMinutes().toString().padStart( 2, "0" );
-                return `${ hours }${ minutes }`;
+                hr = date.getHours().toString().padStart( 2, "0" );
+                min = date.getMinutes().toString().padStart( 2, "0" );
+                return `${ hr }${ min }`;
 
             case "hh:mm":
-                hours = date.getHours().toString().padStart( 2, "0" );
-                minutes = date.getMinutes().toString().padStart( 2, "0" );
-                return `${ hours }:${ minutes }`;
+                hr = date.getHours().toString().padStart( 2, "0" );
+                min = date.getMinutes().toString().padStart( 2, "0" );
+                return `${ hr }:${ min }`;
+            
+            case "h:mmAM":
+                hrValue = date.getHours();
+                hr = ( ( hrValue + 11 ) % 12 + 1 ).toString();
+                min = date.getMinutes().toString().padStart( 2, "0" );
+                meridiem = `${ hrValue < 12 ? `A` : `P` }M`;
+                return `${ hr }:${ min }${ meridiem }`;
 
             case "Mmmm dd, yyyy":
-                month = date.toLocaleString( "default", { month: "long" } );
+                mon = date.toLocaleString( "default", { month: "long" } );
                 day = date.getDate().toString().padStart( 2, "0" );
-                year = date.getFullYear().toString();
-                return `${ month } ${ day }, ${ year }`;
+                yr = date.getFullYear().toString();
+                return `${ mon } ${ day }, ${ yr }`;
             
             case "Mmmm dd, yyyy - hh:mm":
-                month = date.toLocaleString( "default", { month: "long" } );
+                mon = date.toLocaleString( "default", { month: "long" } );
                 day = date.getDate().toString().padStart( 2, "0" );
-                year = date.getFullYear().toString();
-                hours = date.getHours().toString().padStart( 2, "0" );
-                minutes = date.getMinutes().toString().padStart( 2, "0" );
-                return `${ month } ${ day }, ${ year } - ${ hours }:${ minutes }`;
+                yr = date.getFullYear().toString();
+                hr = date.getHours().toString().padStart( 2, "0" );
+                min = date.getMinutes().toString().padStart( 2, "0" );
+                return `${ mon } ${ day }, ${ yr } - ${ hr }:${ min }`;
 
             case "Mmmm dd, yyyy - hh:mm a.m.":
-                month = date.toLocaleString( "default", { month: "long" } );
+                mon = date.toLocaleString( "default", { month: "long" } );
                 day = date.getDate().toString().padStart( 2, "0" );
-                year = date.getFullYear().toString();
-                const hoursValue = date.getHours();
-                hours = ( ( hoursValue + 11 ) % 12 + 1 ).toString().padStart( 2, "0" );
-                minutes = date.getMinutes().toString().padStart( 2, "0" );
-                const meridiem: string = `${ hoursValue < 12 ? `a` : `p` }.m.`;
-                return `${ month } ${ day }, ${ year } - ${ hours }:${ minutes } ${ meridiem }`;
+                yr = date.getFullYear().toString();
+                hrValue = date.getHours();
+                hr = ( ( hrValue + 11 ) % 12 + 1 ).toString().padStart( 2, "0" );
+                min = date.getMinutes().toString().padStart( 2, "0" );
+                meridiem = `${ hrValue < 12 ? `a` : `p` }.m.`;
+                return `${ mon } ${ day }, ${ yr } - ${ hr }:${ min } ${ meridiem }`;
             
             case "mmddyyyy":
-                year = date.getFullYear().toString();
-                month = ( date.getMonth() + 1 ).toString().padStart( 2, "0" );
+                yr = date.getFullYear().toString();
+                mon = ( date.getMonth() + 1 ).toString().padStart( 2, "0" );
                 day = date.getDate().toString().padStart( 2, "0" );
-                return `${ month }${ day }${ year }`;
+                return `${ mon }${ day }${ yr }`;
             
             case "yyyymmdd":
-                year = date.getFullYear().toString();
-                month = ( date.getMonth() + 1 ).toString().padStart( 2, "0" );
+                yr = date.getFullYear().toString();
+                mon = ( date.getMonth() + 1 ).toString().padStart( 2, "0" );
                 day = date.getDate().toString().padStart( 2, "0" );
-                return `${ year }${ month }${ day }`;
+                return `${ yr }${ mon }${ day }`;
 
             case "yyyy-mm-dd":
-                year = date.getFullYear().toString();
-                month = ( date.getMonth() + 1 ).toString().padStart( 2, "0" );
+                yr = date.getFullYear().toString();
+                mon = ( date.getMonth() + 1 ).toString().padStart( 2, "0" );
                 day = date.getDate().toString().padStart( 2, "0" );
-                return `${ year }-${ month }-${ day }`;
+                return `${ yr }-${ mon }-${ day }`;
             
             case "yyyy-mm-ddThh:mm":
-                year = date.getFullYear().toString();
-                month = ( date.getMonth() + 1 ).toString().padStart( 2, "0" );
+                yr = date.getFullYear().toString();
+                mon = ( date.getMonth() + 1 ).toString().padStart( 2, "0" );
                 day = date.getDate().toString().padStart( 2, "0" );
-                hours = date.getHours().toString().padStart( 2, "0" );
-                minutes = date.getMinutes().toString().padStart( 2, "0" );
-                return `${ year }-${ month }-${ day }T${ hours }:${ minutes }`;
+                hr = date.getHours().toString().padStart( 2, "0" );
+                min = date.getMinutes().toString().padStart( 2, "0" );
+                return `${ yr }-${ mon }-${ day }T${ hr }:${ min }`;
 
         }
 

@@ -94,7 +94,7 @@ export default function ServiceManagement(): JSX.Element {
                 return;
 
             }
-            date = DateUtils.addTime( date, { days: 1 } );
+            date = DateUtils.addTime( date, { day: 1 } );
             dateKey = getDateKey( date );
 
         }

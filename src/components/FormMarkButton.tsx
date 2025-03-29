@@ -28,7 +28,7 @@ export default function FormMarkButton< T extends main >(
         yesText?: string,
         no?( parsedValue: main | null, unparsedValue: string, old: main | null ): void | Promise< void >,
         reloadPageData: () => void,
-        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >,
+        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >,
         yes?( parsedValue: main | null, unparsedValue: string, old: main | null ): void | Promise< void >
     }
 ): JSX.Element {
