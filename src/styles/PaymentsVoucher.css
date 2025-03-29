@@ -192,3 +192,16 @@ input {
 .clientIndex-Logo img{
     width: 200px; 
 }
+
+.back-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display:flex;
+    width:50px;
+}
+
+.back-btn img{
+    width: 50px;
+}

@@ -48,6 +48,7 @@ import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import StringUtils from "../utils/StringUtils";
 import { useParams } from "react-router-dom";
+import EmployeeSidebar from "../components/EmployeeSidebar";
 
 import "../styles/NewBooking_v0.css"
 
@@ -257,6 +258,7 @@ export default function NewBooking(): JSX.Element {
     useEffect( () => { loadMaintenanceData(); }, [ pageData.date ] );
 
     return <>
+    <EmployeeSidebar/>
         <h1>Account ID: { accountId }</h1>
         <form onSubmit={ submit }>
             {

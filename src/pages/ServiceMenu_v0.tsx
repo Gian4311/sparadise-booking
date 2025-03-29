@@ -6,6 +6,7 @@ import {
     useEffect,
     useState
 } from "react";
+import EmployeeSidebar from "../components/EmployeeSidebar";
 
 interface ServiceMenuPageData extends SpaRadisePageData  {
 
@@ -41,6 +42,7 @@ export default function ServiceMenu(): JSX.Element {
     useEffect( () => { loadPageData(); }, [] );
 
     return <>
+    <EmployeeSidebar/>
         <Link to="/management/services/new">
             <h1>New</h1>
         </Link>

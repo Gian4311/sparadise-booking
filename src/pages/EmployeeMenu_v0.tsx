@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import "../styles/EmployeeServiceMenu.css";
 import "../styles/Sidebar.css";
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
+import EmployeeSidebar from "../components/EmployeeSidebar";
 
 type rowType = "employees";
 type showMode = "active" | "all" | "inactive" | "onLeave";
@@ -83,22 +84,7 @@ export default function EmployeeMenu(): JSX.Element {
 
     return <>
         <div>
-            <div className="sidebar">
-                <div className="sidebar-logo">
-                    <img src={SpaRadiseLogo} alt="SpaRadise Logo" />
-                </div>
-                <ul className="sidebar-menu">
-                    <li><Link to="../management/dashboard" >Dashboard</Link></li>
-                    <li><Link to="../management/bookings/menu" >Bookings</Link></li>
-                    <li><Link to="../management/clients/menu" >Clients</Link></li>
-                    <li><Link to="/management/employees/menu" className="active">Employees</Link></li>
-                    <li><Link to="../management/servicesAndPackages/menu" >Services & Packages</Link></li>
-                    <li><Link to="../management/vouchers/menu" >Vouchers</Link></li>
-                    <li><Link to="../management/roomsAndChairs/menu" >Rooms & Chairs</Link></li>
-                    <li><Link to="../management/commissions/menu" >Commissions</Link></li>
-                    <li><a href="#">Log Out</a></li>
-                </ul>
-            </div>
+            <EmployeeSidebar/>      
             <div className="service-menu-main-content">
                 <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">Employees
                 </label>

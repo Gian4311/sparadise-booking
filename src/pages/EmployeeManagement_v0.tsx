@@ -35,6 +35,7 @@ import "../styles/Sidebar.css";
 
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 import BackButton from "../images/back button.png";
+import EmployeeSidebar from "../components/EmployeeSidebar";
 
 interface EmployeeManagementPageData extends SpaRadisePageData {
 
@@ -214,22 +215,22 @@ export default function EmployeeManagement(): JSX.Element {
     return <>
         <PopupModal pageData={ pageData } reloadPageData={ reloadPageData }/>
         <form onSubmit={submit}>
-            <div className="sidebar">
-                <div className="sidebar-logo">
-                    <img src={SpaRadiseLogo} alt="SpaRadise Logo" />
+            <EmployeeSidebar/>
+            <nav className="navbar">
+                <div className="clientIndex-Logo">
+                    <img src="../images/SpaRadise Logo.png" alt="SpaRadise Logo"/>
                 </div>
-                <ul className="sidebar-menu">
-                    <li><Link to="../management/dashboard" >Dashboard</Link></li>
-                    <li><Link to="../management/bookings/menu" >Bookings</Link></li>
-                    <li><Link to="../management/clients/menu" >Clients</Link></li>
-                    <li><Link to="/management/employees/menu" className="active">Employees</Link></li>
-                    <li><Link to="../management/servicesAndPackages/menu" >Services & Packages</Link></li>
-                    <li><Link to="../management/vouchers/menu" >Vouchers</Link></li>
-                    <li><Link to="../management/roomsAndChairs/menu" >Rooms & Chairs</Link></li>
-                    <li><Link to="../management/commissions/menu" >Commissions</Link></li>
+                <ul className="nav-links">
+                    <li><a href="#">Dashboard</a></li>
+                    <li><a href="#">Bookings</a></li>
+                    <li><a href="#">Clients</a></li>
+                    <li><a href="#">Employees</a></li>
+                    <li><a href="#">Services & Packages</a></li>
+                    <li><a href="#">Vouchers</a></li>
+                    <li><a href="#">Rooms & Chairs</a></li>
                     <li><a href="#">Log Out</a></li>
                 </ul>
-            </div>
+            </nav>
             <div className="employee-main-content">
                 <label htmlFor="employee-main-content" className="employee-management-location">Employees - {PersonUtils.format(pageData.employeeDefaultData, "f mi l" )}</label>
                 <div className="employee-form-section">

@@ -29,6 +29,7 @@ import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import { Link } from "react-router-dom";
 import "../styles/EmployeeServiceManagement.css";
 import "../styles/Sidebar.css";
+import EmployeeSidebar from "../components/EmployeeSidebar";
 
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 
@@ -396,22 +397,7 @@ export default function ServiceManagement(): JSX.Element {
     return <>
 
         <form onSubmit={ submit }>
-            <div className="sidebar">
-                <div className="sidebar-logo">
-                    <img src={ SpaRadiseLogo } alt="SpaRadise Logo"/>
-                </div>
-                <ul className="sidebar-menu">
-                    <li><Link to="../management/dashboard" >Dashboard</Link></li>
-                    <li><Link to="../management/bookings/menu" >Bookings</Link></li>
-                    <li><Link to="../management/clients/menu" >Clients</Link></li>
-                    <li><Link to="/management/employees/menu" >Employees</Link></li>
-                    <li><Link to="../management/servicesAndPackages/menu" className="active">Services & Packages</Link></li>
-                    <li><Link to="../management/vouchers/menu" >Vouchers</Link></li>
-                    <li><Link to="../management/roomsAndChairs/menu" >Rooms & Chairs</Link></li>
-                    <li><Link to="../management/commissions/menu" >Commissions</Link></li>
-                    <li><a href="#">Log Out</a></li>
-                </ul>
-            </div>
+            <EmployeeSidebar/>
             <div className="service-main-content">
                 <label htmlFor="service-main-content" className="service-management-location">Services & Packages - { pageData.serviceName }</label>
                 <div className="service-form-section">
