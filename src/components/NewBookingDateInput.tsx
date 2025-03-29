@@ -5,8 +5,6 @@ import {
 } from "react";
 import DateUtils from "../utils/DateUtils";
 import { NewBookingPageData } from "../pages/NewBooking_v0";
-import ObjectUtils from "../utils/ObjectUtils";
-import { SpaRadiseDocumentData } from "../firebase/SpaRadiseTypes";
 
 type main = Date;
 

@@ -12,6 +12,7 @@ import {
     WithFieldValue,
     where
 } from "firebase/firestore/lite";
+import DateUtils from "../utils/DateUtils";
 import {
     ServiceTransactionData,
     ServiceTransactionDataMap
@@ -137,6 +138,35 @@ export default class ServiceTransactionUtils {
             serviceTransactionQuery = query(
                 serviceTransactionCollection,
                 where( "service", "==", clientReference )
+            ),
+            snapshotList: QueryDocumentSnapshot[] =
+                ( await getDocs( serviceTransactionQuery ) ).docs
+            ,
+            serviceTransactionDataMap: ServiceTransactionDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            serviceTransactionDataMap[ snapshot.id ] =
+                await ServiceTransactionUtils.getServiceTransactionData( snapshot )
+            ;
+        return serviceTransactionDataMap;
+
+    }
+
+    public static async getServiceTransactionDataMapByDay(
+        date: Date
+    ): Promise< ServiceTransactionDataMap > {
+    
+        const
+            serviceTransactionCollection: CollectionReference =
+                SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.SERVICE_TRANSACTION_COLLECTION )
+            ,
+            fromDateTime: Date = DateUtils.toFloorByDay( date ),
+            toDateTime: Date = DateUtils.toCeilByDay( date ),
+            serviceTransactionQuery = query(
+                serviceTransactionCollection,
+                where( "bookingFromDateTime", "<=", fromDateTime ),
+                where( "bookingToDateTime", ">", toDateTime ),
+                where( "status", "==", "uncanceled" )
             ),
             snapshotList: QueryDocumentSnapshot[] =
                 ( await getDocs( serviceTransactionQuery ) ).docs

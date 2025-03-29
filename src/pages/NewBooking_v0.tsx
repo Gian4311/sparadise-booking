@@ -3,9 +3,15 @@ import {
     BookingData,
     ClientData,
     ClientDataMap,
+    EmployeeDataMap,
+    EmployeeLeaveDataMap,
+    JobDataMap,
+    JobServiceDataMap,
     PackageDataMap,
+    PackageMaintenanceData,
     PackageServiceDataMap,
     ServiceDataMap,
+    ServiceMaintenanceData,
     ServiceTransactionData,
     ServiceTransactionDataMap,
     SpaRadisePageData
@@ -14,7 +20,9 @@ import AccountUtils from "../firebase/AccountUtils";
 import BookingUtils from "../firebase/BookingUtils";
 import Bullet from "../components/Bullet";
 import DateUtils from "../utils/DateUtils";
-import { documentId, DocumentReference } from "firebase/firestore/lite";
+import { DocumentReference } from "firebase/firestore/lite";
+import EmployeeLeaveUtils from "../firebase/EmployeeLeaveUtils";
+import EmployeeUtils from "../firebase/EmployeeUtils";
 import FormDateInput from "../components/FormDateInput";
 import {
     FormEvent,
@@ -23,12 +31,16 @@ import {
 } from "react";
 import FormTextArea from "../components/FormTextArea";
 import FormTinyTextInput from "../components/FormTinyTextInput";
+import JobServiceUtils from "../firebase/JobServiceUtils";
+import JobUtils from "../firebase/JobUtils";
 import NewBookingDateInput from "../components/NewBookingDateInput";
 import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
+import PackageMaintenanceUtils from "../firebase/PackageMaintenanceUtils";
 import PackageServiceUtils from "../firebase/PackageServiceUtils";
 import PackageUtils from "../firebase/PackageUtils";
 import PersonUtils from "../utils/PersonUtils";
+import ServiceMaintenanceUtils from "../firebase/ServiceMaintenanceUtils";
 import ServiceTransactionTimeSlot from "../components/ServiceTransactionTimeSlot";
 import ServiceTransactionUtils from "../firebase/ServiceTransactionUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
@@ -45,6 +57,7 @@ export interface NewBookingPageData extends SpaRadisePageData {
     bookingData: BookingData,
     clientDataMap: ClientDataMap,
     clientIndex: number,
+    clientIndexActive: number,
     clientInfoMap: { [ clientIndex: number ]: {
         packageIncluded: { [ packageId: documentId ]: boolean },
         serviceIncludedMap: { [ serviceId: documentId ]: number },
@@ -55,13 +68,19 @@ export interface NewBookingPageData extends SpaRadisePageData {
         singleServiceIncluded: { [ serviceId: documentId ]: boolean }
     } },
     date: Date,
+    employeeDataMap: EmployeeDataMap,
+    employeeLeaveDataMap: EmployeeLeaveDataMap,
     formIndex: number,
+    jobDataMap: JobDataMap,
+    jobServiceDataMap: JobServiceDataMap,
+    maintenanceDataMap: { [documentId: documentId]: PackageMaintenanceData | ServiceMaintenanceData },
     packageDataMap: PackageDataMap,
     packageServiceDataMap: PackageServiceDataMap,
     packageServiceKeyMap: {
         [ packageId: documentId ]: { [ packageServiceId: documentId ]: documentId }
     },
-    serviceDataMap: ServiceDataMap
+    serviceDataMap: ServiceDataMap,
+    serviceTransactionOfDayDataMap: ServiceTransactionDataMap
 }
 
 export default function NewBooking(): JSX.Element {
@@ -78,14 +97,21 @@ export default function NewBooking(): JSX.Element {
             },
             clientDataMap: {} as ClientDataMap,
             clientIndex: 0,
+            clientIndexActive: 0,
             clientInfoMap: {},
             date: DateUtils.toFloorByDay( DateUtils.addTime( new Date(), { day: 14 } ) ),
+            employeeDataMap: {},
+            employeeLeaveDataMap: {},
             formIndex: 0,
+            jobDataMap: {},
+            jobServiceDataMap: {},
             loaded: false,
+            maintenanceDataMap: {},
             packageDataMap: {} as PackageDataMap,
             packageServiceDataMap: {} as PackageServiceDataMap,
             packageServiceKeyMap: {},
             serviceDataMap: {} as ServiceDataMap,
+            serviceTransactionOfDayDataMap: {},
             updateMap: {}
         } ),
         accountId: string | undefined = useParams().accountId
@@ -122,6 +148,13 @@ export default function NewBooking(): JSX.Element {
 
     }
 
+    async function loadEmployeeData(): Promise< void > {
+
+        pageData.employeeDataMap = await EmployeeUtils.getEmployeeDataMapAll();
+        pageData.employeeLeaveDataMap = await EmployeeLeaveUtils.getEmployeeLeaveDataMapAll();
+
+    }
+
     async function loadFirstClient(): Promise< void > {
 
         const { accountData, accountData: { birthDate } } = pageData;
@@ -143,6 +176,35 @@ export default function NewBooking(): JSX.Element {
 
     }
 
+    async function loadJobData(): Promise< void > {
+
+        pageData.jobDataMap = await JobUtils.getJobDataMapAll();
+        pageData.jobServiceDataMap = await JobServiceUtils.getJobServiceDataMapAll();
+
+    }
+
+    async function loadMaintenanceData(): Promise< void > {
+
+        const { date } = pageData;
+        if( !date ) {
+
+            pageData.maintenanceDataMap = {};
+            reloadPageData();
+            return;
+
+        }
+        const
+            packageMaintenanceDataMap =
+                await PackageMaintenanceUtils.getPackageMaintenanceDataMapByDate( date )
+            ,
+            serviceMaintenanceDataMap =
+                await ServiceMaintenanceUtils.getServiceMaintenanceDataMapByDate( date )
+        ;
+        pageData.maintenanceDataMap = { ...packageMaintenanceDataMap, ...serviceMaintenanceDataMap };
+        reloadPageData();
+
+    }
+
     async function loadPageData(): Promise< void > {
 
         if( !accountId ) return;
@@ -152,6 +214,9 @@ export default function NewBooking(): JSX.Element {
         );
         await loadFirstClient();
         await loadServiceData();
+        await loadEmployeeData();
+        await loadJobData();
+        pageData.loaded = true;
         reloadPageData();
 
     }
@@ -171,7 +236,6 @@ export default function NewBooking(): JSX.Element {
             packageServiceKeyMap[ packageId ][ packageServiceId ] = serviceId;
 
         }
-        pageData.loaded = true;
 
     }
 
@@ -190,14 +254,17 @@ export default function NewBooking(): JSX.Element {
 
     useEffect( () => { loadPageData(); }, [] );
 
+    useEffect( () => { loadMaintenanceData(); }, [ pageData.date ] );
+
     return <>
         <h1>Account ID: { accountId }</h1>
         <form onSubmit={ submit }>
             {
-                ( pageData.formIndex === 0 ) ? <ChooseClients addFormIndex={ addFormIndex } pageData={ pageData } reloadPageData={ reloadPageData }/>
-                : ( pageData.formIndex === 1 ) ? <ChooseServices addFormIndex={ addFormIndex } pageData={ pageData } reloadPageData={ reloadPageData }/>
+                ( pageData.formIndex === 0 ) ? <ChooseClients pageData={ pageData } reloadPageData={ reloadPageData }/>
+                : ( pageData.formIndex === 1 ) ? <ChooseServices pageData={ pageData } reloadPageData={ reloadPageData }/>
+                : ( pageData.formIndex === 2 ) ? <ChooseTimeSlots pageData={ pageData } reloadPageData={ reloadPageData }/>
                 // other form indexes
-                : <>none</>
+                : <button type="button" onClick={ () => { pageData.formIndex--; reloadPageData(); } }>None, Go Back</button>
             }
             
             <button type="button" onClick={ () => console.log( pageData ) }>Log page data</button>
@@ -207,8 +274,7 @@ export default function NewBooking(): JSX.Element {
 
 }
 
-function ChooseClients( { addFormIndex, pageData, reloadPageData }: {
-    addFormIndex: ( value?: number ) => void,
+function ChooseClients( { pageData, reloadPageData }: {
     pageData: NewBookingPageData,
     reloadPageData: () => void
 } ): JSX.Element {
@@ -271,10 +337,25 @@ function ChooseClients( { addFormIndex, pageData, reloadPageData }: {
 
     }
 
+    function loadClientIndexActive(): void {
+
+        let minimum: number = Infinity;
+        for( let keyName in clientDataMap ) {
+
+            const index = +keyName;
+            if( index < minimum ) minimum = index;
+
+        }
+        pageData.clientIndexActive = minimum;
+
+    }
+
     async function nextPage(): Promise< void > {
 
         await checkFormValidity();
-        addFormIndex();
+        pageData.formIndex++;
+        loadClientIndexActive();
+        reloadPageData();
 
     }
 
@@ -305,37 +386,25 @@ function ChooseClients( { addFormIndex, pageData, reloadPageData }: {
         }
         <button type="button" onClick={ addClient }>Add</button>
         <button type="button" onClick={ previousPage }>Back</button>
-        <button type="button" onClick={ nextPage }>Proceed (1/3)</button>
+        <button type="button" onClick={ nextPage }>Proceed (1/4)</button>
     </>;
 
 }
 
-function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
-    addFormIndex: ( value?: number ) => void,
+function ChooseServices( { pageData, reloadPageData }: {
     pageData: NewBookingPageData,
     reloadPageData: () => void
 } ): JSX.Element {
 
     const
         {
-            clientDataMap, clientInfoMap, date, packageDataMap,  packageServiceKeyMap, serviceDataMap
+            clientDataMap, clientIndexActive, clientInfoMap, maintenanceDataMap, packageDataMap,
+            packageServiceKeyMap, serviceDataMap
         } = pageData,
-        [ clientIndexActive, setClientIndexActive ] = useState< number >( getFirstClientIndex ),
         {
             packageIncluded, serviceIncludedMap, serviceTransactionDataMap, singleServiceIncluded,
             showPackages, showServices
-        } = clientInfoMap[ clientIndexActive ],
-        weekDay: number = date.getDay(),
-        serviceTransactionMin = (
-            ( weekDay === 0 ) ? undefined
-            : ( weekDay === 6 ) ? DateUtils.setTime( date, { hr: 10, min: 0 } )
-            : DateUtils.setTime( date, { hr: 9, min: 0 } )
-        ),
-        serviceTransactionMax = (
-            ( weekDay === 0 ) ? undefined
-            : ( weekDay === 6 ) ? DateUtils.setTime( date, { hr: 20, min: 0 } )
-            : DateUtils.setTime( date, { hr: 18, min: 0 } )
-        )
+        } = clientInfoMap[ clientIndexActive ]
     ;
 
     async function addPackage( packageId: documentId ): Promise< void > {
@@ -392,8 +461,13 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
     
         const
             { MIN_AGE_LIMIT } = SpaRadiseEnv,
-            { clientDataMap } = pageData
+            { clientDataMap, date } = pageData
         ;
+        if( !date )
+            throw new Error( "No booking date given! ");
+        const isSunday: boolean = ( date.getDay() === 0 );
+        if( isSunday )
+            throw new Error( "Booking date cannot be on a Sunday!" );
         for( let clientId in clientDataMap ) {
 
             const { name, birthDate } = clientDataMap[ clientId ];
@@ -438,22 +512,9 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
 
     }
 
-    function getFirstClientIndex(): number {
-
-        let minimum: number = Infinity;
-        for( let keyName in clientDataMap ) {
-
-            const index = +keyName;
-            if( index < minimum ) minimum = index;
-
-        }
-        return minimum;
-
-    }
-
     async function handleChangeClientActive( clientIndex: number ): Promise< void > {
 
-        setClientIndexActive( clientIndex );
+        pageData.clientIndexActive = clientIndex;
         reloadPageData();
 
     }
@@ -480,13 +541,15 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
     async function nextPage(): Promise< void > {
 
         await checkFormValidity();
-        addFormIndex();
+        pageData.formIndex++;
+        reloadPageData();
 
     }
 
     async function previousPage(): Promise< void > {
 
-        addFormIndex( -1 );
+        pageData.formIndex--;
+        reloadPageData();
 
     }
 
@@ -525,28 +588,41 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
         <div className={ showPackages ? `` : `hidden` }>{
             Object.keys( packageDataMap ).map( packageId => {
                 
+                const { price, status } = maintenanceDataMap[ packageId ];
+                if( status === "inactive" ) return undefined;
+
                 const
                     { name, description } = packageDataMap[ packageId ],
-                    serviceKeyMap = packageServiceKeyMap[ packageId ]
+                    serviceKeyMap = packageServiceKeyMap[ packageId ],
+                    serviceKeyList = Object.keys( serviceKeyMap )
+                        .filter( packageServiceId => {
+
+                            const
+                                serviceId: string = serviceKeyMap[ packageServiceId ],
+                                { status } = maintenanceDataMap[ serviceId ]
+                            ;
+                            return ( status === "active" );
+
+                        } ).map( packageServiceId => serviceKeyMap[ packageServiceId ] )
                 ;
+                if( serviceKeyList.length <= 1 ) return <></>;
+
                 return <div className="package-box" key={ packageId }>
                     <h3>{ name }</h3>
                     Description:
-                    <p>{ description }</p>
+                    <p>{ description }<br/>Price: { price }</p>
                     <ul>{
-                        Object.keys( serviceKeyMap ).map( packageServiceId => serviceKeyMap[ packageServiceId ] ).sort(
+                        serviceKeyList.sort(
                             ( serviceId1, serviceId2 ) => StringUtils.compare(
                                 serviceDataMap[ serviceId1 ].name,
                                 serviceDataMap[ serviceId2 ].name
                             )
-                        ).map(
-                            serviceId => {
+                        ).map( serviceId => {
 
-                                const { name } = serviceDataMap[ serviceId ];
-                                return <li className={ isConflictingService( serviceId ) ? `included` : `` } key={ serviceId }>{ name }</li>;
+                            const { name } = serviceDataMap[ serviceId ];
+                            return <li className={ isConflictingService( serviceId ) ? `included` : `` } key={ serviceId }>{ name }</li>;
 
-                            }
-                        )
+                        } )
                     }</ul>
                     {
                         ( packageId in packageIncluded ) ?  <button type="button" onClick={ () => deletePackage( packageId ) }>Remove</button>
@@ -561,7 +637,11 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
         <div className={ showServices ? `` : `hidden` }>{
             Object.keys( serviceDataMap ).map( serviceId => {
                 
-                const { name, description } = serviceDataMap[ serviceId ];
+                const
+                    { name, description } = serviceDataMap[ serviceId ],
+                    { status } = maintenanceDataMap[ serviceId ]
+                ;
+                if( status === "inactive" ) return undefined;
                 return <div className="package-box" key={ serviceId }>
                     <h3>{ name }</h3>
                     Description:
@@ -575,7 +655,85 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
 
             } )
         }</div>
+        <label>Notes</label>
+        <FormTextArea documentData={ clientDataMap[ clientIndexActive ] } keyName="notes" pageData={ pageData } required={ true }/>
+        <button type="button" onClick={ previousPage }>Back</button>
+        <button type="button" onClick={ nextPage }>Proceed (2/4)</button>
+    </>;
+
+}
+
+function ChooseTimeSlots( { pageData, reloadPageData }: {
+    pageData: NewBookingPageData,
+    reloadPageData: () => void
+} ): JSX.Element {
+
+    const
+        {
+            clientDataMap, clientIndexActive, clientInfoMap, date
+        } = pageData,
+        weekDay: number = date.getDay(),
+        serviceTransactionMin = (
+            ( weekDay === 0 ) ? undefined
+            : ( weekDay === 6 ) ? DateUtils.setTime( date, { hr: 10, min: 0 } )
+            : DateUtils.setTime( date, { hr: 9, min: 0 } )
+        ),
+        serviceTransactionMax = (
+            ( weekDay === 0 ) ? undefined
+            : ( weekDay === 6 ) ? DateUtils.setTime( date, { hr: 20, min: 0 } )
+            : DateUtils.setTime( date, { hr: 18, min: 0 } )
+        )
+    ;
+
+    async function checkFormValidity(): Promise< boolean > {
+    
+        return true;
+
+    }
+
+    async function handleChangeClientActive( clientIndex: number ): Promise< void > {
+
+        pageData.clientIndexActive = clientIndex;
+        reloadPageData();
+
+    }
+
+    async function loadComponentData(): Promise< void > {
+
+        pageData.serviceTransactionOfDayDataMap =
+            await ServiceTransactionUtils.getServiceTransactionDataMapByDay( pageData.date )
+        ;
+
+    }
+
+    async function nextPage(): Promise< void > {
+
+        pageData.formIndex++;
+        reloadPageData();
+
+    }
+
+    async function previousPage(): Promise< void > {
+
+        pageData.formIndex--;
+        reloadPageData();
+
+    }
+
+    useEffect( () => { loadComponentData(); }, [] );
+
+    return <>
         <h1>Choose Time Slots</h1>
+        <h1>Date: { DateUtils.toString( pageData.date, "Mmmm dd, yyyy" ) }</h1>
+        <ul>{
+            Object.keys( clientDataMap ).sort().map( clientIndex => 
+                <li
+                    className={ ( +clientIndex == clientIndexActive ) ? `active` : `` }
+                    key={ clientIndex }
+                    onClick={ () => handleChangeClientActive( +clientIndex ) }
+                >{ clientDataMap[ clientIndex ].name }</li>
+            )
+        }</ul>
         <p>
             Services marked<Bullet color="#ffc100" size="12px" style={ { margin: "0 5px" } }/>
             can be done together with<Bullet color="#6699ff" size="12px" style={ { margin: "0 5px" } }/>
@@ -612,6 +770,7 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
                                 documentData={ serviceTransactionData }
                                 duration={ 30 }
                                 keyNameFrom="bookingFromDateTime" keyNameTo="bookingToDateTime" max={ serviceTransactionMax } min={ serviceTransactionMin } pageData={ pageData }
+                                reloadPageData={ reloadPageData }
                             >
                                 <option value="" disabled>Select time slot</option>
                             </ServiceTransactionTimeSlot>
@@ -623,7 +782,7 @@ function ChooseServices( { addFormIndex, pageData, reloadPageData }: {
             }</tbody>
         </table>
         <button type="button" onClick={ previousPage }>Back</button>
-        <button type="button" onClick={ nextPage }>Proceed (1/3)</button>
+        <button type="button" onClick={ nextPage }>Proceed (3/4)</button>
     </>;
 
 }

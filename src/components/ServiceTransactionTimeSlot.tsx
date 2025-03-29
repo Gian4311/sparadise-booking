@@ -20,13 +20,19 @@ interface DateRangeOptionMap {
 
 }
 
+interface EmployeeAssignableMap {
+
+    [ serviceTransactionId: string ]: string[]
+
+}
+
 const TIME_RANGE_REGEX = /^([0-1][0-9]|2[0-3]):[0-5][0-9]-([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
 
 export default function ServiceTransactionTimeSlot(
     {
         children, className, documentData, duration, keyNameFrom,
         keyNameTo, max, min, name = keyNameFrom.toString(), pageData, readOnly, required,
-        onChange, validate
+        onChange, reloadPageData, validate
     }: {
         children?: JSX.Element | JSX.Element[],
         className?: string,
@@ -41,6 +47,7 @@ export default function ServiceTransactionTimeSlot(
         readOnly?: boolean,
         required?: boolean,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
+        reloadPageData(): void,
         validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >
     }
 ): JSX.Element {
@@ -53,22 +60,38 @@ export default function ServiceTransactionTimeSlot(
         OPTION_ADD = { min: duration }
     ;
 
-    async function adjustToMinMax(
-        unparsedValue: string, optionMap: DateRangeOptionMap
-    ): Promise< string > {
+    async function getEmployeeAssignableMap( dateRange: DateRange ): Promise< EmployeeAssignableMap > {
 
-        const dateRange = parseValue( unparsedValue );
-        if( !( dateRange instanceof DateRange ) ) return unparsedValue;
         const
-            optionKeys = Object.keys( optionMap ),
-            dateTimeFrom = documentData[ keyNameFrom ],
-            dateTimeTo = documentData[ keyNameTo ]
+            {
+                clientInfoMap, employeeDataMap, employeeLeaveDataMap,
+                jobDataMap, jobServiceDataMap, serviceTransactionOfDayDataMap
+            } = pageData,
+            serviceTransactionList: ServiceTransactionData[] = [],
+            employeeAssignableMap: EmployeeAssignableMap = {}
         ;
-        if( min && ( dateTimeFrom instanceof Date ) && dateTimeFrom < min )
-            return optionKeys[ 0 ];
-        if( max && ( dateTimeTo instanceof Date ) && dateTimeTo > max )
-            return optionKeys[ optionKeys.length - 1 ];
-        return unparsedValue;
+        for( let clientIndex in clientInfoMap ) {
+
+            const { serviceTransactionDataMap } = clientInfoMap[ clientIndex ];
+            for( let serviceTransactionIndex in serviceTransactionDataMap ) {
+
+                const serviceTransactionData = serviceTransactionDataMap[ serviceTransactionIndex ];
+                if( documentData === serviceTransactionData ) continue;
+                serviceTransactionList.push( serviceTransactionData );
+
+            }
+
+        }
+        for( let serviceTransactionId in serviceTransactionOfDayDataMap ) {
+
+            const
+                { bookingFromDateTime, bookingToDateTime } =
+                    serviceTransactionOfDayDataMap[ serviceTransactionId ]
+            ;
+            // if( dateRange.overlapsWith())
+
+        }
+        return employeeAssignableMap;
 
     }
 
@@ -77,8 +100,8 @@ export default function ServiceTransactionTimeSlot(
         if( readOnly ) return;
         const
             unparsedValueNew: string = event.target.value,
-            parsedValue: main | null = parseValue( unparsedValueNew ),
-            old = parseValue( unparsedValue )
+            parsedValue: main | null = await parseValue( unparsedValueNew ),
+            old = await parseValue( unparsedValue )
         ;
         if( validate ) if( !( await validate( parsedValue, unparsedValueNew, old ) ) ) return;
         setUnparsedValue( unparsedValueNew );
@@ -89,45 +112,74 @@ export default function ServiceTransactionTimeSlot(
             ( parsedValue instanceof DateRange ) ? parsedValue.getEnd() : parsedValue
         ;
         if( onChange ) await onChange( parsedValue, unparsedValueNew, old );
+        // reloadPageData();
 
     }
 
-    async function handleChangeDate(): Promise< void > {
+    function hasConflictingServiceTransaction( dateRange: DateRange ): boolean {
 
         const
-            { bookingFromDateTime, bookingToDateTime } = documentData,
-            { date } = pageData,
-            dayData = {
-                yr: date.getFullYear(),
-                mon: date.getMonth(),
-                day: date.getDate()
-            },
-            emptyDate = null as unknown as Date
+            {
+                clientInfoMap, employeeDataMap, employeeLeaveDataMap,
+                jobDataMap, jobServiceDataMap, serviceTransactionOfDayDataMap
+            } = pageData
         ;
-        if( bookingFromDateTime )
-            documentData.bookingFromDateTime = dayData ? DateUtils.setTime(
-                bookingFromDateTime, dayData
-            ) : emptyDate;
-        if( bookingToDateTime )
-            documentData.bookingToDateTime = dayData ? DateUtils.setTime(
-                bookingToDateTime, dayData
-            ) : emptyDate;
+        for( let clientIndex in clientInfoMap ) {
+
+            const { serviceTransactionDataMap } = clientInfoMap[ clientIndex ];
+            for( let serviceTransactionIndex in serviceTransactionDataMap ) {
+
+                const serviceTransactionData = serviceTransactionDataMap[ serviceTransactionIndex ];
+                if( documentData === serviceTransactionData ) continue;
+                const
+                    { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
+                    dateRangeCompare: DateRange | null = (
+                        ( bookingFromDateTime && bookingToDateTime ) ? new DateRange(
+                            bookingFromDateTime, bookingToDateTime
+                        ) : null
+                    )
+                ;
+                if( !dateRangeCompare ) continue;
+                if( dateRange.overlapsWith( dateRangeCompare ) ) return true;
+
+            }
+
+        }
+        for( let serviceTransactionId in serviceTransactionOfDayDataMap ) {
+
+            const
+                { bookingFromDateTime, bookingToDateTime } =
+                    serviceTransactionOfDayDataMap[ serviceTransactionId ]
+                ,
+                dateRangeCompare: DateRange | null = (
+                    ( bookingFromDateTime && bookingToDateTime ) ? new DateRange(
+                        bookingFromDateTime, bookingToDateTime
+                    ) : null
+                )
+            ;
+            if( !dateRangeCompare ) continue;
+            if( dateRange.overlapsWith( dateRangeCompare ) ) return true;
+
+        }
+        return false;
 
     }
 
-    async function loadOptionMap(): Promise< void > {
+    async function loadOptionMap(): Promise< DateRangeOptionMap > {
 
-        const { date: bookingDate } = pageData
-        if( bookingDate.getDay() === 0 ) {
+        const
+            { date: bookingDate } = pageData,
+            isSunday: boolean = ( bookingDate?.getDay() === 0 )
+        ;
+        let optionMap: DateRangeOptionMap = {};
+        if( !bookingDate || isSunday ) {
 
-            setOptionMap( {} )
-            return;
+            setOptionMap( optionMap );
+            return optionMap;
 
         };
-        const
-            optionMax: Date = max ? max : DateUtils.toCeilByDay( bookingDate ),
-            optionMap: DateRangeOptionMap = {}
-        ;
+
+        const optionMax: Date = max ? max : DateUtils.toCeilByDay( bookingDate );
         let optionDate: Date =
             min ? DateUtils.toCeilByMin( min, 30 )
             : DateUtils.toFloorByDay( bookingDate )
@@ -136,22 +188,26 @@ export default function ServiceTransactionTimeSlot(
 
             const
                 end: Date = DateUtils.addTime( optionDate, OPTION_ADD ),
-                dateRange: DateRange = new DateRange( optionDate, end ),
-                unparsedValue: string = unparseValue( dateRange )
+                dateRange: DateRange = new DateRange( optionDate, end )
             ;
+            if( hasConflictingServiceTransaction( dateRange ) ) continue;
+            const
+                employeeAssignableMap: EmployeeAssignableMap = await getEmployeeAssignableMap(
+                    dateRange
+                )
+            ;
+
+            const unparsedValue: string = await unparseValue( dateRange );
             optionMap[ unparsedValue ] = dateRange;
             optionDate = end;
 
         }
         setOptionMap( optionMap );
-        const adjusted = await adjustToMinMax( unparsedValue, optionMap );
-        if( unparsedValue !== adjusted ) await handleChange( {
-            target: { value: adjusted }
-        } as ChangeEvent< HTMLSelectElement > );
+        return optionMap;
 
     }
 
-    function parseValue( unparsedValue: string ): main | null {
+    async function parseValue( unparsedValue: string ): Promise< main | null > {
         
         const
             isTrue: boolean = ( unparsedValue === "true" ),
@@ -188,7 +244,7 @@ export default function ServiceTransactionTimeSlot(
 
     }
 
-    function unparseValue( parsedValue: main | null ): string {
+    async function unparseValue( parsedValue: main | null ): Promise< string > {
 
         return (
             ( parsedValue instanceof DateRange ) ? parsedValue.toString( "hh:mm-hh:mm" )
@@ -209,10 +265,30 @@ export default function ServiceTransactionTimeSlot(
             throw new Error( `Service transaction max must be same day with new booking day.` ); 
         if( min && !DateUtils.areSameByDay( date, min ) )
             throw new Error( `Service transaction min must be same day with new booking day.` );
-        await handleChangeDate();
-        await loadOptionMap();
+        const
+            { bookingFromDateTime, bookingToDateTime } = documentData,
+            dateTimeRange: DateRange | null = (
+                ( bookingFromDateTime && bookingToDateTime ) ? new DateRange(
+                    bookingFromDateTime, bookingToDateTime
+                ) : null
+            ),
+            optionMap = await loadOptionMap(),
+            event = { target: { value: "" } } as ChangeEvent< HTMLSelectElement >
+        ;
+        let unparsedValue: string = await unparseValue( dateTimeRange );
+        if( !( unparsedValue in optionMap ) )
+            await handleChange( event );
+        else if(
+            !DateUtils.areSameByDay( bookingFromDateTime, date )
+            || !DateUtils.areSameByDay( bookingToDateTime, date )
+        ) {
 
-    } )() }, [ pageData, max, min ] );
+            event.target.value = unparsedValue;
+            await handleChange( event );
+
+        } else setUnparsedValue( unparsedValue );
+
+    } )() }, [ pageData ] );
 
     return <select
         className={ className }
