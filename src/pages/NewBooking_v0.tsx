@@ -258,7 +258,7 @@ export default function NewBooking(): JSX.Element {
     useEffect( () => { loadMaintenanceData(); }, [ pageData.date ] );
 
     return <>
-    <EmployeeSidebar/>
+    {/* <EmployeeSidebar/> */}
         <h1>Account ID: { accountId }</h1>
         <form onSubmit={ submit }>
             {
