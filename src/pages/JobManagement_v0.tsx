@@ -20,6 +20,7 @@ import ServiceUtils from "../firebase/ServiceUtils";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import { useParams } from "react-router-dom";
 import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
+import EmployeeSidebar from "../components/EmployeeSidebar";
 
 interface JobManagementPageData extends SpaRadisePageData {
     
@@ -296,6 +297,7 @@ export default function JobManagement(): JSX.Element {
     useEffect( () => { loadPageData(); }, [] );
 
     return <>
+      <EmployeeSidebar/>
         <form onSubmit={ submit }>
             <h1>ID: { documentId }</h1>
             <label>Name</label>
