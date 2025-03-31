@@ -105,7 +105,7 @@ export default function VoucherMenu(): JSX.Element {
 
     return <>
         <div>
-        <EmployeeSidebar/>
+            <EmployeeSidebar />
             <div className="sidebar">
                 <div className="sidebar-logo">
                     <img src={SpaRadiseLogo} alt="SpaRadise Logo" />
@@ -138,8 +138,7 @@ export default function VoucherMenu(): JSX.Element {
                             <option value="service">Services only</option>
                             <option value="package">Packages only</option>
                         </select>
-                        <Link to="/management/services/new"><button className="action-btn" type="button">+ Add new service</button></Link>
-                        <Link to="/management/packages/new"><button className="action-btn" type="button">+ Add new package</button></Link>
+                        <Link to="/management/vouchers/new"><button className="action-btn" type="button">+ Add new Voucher</button></Link>
                     </div>
                     <table className="services-table">
                         <thead><tr>
@@ -149,33 +148,24 @@ export default function VoucherMenu(): JSX.Element {
                             <th>Type</th>
                             <th>Amount</th>
                         </tr></thead>
-                        <tbody>{
+                        <tbody>                        {
+
+                            voucherDataMap ? Object.keys(voucherDataMap).map((voucherId, index) => {
+
+                                const voucherData = pageData.voucherDataMap[voucherId];
+                                return <Link key={index} to={"/management/vouchers/" + voucherId}>
+                                    <h1>{voucherData.name}</h1>
+                                </Link>
+
+                            }) : undefined
+
                         }
+
                         </tbody>
                     </table>
                 </div>
 
-                <Link to="/management/vouchers/new">
-
-
-                    <h1>New</h1>
-                </Link>
-
             </div>
-
-
-            {
-
-                voucherDataMap ? Object.keys(voucherDataMap).map((voucherId, index) => {
-
-                    const voucherData = pageData.voucherDataMap[voucherId];
-                    return <Link key={index} to={"/management/vouchers/" + voucherId}>
-                        <h1>{voucherData.name}</h1>
-                    </Link>
-
-                }) : undefined
-
-            }
         </div>
     </>;
 
