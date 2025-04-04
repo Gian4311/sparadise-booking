@@ -23,6 +23,25 @@ import StringUtils from "../utils/StringUtils";
 
 export default class ServiceUtils {
 
+    public static areCompatibleServiceData(
+        serviceData1: ServiceData, serviceData2: ServiceData
+    ): boolean {
+
+        const
+            { serviceType: serviceType1, roomType: roomType1 } = serviceData1,
+            { serviceType: serviceType2, roomType: roomType2 } = serviceData2,
+            compatibleServiceTypes: boolean = (
+                ( serviceType1 === "handsAndFeet" && serviceType2 === "browsAndLashes" )
+                || ( serviceType1 === "browsAndLashes" && serviceType2 === "handsAndFeet" )
+                || ( serviceType1 === "handsAndFeet" && serviceType2 === "facial" )
+                || ( serviceType1 === "facial" && serviceType2 === "handsAndFeet" )
+            ),
+            compatibleRoomTypes: boolean = ( roomType1 === roomType2 )
+        ;
+        return ( compatibleServiceTypes && compatibleRoomTypes );
+
+    }
+
     public static async checkServiceData( serviceData: ServiceData ): Promise< boolean > {
     
         const

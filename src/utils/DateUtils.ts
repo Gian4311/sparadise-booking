@@ -72,6 +72,12 @@ export default class DateUtils {
 
     }
 
+    public static getMinDiff( date1: Date, date2: Date ): number {
+
+        return ( date1.getTime() - date2.getTime() ) / 60000;
+
+    }
+
     public static getYearAge( date: Date ): number {
 
         const
@@ -122,6 +128,17 @@ export default class DateUtils {
             min: number = newDate.getMinutes()
         ;
         newDate.setMinutes( ceilByMin * Math.ceil( min / ceilByMin ) );
+        return newDate;
+
+    }
+
+    public static toFloorByMin( date: Date, floorByMin: number ): Date {
+
+        const
+            newDate: Date = new Date( date ),
+            min: number = newDate.getMinutes()
+        ;
+        newDate.setMinutes( floorByMin * Math.floor( min / floorByMin ) );
         return newDate;
 
     }

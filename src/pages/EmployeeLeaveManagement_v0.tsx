@@ -1,4 +1,4 @@
-import { DateRange } from "../utils/DateRange";
+import DateRange from "../utils/DateRange";
 import DateUtils from "../utils/DateUtils";
 import { DocumentReference } from "firebase/firestore/lite";
 import {

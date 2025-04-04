@@ -1,5 +1,6 @@
 import {
     addDoc,
+    and,
     CollectionReference,
     deleteDoc,
     DocumentData,
@@ -13,7 +14,8 @@ import {
     WithFieldValue,
     where
 } from "firebase/firestore/lite";
-import { DateRange } from "../utils/DateRange";
+import DateRange from "../utils/DateRange"
+import DateUtils from "../utils/DateUtils";
 import {
     EmployeeLeaveData,
     EmployeeLeaveDataMap
@@ -88,6 +90,37 @@ export default class EmployeeLeaveUtils {
 
         }
 
+
+    }
+
+    public static async getApprovedEmployeeLeaveDataMapByDay(
+        date: Date
+    ): Promise< EmployeeLeaveDataMap > {
+
+        const
+            employeeLeaveCollection: CollectionReference =
+                SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.EMPLOYEE_LEAVE_COLLECTION )
+            ,
+            dateTimeStart: Date = DateUtils.toFloorByDay( date ),
+            dateTimeEnd: Date = DateUtils.toCeilByDay( date ),
+            employeeLeaveQuery = query(
+                employeeLeaveCollection,
+                and(
+                    where( "toDateTime", ">", dateTimeStart ),
+                    where( "fromDateTime", "<", dateTimeEnd ),
+                    where( "status", "==", "approved" )
+                )
+            ),
+            snapshotList: QueryDocumentSnapshot[] =
+                ( await getDocs( employeeLeaveQuery ) ).docs
+            ,
+            employeeLeaveDataMap: EmployeeLeaveDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            employeeLeaveDataMap[ snapshot.id ] =
+                await EmployeeLeaveUtils.getEmployeeLeaveData( snapshot )
+            ;
+        return employeeLeaveDataMap;
 
     }
 

@@ -3,7 +3,7 @@ import {
     useEffect,
     useState
 } from "react";
-import { DateRange } from "../utils/DateRange";
+import DateRange from "../utils/DateRange";
 import DateUtils from "../utils/DateUtils";
 import { NewBookingPageData } from "../pages/NewBooking_v0";
 import NumberUtils from "../utils/NumberUtils";
@@ -191,11 +191,11 @@ export default function ServiceTransactionTimeSlot(
                 dateRange: DateRange = new DateRange( optionDate, end )
             ;
             if( hasConflictingServiceTransaction( dateRange ) ) continue;
-            const
-                employeeAssignableMap: EmployeeAssignableMap = await getEmployeeAssignableMap(
-                    dateRange
-                )
-            ;
+            // const
+            //     employeeAssignableMap: EmployeeAssignableMap = await getEmployeeAssignableMap(
+            //         dateRange
+            //     )
+            // ;
 
             const unparsedValue: string = await unparseValue( dateRange );
             optionMap[ unparsedValue ] = dateRange;

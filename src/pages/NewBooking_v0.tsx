@@ -17,6 +17,7 @@ import {
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
 import AccountUtils from "../firebase/AccountUtils";
+import BookingCalendar from "../utils/BookingCalendar";
 import BookingUtils from "../firebase/BookingUtils";
 import Bullet from "../components/Bullet";
 import DateUtils from "../utils/DateUtils";
@@ -55,6 +56,7 @@ import "../styles/NewBooking_v0.css"
 export interface NewBookingPageData extends SpaRadisePageData {
     
     accountData: AccountData,
+    bookingCalendar: BookingCalendar,
     bookingData: BookingData,
     clientDataMap: ClientDataMap,
     clientIndex: number,
@@ -70,7 +72,7 @@ export interface NewBookingPageData extends SpaRadisePageData {
     } },
     date: Date,
     employeeDataMap: EmployeeDataMap,
-    employeeLeaveDataMap: EmployeeLeaveDataMap,
+    employeeLeaveOfDayDataMap: EmployeeLeaveDataMap,
     formIndex: number,
     jobDataMap: JobDataMap,
     jobServiceDataMap: JobServiceDataMap,
@@ -89,6 +91,7 @@ export default function NewBooking(): JSX.Element {
     const
         [ pageData, setPageData ] = useState< NewBookingPageData >( {
             accountData: {} as AccountData,
+            bookingCalendar: null as unknown as BookingCalendar,
             bookingData: {
                 account: null as unknown as DocumentReference,
                 reservedDateTime: null as unknown as Date,
@@ -102,7 +105,7 @@ export default function NewBooking(): JSX.Element {
             clientInfoMap: {},
             date: DateUtils.toFloorByDay( DateUtils.addTime( new Date(), { day: 14 } ) ),
             employeeDataMap: {},
-            employeeLeaveDataMap: {},
+            employeeLeaveOfDayDataMap: {},
             formIndex: 0,
             jobDataMap: {},
             jobServiceDataMap: {},
@@ -149,10 +152,41 @@ export default function NewBooking(): JSX.Element {
 
     }
 
+    async function handleChangeDate(): Promise< void > {
+
+        if( !pageData.loaded ) return;
+        await loadMaintenanceData();
+        const { date } = pageData;
+        pageData.employeeLeaveOfDayDataMap =
+            await EmployeeLeaveUtils.getApprovedEmployeeLeaveDataMapByDay( date )
+        ;
+        pageData.serviceTransactionOfDayDataMap =
+            await ServiceTransactionUtils.getServiceTransactionDataMapByDay( date )
+        ;
+        await loadBookingCalendar();
+
+    }
+
+    async function loadBookingCalendar(): Promise< void > {
+
+        const
+            { employeeLeaveOfDayDataMap, serviceTransactionOfDayDataMap } = pageData,
+            serviceTransactionDataMap: ServiceTransactionDataMap = {
+                ...serviceTransactionOfDayDataMap
+            },
+            bookingCalendarPageData = {
+                ...pageData,
+                employeeLeaveDataMap: employeeLeaveOfDayDataMap,
+                serviceTransactionDataMap
+            }
+        ;
+        pageData.bookingCalendar = new BookingCalendar( bookingCalendarPageData );
+
+    }
+
     async function loadEmployeeData(): Promise< void > {
 
         pageData.employeeDataMap = await EmployeeUtils.getEmployeeDataMapAll();
-        pageData.employeeLeaveDataMap = await EmployeeLeaveUtils.getEmployeeLeaveDataMapAll();
 
     }
 
@@ -218,6 +252,7 @@ export default function NewBooking(): JSX.Element {
         await loadEmployeeData();
         await loadJobData();
         pageData.loaded = true;
+        await handleChangeDate();
         reloadPageData();
 
     }
@@ -255,7 +290,7 @@ export default function NewBooking(): JSX.Element {
 
     useEffect( () => { loadPageData(); }, [] );
 
-    useEffect( () => { loadMaintenanceData(); }, [ pageData.date ] );
+    useEffect( () => { handleChangeDate(); }, [ pageData.date ] );
 
     return <>
     {/* <EmployeeSidebar/> */}
@@ -700,14 +735,6 @@ function ChooseTimeSlots( { pageData, reloadPageData }: {
 
     }
 
-    async function loadComponentData(): Promise< void > {
-
-        pageData.serviceTransactionOfDayDataMap =
-            await ServiceTransactionUtils.getServiceTransactionDataMapByDay( pageData.date )
-        ;
-
-    }
-
     async function nextPage(): Promise< void > {
 
         pageData.formIndex++;
@@ -721,8 +748,6 @@ function ChooseTimeSlots( { pageData, reloadPageData }: {
         reloadPageData();
 
     }
-
-    useEffect( () => { loadComponentData(); }, [] );
 
     return <>
         <h1>Choose Time Slots</h1>
@@ -768,14 +793,14 @@ function ChooseTimeSlots( { pageData, reloadPageData }: {
                         }</td>
                         <td>{ name }</td>
                         <td>
-                            <ServiceTransactionTimeSlot
+                            {/* <ServiceTransactionTimeSlot
                                 documentData={ serviceTransactionData }
                                 duration={ 30 }
                                 keyNameFrom="bookingFromDateTime" keyNameTo="bookingToDateTime" max={ serviceTransactionMax } min={ serviceTransactionMin } pageData={ pageData }
                                 reloadPageData={ reloadPageData }
                             >
                                 <option value="" disabled>Select time slot</option>
-                            </ServiceTransactionTimeSlot>
+                            </ServiceTransactionTimeSlot> */}
                         </td>
                         <td></td>
                     </tr>;
