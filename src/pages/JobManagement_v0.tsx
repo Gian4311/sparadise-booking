@@ -297,7 +297,7 @@ export default function JobManagement(): JSX.Element {
     useEffect( () => { loadPageData(); }, [] );
 
     return <>
-      <EmployeeSidebar/>
+      {/* <EmployeeSidebar/> */}
         <form onSubmit={ submit }>
             <h1>ID: { documentId }</h1>
             <label>Name</label>
