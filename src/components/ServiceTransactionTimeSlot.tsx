@@ -90,6 +90,62 @@ export default function ServiceTransactionTimeSlot(
 
     }
 
+    async function loadComponentData(): Promise< void > {
+
+        const
+            { date, bookingCalendar } = pageData,
+            optionMap = await loadOptionMap()
+        ;
+        let { bookingFromDateTime, bookingToDateTime } = documentData;
+        if( !bookingFromDateTime && !bookingToDateTime ) return;
+        let
+            dateTimeRange: DateRange | null = (
+                ( bookingFromDateTime && bookingToDateTime ) ? new DateRange(
+                    bookingFromDateTime, bookingToDateTime
+                ) : null
+            ),
+            unparsedValue: string = await unparseValue( dateTimeRange )
+        ;
+        if(
+            DateUtils.areSameByDay( date, bookingFromDateTime )
+            || DateUtils.areSameByDay( date, bookingToDateTime )
+        ) {
+
+            setUnparsedValue( unparsedValue );
+            return;
+
+        }
+        const dayData = {
+            year: date.getFullYear(),
+            mon: date.getMonth(),
+            day: date.getDate()
+        };
+        bookingFromDateTime = DateUtils.setTime( bookingFromDateTime, dayData );
+        bookingToDateTime = DateUtils.setTime( bookingToDateTime, dayData );
+        dateTimeRange = (
+            ( bookingFromDateTime && bookingToDateTime ) ? new DateRange(
+                bookingFromDateTime, bookingToDateTime
+            ) : null
+        );
+        unparsedValue = await unparseValue( dateTimeRange );
+        bookingCalendar.deleteServiceTransaction( documentData, serviceTransactionId, clientId );
+        if( !( unparsedValue in optionMap ) ) {
+
+            documentData.bookingFromDateTime = null as unknown as Date;
+            documentData.bookingToDateTime = null as unknown as Date;
+            setUnparsedValue( "" );
+
+        } else {
+
+            documentData.bookingFromDateTime = bookingFromDateTime;
+            documentData.bookingToDateTime = bookingToDateTime;
+            bookingCalendar.addServiceTransaction( documentData, serviceTransactionId, clientId );
+            setUnparsedValue( unparsedValue );
+
+        }
+
+    }
+
     async function loadOptionMap(): Promise< DateRangeOptionMap > {
 
         const
@@ -199,36 +255,7 @@ export default function ServiceTransactionTimeSlot(
             throw new Error( `Service transaction max must be same day with new booking day.` ); 
         if( min && !DateUtils.areSameByDay( date, min ) )
             throw new Error( `Service transaction min must be same day with new booking day.` );
-
-        const optionMap = await loadOptionMap();
-        let { bookingFromDateTime, bookingToDateTime } = documentData;
-        if( !bookingFromDateTime && !bookingToDateTime ) return;
-        const dayData = {
-            year: date.getFullYear(),
-            mon: date.getMonth(),
-            day: date.getDate()
-        };
-        bookingFromDateTime = DateUtils.setTime( bookingFromDateTime, dayData );
-        bookingToDateTime = DateUtils.setTime( bookingToDateTime, dayData );
-        const dateTimeRange: DateRange | null = (
-            ( bookingFromDateTime && bookingToDateTime ) ? new DateRange(
-                bookingFromDateTime, bookingToDateTime
-            ) : null
-        );
-        let unparsedValue: string = await unparseValue( dateTimeRange );
-        if( !( unparsedValue in optionMap ) ) {
-
-            documentData.bookingFromDateTime = null as unknown as Date;
-            documentData.bookingToDateTime = null as unknown as Date;
-            setUnparsedValue( "" );
-
-        } else {
-
-            documentData.bookingFromDateTime = bookingFromDateTime;
-            documentData.bookingToDateTime = bookingToDateTime;
-            setUnparsedValue( unparsedValue );
-
-        }
+        await loadComponentData();
 
     } )() }, [ pageData ] );
 
