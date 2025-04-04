@@ -17,10 +17,11 @@ import {
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
 import AccountUtils from "../firebase/AccountUtils";
+import BookingCalendar from "../utils/BookingCalendar";
 import BookingUtils from "../firebase/BookingUtils";
 import Bullet from "../components/Bullet";
 import DateUtils from "../utils/DateUtils";
-import { DocumentReference } from "firebase/firestore/lite";
+import { documentId, DocumentReference } from "firebase/firestore/lite";
 import EmployeeLeaveUtils from "../firebase/EmployeeLeaveUtils";
 import EmployeeUtils from "../firebase/EmployeeUtils";
 import FormDateInput from "../components/FormDateInput";
@@ -55,6 +56,7 @@ import "../styles/NewBooking_v0.css"
 export interface NewBookingPageData extends SpaRadisePageData {
     
     accountData: AccountData,
+    bookingCalendar: BookingCalendar,
     bookingData: BookingData,
     clientDataMap: ClientDataMap,
     clientIndex: number,
@@ -62,7 +64,7 @@ export interface NewBookingPageData extends SpaRadisePageData {
     clientInfoMap: { [ clientIndex: number ]: {
         packageIncluded: { [ packageId: documentId ]: boolean },
         serviceIncludedMap: { [ serviceId: documentId ]: number },
-        serviceTransactionDataMap: { [ serviceTransactionIndex: number ]: ServiceTransactionData },
+        serviceTransactionDataMap: { [ serviceTransactionId: string ]: ServiceTransactionData },
         serviceTransactionIndex: number,
         showPackages: boolean,
         showServices: boolean,
@@ -70,7 +72,7 @@ export interface NewBookingPageData extends SpaRadisePageData {
     } },
     date: Date,
     employeeDataMap: EmployeeDataMap,
-    employeeLeaveDataMap: EmployeeLeaveDataMap,
+    employeeLeaveOfDayDataMap: EmployeeLeaveDataMap,
     formIndex: number,
     jobDataMap: JobDataMap,
     jobServiceDataMap: JobServiceDataMap,
@@ -89,6 +91,7 @@ export default function NewBooking(): JSX.Element {
     const
         [ pageData, setPageData ] = useState< NewBookingPageData >( {
             accountData: {} as AccountData,
+            bookingCalendar: null as unknown as BookingCalendar,
             bookingData: {
                 account: null as unknown as DocumentReference,
                 reservedDateTime: null as unknown as Date,
@@ -102,7 +105,7 @@ export default function NewBooking(): JSX.Element {
             clientInfoMap: {},
             date: DateUtils.toFloorByDay( DateUtils.addTime( new Date(), { day: 14 } ) ),
             employeeDataMap: {},
-            employeeLeaveDataMap: {},
+            employeeLeaveOfDayDataMap: {},
             formIndex: 0,
             jobDataMap: {},
             jobServiceDataMap: {},
@@ -149,10 +152,41 @@ export default function NewBooking(): JSX.Element {
 
     }
 
+    async function handleChangeDate(): Promise< void > {
+
+        if( !pageData.loaded ) return;
+        await loadMaintenanceData();
+        const { date } = pageData;
+        pageData.employeeLeaveOfDayDataMap =
+            await EmployeeLeaveUtils.getApprovedEmployeeLeaveDataMapByDay( date )
+        ;
+        pageData.serviceTransactionOfDayDataMap =
+            await ServiceTransactionUtils.getServiceTransactionDataMapByDay( date )
+        ;
+        await loadBookingCalendar();
+
+    }
+
+    async function loadBookingCalendar(): Promise< void > {
+
+        const
+            { employeeLeaveOfDayDataMap, serviceTransactionOfDayDataMap } = pageData,
+            serviceTransactionDataMap: ServiceTransactionDataMap = {
+                ...serviceTransactionOfDayDataMap
+            },
+            bookingCalendarPageData = {
+                ...pageData,
+                employeeLeaveDataMap: employeeLeaveOfDayDataMap,
+                serviceTransactionDataMap
+            }
+        ;
+        pageData.bookingCalendar = new BookingCalendar( bookingCalendarPageData );
+
+    }
+
     async function loadEmployeeData(): Promise< void > {
 
         pageData.employeeDataMap = await EmployeeUtils.getEmployeeDataMapAll();
-        pageData.employeeLeaveDataMap = await EmployeeLeaveUtils.getEmployeeLeaveDataMapAll();
 
     }
 
@@ -218,6 +252,7 @@ export default function NewBooking(): JSX.Element {
         await loadEmployeeData();
         await loadJobData();
         pageData.loaded = true;
+        await handleChangeDate();
         reloadPageData();
 
     }
@@ -255,7 +290,7 @@ export default function NewBooking(): JSX.Element {
 
     useEffect( () => { loadPageData(); }, [] );
 
-    useEffect( () => { loadMaintenanceData(); }, [ pageData.date ] );
+    useEffect( () => { handleChangeDate(); }, [ pageData.date ] );
 
     return <>
     {/* <EmployeeSidebar/> */}
@@ -428,8 +463,13 @@ function ChooseServices( { pageData, reloadPageData }: {
         serviceId: documentId, packageId?: documentId
     ): Promise< void > {
 
-        const { serviceTransactionIndex } = clientInfoMap[ clientIndexActive ];
-        serviceTransactionDataMap[ serviceTransactionIndex ] = {
+        const
+            { serviceTransactionIndex } = clientInfoMap[ clientIndexActive ],
+            serviceTransactionId: string = getServiceTransactionId(
+                clientIndexActive, serviceTransactionIndex
+            )
+        ;
+        serviceTransactionDataMap[ serviceTransactionId ] = {
             client: null as unknown as DocumentReference,
             service: SpaRadiseFirestore.getDocumentReference(
                 serviceId, SpaRadiseEnv.SERVICE_COLLECTION
@@ -674,17 +714,7 @@ function ChooseTimeSlots( { pageData, reloadPageData }: {
         {
             clientDataMap, clientIndexActive, clientInfoMap, date
         } = pageData,
-        weekDay: number = date.getDay(),
-        serviceTransactionMin = (
-            ( weekDay === 0 ) ? undefined
-            : ( weekDay === 6 ) ? DateUtils.setTime( date, { hr: 10, min: 0 } )
-            : DateUtils.setTime( date, { hr: 9, min: 0 } )
-        ),
-        serviceTransactionMax = (
-            ( weekDay === 0 ) ? undefined
-            : ( weekDay === 6 ) ? DateUtils.setTime( date, { hr: 20, min: 0 } )
-            : DateUtils.setTime( date, { hr: 18, min: 0 } )
-        )
+        weekDay: number = date.getDay()
     ;
 
     async function checkFormValidity(): Promise< boolean > {
@@ -697,14 +727,6 @@ function ChooseTimeSlots( { pageData, reloadPageData }: {
 
         pageData.clientIndexActive = clientIndex;
         reloadPageData();
-
-    }
-
-    async function loadComponentData(): Promise< void > {
-
-        pageData.serviceTransactionOfDayDataMap =
-            await ServiceTransactionUtils.getServiceTransactionDataMapByDay( pageData.date )
-        ;
 
     }
 
@@ -721,8 +743,6 @@ function ChooseTimeSlots( { pageData, reloadPageData }: {
         reloadPageData();
 
     }
-
-    useEffect( () => { loadComponentData(); }, [] );
 
     return <>
         <h1>Choose Time Slots</h1>
@@ -754,10 +774,10 @@ function ChooseTimeSlots( { pageData, reloadPageData }: {
                     const
                         serviceTransactionData = pageData
                             .clientInfoMap[ clientIndexActive ]
-                            .serviceTransactionDataMap[ +serviceTransactionId ]
+                            .serviceTransactionDataMap[ serviceTransactionId ]
                         ,
                         { service: { id: serviceId } } = serviceTransactionData,
-                        { name, serviceType } = pageData.serviceDataMap[ serviceId ]
+                        { name, serviceType, durationMin } = pageData.serviceDataMap[ serviceId ]
                     ;
                     return <tr key={ serviceTransactionId }>
                         <td>{
@@ -768,12 +788,7 @@ function ChooseTimeSlots( { pageData, reloadPageData }: {
                         }</td>
                         <td>{ name }</td>
                         <td>
-                            <ServiceTransactionTimeSlot
-                                documentData={ serviceTransactionData }
-                                duration={ 30 }
-                                keyNameFrom="bookingFromDateTime" keyNameTo="bookingToDateTime" max={ serviceTransactionMax } min={ serviceTransactionMin } pageData={ pageData }
-                                reloadPageData={ reloadPageData }
-                            >
+                            <ServiceTransactionTimeSlot clientId={ clientIndexActive.toString() } documentData={ serviceTransactionData } duration={ durationMin } keyNameFrom="bookingFromDateTime" keyNameTo="bookingToDateTime" pageData={ pageData } serviceTransactionId={ serviceTransactionId } reloadPageData={ reloadPageData }>
                                 <option value="" disabled>Select time slot</option>
                             </ServiceTransactionTimeSlot>
                         </td>
@@ -786,5 +801,13 @@ function ChooseTimeSlots( { pageData, reloadPageData }: {
         <button type="button" onClick={ previousPage }>Back</button>
         <button type="button" onClick={ nextPage }>Proceed (3/4)</button>
     </>;
+
+}
+
+export function getServiceTransactionId(
+    clientIndex: number, serviceTransactionIndex: number
+): string {
+
+    return `${ clientIndex }_${ serviceTransactionIndex }`;
 
 }

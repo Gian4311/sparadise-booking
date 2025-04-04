@@ -42,7 +42,7 @@ export default function JobMenu(): JSX.Element {
     useEffect( () => { loadPageData(); }, [] );
 
     return <>
-    <EmployeeSidebar/>
+    {/* <EmployeeSidebar/> */}
         <Link to="/management/jobs/new">
             <h1>New</h1>
         </Link>

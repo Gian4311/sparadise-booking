@@ -171,7 +171,7 @@ export interface ServiceData extends SpaRadiseDocumentData {
     serviceType: serviceType,
     roomType: roomType,
     ageLimit: number,
-    durationMin: number
+    durationMin: 30 | 60
 
 }
 

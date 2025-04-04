@@ -1,4 +1,4 @@
-import { NumberRange } from "../utils/NumberRange";
+import NumberRange from "../utils/NumberRange";
 
 export default class SpaRadiseEnv {
 
