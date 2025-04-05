@@ -10,6 +10,8 @@ import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
 import PackageUtils from "../firebase/PackageUtils";
 import {
+    ServiceData,
+    PackageData,
     PackageDataMap,
     ServiceDataMap,
     SpaRadisePageData,
@@ -25,7 +27,7 @@ import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import { useParams } from "react-router-dom";
 import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import EmployeeSidebar from "../components/EmployeeSidebar";
-
+import BackButton from "../images/back button.png";
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 
 interface VoucherManagementPageData extends SpaRadisePageData {
@@ -42,7 +44,9 @@ interface VoucherManagementPageData extends SpaRadisePageData {
     voucherServiceDataMap: VoucherServiceDataMap,
     voucherServiceIncludedMap: { [serviceId: documentId]: documentId | number },
     voucherServiceIndex: number,
-    voucherServiceToDeleteMap: { [voucherServiceId: documentId]: boolean }
+    voucherServiceToDeleteMap: { [voucherServiceId: documentId]: boolean },
+    serviceData: ServiceData,
+    packageData: PackageData
 
 }
 
@@ -68,7 +72,20 @@ export default function VoucherManagement(): JSX.Element {
             voucherServiceDataMap: {},
             voucherServiceIncludedMap: {},
             voucherServiceIndex: 0,
-            voucherServiceToDeleteMap: {}
+            voucherServiceToDeleteMap: {},
+            serviceData: {
+                name: null as unknown as string,
+                description: null as unknown as string,
+                serviceType: null as unknown as serviceType,
+                roomType: null as unknown as roomType,
+                ageLimit: null as unknown as number,
+                durationMin: null as unknown as number
+
+            },
+            packageData: {
+                name: null as unknown as string,
+                description: null as unknown as string
+            }
         }),
         documentId: string | undefined = useParams().id,
         isNewMode: boolean = (documentId === "new"),
@@ -465,7 +482,7 @@ export default function VoucherManagement(): JSX.Element {
                 <div className="service-form-section">
                     <div className="service-header">
                         <a href="#" className="service-back-arrow" aria-label="Back">
-                            &#8592;
+                            <img src={BackButton} alt="Back" className="back-icon" />
                         </a>
                         <h1>{pageData.voucherData.name}</h1>
                     </div>
@@ -481,42 +498,77 @@ export default function VoucherManagement(): JSX.Element {
                             <FormTinyTextInput documentData={pageData.voucherData} documentDefaultData={pageData.voucherDefaultData} documentId={documentId} keyName="code" name="voucher-code" pageData={pageData} required={true} />
                         </div>
                     </div>
-                    <div className="service-form-row-group">
-                            <label htmlFor="amount">Deductions</label>
+                    <div className="service-form-row">
+                        <div className="voucher-deduction">
+                            <label htmlFor="voucher-deduction">Deductions:</label>
                             <FormMoneyOrPercentageInput documentData={pageData.voucherData} documentDefaultData={pageData.voucherDefaultData} documentId={documentId} keyNameMoney="amount" keyNamePercentage="percentage" name="amount" pageData={pageData} required={true} />
+                        </div>
                     </div>
 
-                    <button type="button" onClick={() => console.log(pageData)}>Log page data</button>
-                    <button type="button" onClick={deleteVoucher}>Delete</button>
-                    <button type="submit">Submit</button>
-
-                    <h1>Services</h1>
-                    {
-                        Object.keys(pageData.serviceDataMap).map((serviceId, key) => {
-
-                            const
-                                service = pageData.serviceDataMap[serviceId],
-                                voucherServiceId: string | number = pageData.voucherServiceIncludedMap[serviceId]
-                                ;
-                            return <div key={key}>
-                                {service.name}
+                    <div className="section-label"> Select Services:
+                        <div id="services-list">
+                            <div className="service-scroll-container">
                                 {
-                                    (
-                                        !(serviceId in pageData.voucherServiceIncludedMap)
-                                        || (voucherServiceId in pageData.voucherServiceToDeleteMap)
-                                    ) ? (
-                                        <button type="button" onClick={() => addVoucherService(serviceId)}>Add</button>
-                                    ) : (
-                                        <button type="button" onClick={() => deleteVoucherService(serviceId)}>Remove</button>
-                                    )
+                                    Object.keys(pageData.serviceDataMap).map((serviceId, key) => {
+                                        const service = pageData.serviceDataMap[serviceId];
+                                        const packageServiceId: string | number = pageData.voucherServiceIncludedMap[serviceId];
+
+                                        return (
+                                            <div className="service-scroll-item">
+                                                <div className="service-name" key={key}>
+                                                    {service.name}</div>
+                                                <div className="service-description" key={key}>
+                                                    {service.description}</div>
+
+                                                {
+                                                    !(serviceId in pageData.voucherServiceIncludedMap) ||
+                                                        packageServiceId in pageData.voucherServiceIncludedMap ? (
+                                                        <button className="add-btn" type="button" onClick={() => addVoucherService(serviceId)}>Add</button>
+                                                    ) : (
+                                                        <button className="remove-btn" type="button" onClick={() => deleteVoucherService(serviceId)}>Remove</button>
+                                                    )
+                                                }
+                                            </div>
+                                        );
+                                    })
                                 }
 
-                            </div>;
 
-                        })
-                    }
+                            </div>
+                        </div>
+                    </div>
+                    <div className="section-label"> Select Services:
+                        <div id="services-list">
+                            <div className="service-scroll-container">
+                                {
+                                    Object.keys(pageData.packageDataMap).map((packageId, key) => {
+                                        const packages = pageData.packageDataMap[packageId];
+                                        const packageServiceId: string | number = pageData.voucherPackageIncludedMap[packageId];
 
-                    <h1>Packages</h1>
+                                        return (
+                                            <div className="service-scroll-item">
+                                                <div className="package-name" key={key}>
+                                                    {packages.name}</div>
+                                                <div className="service-description" key={key}>
+                                                    {packages.description}</div>
+
+                                                {
+                                                    !(packageId in pageData.voucherPackageIncludedMap) ||
+                                                        packageServiceId in pageData.voucherPackageIncludedMap ? (
+                                                        <button className="add-btn" type="button" onClick={() => addVoucherPackage(packageId)}>Add</button>
+                                                    ) : (
+                                                        <button className="remove-btn" type="button" onClick={() => deleteVoucherPackage(packageId)}>Remove</button>
+                                                    )
+                                                }
+                                            </div>
+                                        );
+                                    })
+                                }
+
+
+                            </div>
+                        </div>
+                    </div>
                     {
                         Object.keys(pageData.packageDataMap).map((packageId, key) => {
 
@@ -541,6 +593,11 @@ export default function VoucherManagement(): JSX.Element {
 
                         })
                     }
+
+                    <button type="button" onClick={() => console.log(pageData)}>Log page data</button>
+                    <button className="service-delete-btn" type="button" onClick={deleteVoucher}>Delete</button>
+                    <button className="service-cancel-btn" type="button">Cancel</button>
+                    <button className="service-save-btn" type="submit">Submit</button>
                 </div>
             </div>
         </form>
