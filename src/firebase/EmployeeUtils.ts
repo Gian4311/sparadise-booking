@@ -6,20 +6,21 @@ import {
     DocumentReference,
     DocumentSnapshot,
     getDocs,
+    or,
     orderBy,
     QueryDocumentSnapshot,
     query,
     updateDoc,
+    where,
     WithFieldValue
 } from "firebase/firestore/lite";
-import NumberUtils from "../utils/NumberUtils";
+import DateUtils from "../utils/DateUtils";
 import {
     EmployeeData,
     EmployeeDataMap
 } from "./SpaRadiseTypes";
 import SpaRadiseFirestore from "./SpaRadiseFirestore";
 import SpaRadiseEnv from "./SpaRadiseEnv";
-import StringUtils from "../utils/StringUtils";
 
 export default class EmployeeUtils {
 
@@ -35,7 +36,6 @@ export default class EmployeeUtils {
 
             // name must be between 1-255 someth
             if( lastName === null ) throw new Error( "Last name is empty." );
-            if( middleName === null ) throw new Error( "Middle name is empty." );
             if( firstName === null ) throw new Error( "First name is empty." );
             //if( !StringUtils.isTinyText( name ) ) throw new Error( "Name must be tinytext." );
             //if( description === null ) throw new Error( "Description is empty." );
@@ -147,6 +147,30 @@ export default class EmployeeUtils {
             ),
             employeeQuery = query(
                 employeeCollection,
+                orderBy( "lastName" ),
+                orderBy( "firstName" ),
+                orderBy( "middleName" )
+            ),
+            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( employeeQuery ) ).docs,
+            employeeDataMap: EmployeeDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            employeeDataMap[ snapshot.id ] = await EmployeeUtils.getEmployeeData( snapshot );
+        return employeeDataMap;
+
+    }
+
+    public static async getActiveEmployeeDataMap( date: Date ): Promise< EmployeeDataMap > {
+        
+        date = DateUtils.toCeilByDay( date );
+        const
+            employeeCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
+                SpaRadiseEnv.EMPLOYEE_COLLECTION
+            ),
+            employeeQuery = query(
+                employeeCollection,
+                where( "hireDate", "<", date ),
+                where( "jobStatus", "==", "active" ),
                 orderBy( "lastName" ),
                 orderBy( "firstName" ),
                 orderBy( "middleName" )

@@ -192,7 +192,6 @@ export default class BookingCalendar {
             return false;
 
         // checking if there is assignable employee
-
         const
             timeSlotData: TimeSlotData = {
                 clientId, serviceTransactionId, serviceTransactionData, rowPosition

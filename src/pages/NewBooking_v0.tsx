@@ -52,6 +52,7 @@ import { useParams } from "react-router-dom";
 import EmployeeSidebar from "../components/EmployeeSidebar";
 
 import "../styles/NewBooking_v0.css"
+import DateRange from "../utils/DateRange";
 
 export interface NewBookingPageData extends SpaRadisePageData {
     
@@ -63,7 +64,7 @@ export interface NewBookingPageData extends SpaRadisePageData {
     clientIndexActive: number,
     clientInfoMap: { [ clientIndex: number ]: {
         packageIncluded: { [ packageId: documentId ]: boolean },
-        serviceIncludedMap: { [ serviceId: documentId ]: number },
+        serviceIncludedMap: { [ serviceId: documentId ]: string },
         serviceTransactionDataMap: { [ serviceTransactionId: string ]: ServiceTransactionData },
         serviceTransactionIndex: number,
         showPackages: boolean,
@@ -157,9 +158,7 @@ export default function NewBooking(): JSX.Element {
         if( !pageData.loaded ) return;
         await loadMaintenanceData();
         const { date } = pageData;
-        pageData.employeeLeaveOfDayDataMap =
-            await EmployeeLeaveUtils.getApprovedEmployeeLeaveDataMapByDay( date )
-        ;
+        await loadEmployeeData();
         pageData.serviceTransactionOfDayDataMap =
             await ServiceTransactionUtils.getServiceTransactionDataMapByDay( date )
         ;
@@ -186,7 +185,11 @@ export default function NewBooking(): JSX.Element {
 
     async function loadEmployeeData(): Promise< void > {
 
-        pageData.employeeDataMap = await EmployeeUtils.getEmployeeDataMapAll();
+        const { date } = pageData;
+        pageData.employeeDataMap = await EmployeeUtils.getActiveEmployeeDataMap( date );
+        pageData.employeeLeaveOfDayDataMap =
+            await EmployeeLeaveUtils.getApprovedEmployeeLeaveDataMapByDay( date )
+        ;
 
     }
 
@@ -249,7 +252,6 @@ export default function NewBooking(): JSX.Element {
         );
         await loadFirstClient();
         await loadServiceData();
-        await loadEmployeeData();
         await loadJobData();
         pageData.loaded = true;
         await handleChangeDate();
@@ -300,6 +302,7 @@ export default function NewBooking(): JSX.Element {
                 ( pageData.formIndex === 0 ) ? <ChooseClients pageData={ pageData } reloadPageData={ reloadPageData }/>
                 : ( pageData.formIndex === 1 ) ? <ChooseServices pageData={ pageData } reloadPageData={ reloadPageData }/>
                 : ( pageData.formIndex === 2 ) ? <ChooseTimeSlots pageData={ pageData } reloadPageData={ reloadPageData }/>
+                : ( pageData.formIndex === 3 ) ? <Summary pageData={ pageData } reloadPageData={ reloadPageData }/>
                 // other form indexes
                 : <button type="button" onClick={ () => { pageData.formIndex--; reloadPageData(); } }>None, Go Back</button>
             }
@@ -485,7 +488,9 @@ function ChooseServices( { pageData, reloadPageData }: {
             employee: null,
             notes: null
         };
-        serviceIncludedMap[ serviceId ] = serviceTransactionIndex;
+        serviceIncludedMap[ serviceId ] = getServiceTransactionId(
+            clientIndexActive, serviceTransactionIndex
+        );
         clientInfoMap[ clientIndexActive ].serviceTransactionIndex++;
 
     }
@@ -710,15 +715,28 @@ function ChooseTimeSlots( { pageData, reloadPageData }: {
     reloadPageData: () => void
 } ): JSX.Element {
 
-    const
-        {
-            clientDataMap, clientIndexActive, clientInfoMap, date
-        } = pageData,
-        weekDay: number = date.getDay()
-    ;
+    const { clientDataMap, clientInfoMap, clientIndexActive, date } = pageData;
 
     async function checkFormValidity(): Promise< boolean > {
-    
+        
+        for( let clientIndex in clientDataMap ) {
+
+            const { serviceTransactionDataMap } = clientInfoMap[ +clientIndex ];
+            for( let serviceTransactionId in serviceTransactionDataMap ) {
+
+                const
+                    { bookingFromDateTime, bookingToDateTime } = serviceTransactionDataMap[
+                        serviceTransactionId
+                    ]
+                ;
+                if( !bookingFromDateTime )
+                    throw new Error( `Booking from date time in ${ serviceTransactionId } is undefined.` );
+                if( !bookingToDateTime )
+                    throw new Error( `Booking to date time in ${ serviceTransactionId } is undefined.` );
+
+            }
+
+        }
         return true;
 
     }
@@ -732,6 +750,7 @@ function ChooseTimeSlots( { pageData, reloadPageData }: {
 
     async function nextPage(): Promise< void > {
 
+        await checkFormValidity();
         pageData.formIndex++;
         reloadPageData();
 
@@ -746,7 +765,7 @@ function ChooseTimeSlots( { pageData, reloadPageData }: {
 
     return <>
         <h1>Choose Time Slots</h1>
-        <h1>Date: { DateUtils.toString( pageData.date, "Mmmm dd, yyyy" ) }</h1>
+        <h1>Date: { DateUtils.toString( date, "Mmmm dd, yyyy" ) }</h1>
         <ul>{
             Object.keys( clientDataMap ).sort().map( clientIndex => 
                 <li
@@ -801,6 +820,117 @@ function ChooseTimeSlots( { pageData, reloadPageData }: {
         <button type="button" onClick={ previousPage }>Back</button>
         <button type="button" onClick={ nextPage }>Proceed (3/4)</button>
     </>;
+
+}
+
+function Summary( { pageData, reloadPageData }: {
+    pageData: NewBookingPageData,
+    reloadPageData: () => void
+} ): JSX.Element {
+
+    const
+        { date, clientDataMap, clientInfoMap, maintenanceDataMap } = pageData
+    ;
+
+    async function checkFormValidity(): Promise< boolean > {
+    
+        return true;
+
+    }
+
+    async function nextPage(): Promise< void > {
+
+        pageData.formIndex++;
+        reloadPageData();
+
+    }
+
+    async function previousPage(): Promise< void > {
+
+        pageData.formIndex--;
+        reloadPageData();
+
+    }
+
+    return <>
+        <h1>Summary</h1>
+        <h1>Date: { DateUtils.toString( date, "Mmmm dd, yyyy" ) }</h1>
+        <Receipt pageData={ pageData } reloadPageData={ reloadPageData }/>
+        Voucher/s:
+        <div>
+
+        </div>
+        <button type="button" onClick={ previousPage }>Back</button>
+        <button type="button" onClick={ nextPage }>Proceed (3/4)</button>
+    </>;
+
+}
+
+function Receipt( { pageData, reloadPageData }: {
+    pageData: NewBookingPageData,
+    reloadPageData: () => void
+} ): JSX.Element {
+
+    const
+        {
+            date, clientDataMap, clientInfoMap, maintenanceDataMap, packageDataMap,
+            packageServiceKeyMap, serviceDataMap
+        } = pageData
+    ;
+    return <table>
+        <thead><tr>
+            <td>Service/Package</td>
+            <td>Price</td>
+        </tr></thead>
+        <tbody>{
+            Object.keys( clientInfoMap ).map( clientIndex => {
+
+                const
+                    clientData = clientDataMap[ +clientIndex ],
+                    { name } = clientData,
+                    { packageIncluded, singleServiceIncluded, serviceTransactionDataMap, serviceIncludedMap } = clientInfoMap[ +clientIndex ]
+                ;
+
+                return <>
+                    <tr key={ clientIndex }><td colSpan={ 2 }>{ name }</td></tr>
+                    {
+                        Object.keys( packageIncluded ).map( packageKey => {
+
+                            const
+                                { name } = packageDataMap[ packageKey ],
+                                { price } = maintenanceDataMap[ packageKey ]
+                            ;
+                            return <tr key={ packageKey }>
+                                <td>
+                                    { name }
+                                    <ul>{
+                                        Object.keys( packageServiceKeyMap[ packageKey ] ).map( packageServiceId => {
+                                            
+                                            const
+                                                serviceId: string = packageServiceKeyMap[ packageKey ][ packageServiceId ],
+                                                { name } = serviceDataMap[ serviceId ],
+                                                serviceTransactionId = serviceIncludedMap[ serviceId ],
+                                                { bookingFromDateTime, bookingToDateTime } = serviceTransactionDataMap[ serviceTransactionId ],
+                                                dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime )
+                                            ;
+                                            return <li key={ packageServiceId }>
+                                                { `> ` }{ name }{ `(${ dateRange.toString( "h:mmAM-h:mmAM" ) })` }
+                                            </li>;
+
+                                        } )
+                                    }</ul>
+                                </td>
+                                <td>P{ price }</td>
+                            </tr>;
+
+                        } )
+                    }
+                </>;
+
+            } )
+        }</tbody>
+    </table>;
+        
 
 }
 
