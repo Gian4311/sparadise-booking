@@ -5,15 +5,9 @@ import {
 } from "react";
 import DateRange from "../utils/DateRange";
 import DateUtils from "../utils/DateUtils";
-import {
-    getServiceTransactionId,
-    NewBookingPageData
-} from "../pages/NewBooking_v0";
+import { NewBookingPageData } from "../pages/NewBooking_v0";
 import NumberUtils from "../utils/NumberUtils";
-import {
-    ServiceTransactionData,
-    SpaRadiseDocumentData
-} from "../firebase/SpaRadiseTypes";
+import { ServiceTransactionData } from "../firebase/SpaRadiseTypes";
 
 type main = string | boolean | DateRange | number | null;
 
@@ -55,9 +49,13 @@ export default function ServiceTransactionTimeSlot(
         readOnly?: boolean,
         required?: boolean,
         serviceTransactionId: string,
-        onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
+        onChange?(
+            parsedValue: main | null, unparsedValue: string, old: main | null
+        ): Promise< void > | void,
         reloadPageData(): void,
-        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >
+        validate?(
+            parsedValue: main | null, unparsedValue: string, old: main | null
+        ): boolean | Promise< boolean >
     }
 ): JSX.Element {
 

@@ -12,6 +12,8 @@ import {
 import ObjectUtils from "./ObjectUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
 
+type timeSlotRowPosition = ( "single" | "up" | "down" );
+
 interface CalendarRow {
 
     chairs: number,
@@ -56,6 +58,7 @@ interface TimeSlotData {
     clientId: documentId,
     serviceTransactionData: ServiceTransactionData,
     serviceTransactionId: string,
+    rowPosition: timeSlotRowPosition
 
 }
 
@@ -78,25 +81,32 @@ export default class BookingCalendar {
     public addServiceTransaction(
         serviceTransactionData: ServiceTransactionData,
         serviceTransactionId: documentId,
-        clientId: documentId
+        clientId: documentId,
+        rowPosition?: timeSlotRowPosition
     ): boolean {
 
-        const serviceTransactionDataList = this.preprocessServiceTransactionData(
-            serviceTransactionData
-        );
-        switch( serviceTransactionDataList.length ) {
+        if( !rowPosition ) {
 
-            case 2: return (
-                this.addServiceTransaction(
-                    serviceTransactionDataList[ 0 ], serviceTransactionId, clientId
-                ) && this.addServiceTransaction(
-                    serviceTransactionDataList[ 1 ], serviceTransactionId, clientId
-                )
+            const serviceTransactionDataList = this.preprocessServiceTransactionData(
+                serviceTransactionData
             );
-            
-            case 0: return false;
-
-            default: serviceTransactionData = serviceTransactionDataList[ 0 ];
+            switch( serviceTransactionDataList.length ) {
+    
+                case 2: return (
+                    this.addServiceTransaction(
+                        serviceTransactionDataList[ 0 ], serviceTransactionId, clientId, "up"
+                    ) && this.addServiceTransaction(
+                        serviceTransactionDataList[ 1 ], serviceTransactionId, clientId, "down"
+                    )
+                );
+                
+                case 0: return false;
+    
+                default:
+                    serviceTransactionData = serviceTransactionDataList[ 0 ];
+                    rowPosition = "single";
+    
+            }
 
         }
         const
@@ -111,7 +121,7 @@ export default class BookingCalendar {
             { service: { id: serviceId } } = serviceTransactionData,
             { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
             timeSlotData: TimeSlotData = {
-                clientId, serviceTransactionId, serviceTransactionData
+                clientId, serviceTransactionId, serviceTransactionData, rowPosition
             },
             { roomType } = serviceDataMap[ serviceId ],
             timeSlotDataList: TimeSlotData[] =
@@ -126,26 +136,33 @@ export default class BookingCalendar {
     public canAddServiceTransactionData(
         serviceTransactionData: ServiceTransactionData,
         serviceTransactionId: documentId,
-        clientId: documentId
+        clientId: documentId,
+        rowPosition?: timeSlotRowPosition
     ): boolean {
 
         // preprocessing
-        const serviceTransactionDataList = this.preprocessServiceTransactionData(
-            serviceTransactionData
-        );
-        switch( serviceTransactionDataList.length ) {
+        if( !rowPosition ) {
 
-            case 2: return (
-                this.canAddServiceTransactionData(
-                    serviceTransactionDataList[ 1 ], serviceTransactionId, clientId
-                ) && this.canAddServiceTransactionData(
-                    serviceTransactionDataList[ 0 ], serviceTransactionId, clientId
-                )
+            const serviceTransactionDataList = this.preprocessServiceTransactionData(
+                serviceTransactionData
             );
-            
-            case 0: return false;
-
-            default: serviceTransactionData = serviceTransactionDataList[ 0 ];
+            switch( serviceTransactionDataList.length ) {
+    
+                case 2: return (
+                    this.canAddServiceTransactionData(
+                        serviceTransactionDataList[ 1 ], serviceTransactionId, clientId, "down"
+                    ) && this.canAddServiceTransactionData(
+                        serviceTransactionDataList[ 0 ], serviceTransactionId, clientId, "up"
+                    )
+                );
+                
+                case 0: return false;
+    
+                default:
+                    serviceTransactionData = serviceTransactionDataList[ 0 ];
+                    rowPosition = "single";
+    
+            }
 
         }
 
@@ -166,7 +183,7 @@ export default class BookingCalendar {
         const
             { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
             timeSlotData: TimeSlotData = {
-                clientId, serviceTransactionId, serviceTransactionData
+                clientId, serviceTransactionId, serviceTransactionData, rowPosition
             },
             timeSlotDataList: TimeSlotData[] = [
                 ...chairTimeSlotDataList, ...roomTimeSlotDataList, timeSlotData
@@ -221,25 +238,31 @@ export default class BookingCalendar {
         serviceTransactionData: ServiceTransactionData,
         serviceTransactionId: documentId,
         clientId: documentId,
-        row: ( "up" | "down" ) = "up"
+        rowPosition?: timeSlotRowPosition
     ): boolean {
 
-        const serviceTransactionDataList = this.preprocessServiceTransactionData(
-            serviceTransactionData
-        );
-        switch( serviceTransactionDataList.length ) {
+        if( !rowPosition ) {
 
-            case 2: return (
-                this.deleteServiceTransaction(
-                    serviceTransactionDataList[ 0 ], serviceTransactionId, clientId
-                ) && this.deleteServiceTransaction(
-                    serviceTransactionDataList[ 1 ], serviceTransactionId, clientId, "down"
-                )
+            const serviceTransactionDataList = this.preprocessServiceTransactionData(
+                serviceTransactionData
             );
-            
-            case 0: return false;
-
-            default: serviceTransactionData = serviceTransactionDataList[ 0 ];
+            switch( serviceTransactionDataList.length ) {
+    
+                case 2: return (
+                    this.deleteServiceTransaction(
+                        serviceTransactionDataList[ 0 ], serviceTransactionId, clientId, "up"
+                    ) && this.deleteServiceTransaction(
+                        serviceTransactionDataList[ 1 ], serviceTransactionId, clientId, "down"
+                    )
+                );
+                
+                case 0: return false;
+    
+                default:
+                    serviceTransactionData = serviceTransactionDataList[ 0 ];
+                    rowPosition = "single";
+    
+            }
 
         }
         const
@@ -258,7 +281,7 @@ export default class BookingCalendar {
                 ( roomType === "chair" ) ? chairTimeSlotDataList : roomTimeSlotDataList
             ,
             timeSlotIndex: number = this.indexOfServiceTransaction(
-                serviceTransactionData, serviceTransactionId, row
+                serviceTransactionData, serviceTransactionId, rowPosition
             )
         ;
         timeSlotDataList.splice( timeSlotIndex, 1 );
@@ -285,6 +308,54 @@ export default class BookingCalendar {
         ;
         for( let { clientId } of roomTimeSlotDataList ) clientMap[ clientId ] = undefined;
         return ( rooms - ObjectUtils.keyLength( clientMap ) );
+
+    }
+
+    private getPossibleConflictingTimeSlotDataList(
+        serviceTransactionData: ServiceTransactionData,
+        serviceTransactionId: documentId,
+        rowPosition?: timeSlotRowPosition,
+        timeSlotIdIgnoreList: { [ timeSlotId: string ]: undefined } = {}
+    ): TimeSlotData[] {
+
+        if( !rowPosition ) {
+
+            const serviceTransactionDataList = this.preprocessServiceTransactionData(
+                serviceTransactionData
+            );
+            switch( serviceTransactionDataList.length ) {
+    
+                case 2: return (
+                    this.getPossibleConflictingTimeSlotDataList(
+                        serviceTransactionDataList[ 0 ], serviceTransactionId, "up"
+                    ) && this.getPossibleConflictingTimeSlotDataList(
+                        serviceTransactionDataList[ 1 ], serviceTransactionId, "down"
+                    )
+                );
+                
+                case 0: return [];
+    
+                default:
+                    serviceTransactionData = serviceTransactionDataList[ 0 ];
+                    rowPosition = "single";
+    
+            }
+
+        }
+
+        const
+            { timeSlotDataMap } = this,
+            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
+            timeSlotId: string = dateRange.toString( "hh:mm-hh:mm" ),
+            { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ]
+        ;
+        for( let { rowPosition } of [ ...chairTimeSlotDataList, ...roomTimeSlotDataList ] ) {
+
+
+
+        }
+        return []
 
     }
 
@@ -430,7 +501,7 @@ export default class BookingCalendar {
     public indexOfServiceTransaction(
         serviceTransactionData: ServiceTransactionData,
         serviceTransactionId: documentId,
-        row: ( "up" | "down" ) = "up"
+        rowPosition: timeSlotRowPosition
     ): number {
 
         const serviceTransactionDataList = this.preprocessServiceTransactionData(
@@ -439,7 +510,7 @@ export default class BookingCalendar {
         switch( serviceTransactionDataList.length ) {
 
             case 2:
-                if( row === "down" ) serviceTransactionData = serviceTransactionDataList[ 1 ];
+                if( rowPosition === "down" ) serviceTransactionData = serviceTransactionDataList[ 1 ];
                 break;
             
             case 0: return -1;
