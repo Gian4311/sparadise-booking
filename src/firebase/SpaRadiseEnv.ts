@@ -32,6 +32,7 @@ export default class SpaRadiseEnv {
     ];
     public static ROOM_TYPE_LIST: roomType[] = [ "chair", "room" ];
     public static SERVICE_COLLECTION = "services";
+    public static SERVICE_DURATION_LIST = [ 30, 60 ];
     public static SERVICE_DURATION_MIN_RANGE = new NumberRange( 0, 120, 30, false );
     public static SERVICE_MAINTENANCE_COLLECTION = "serviceMaintenances";
     public static SERVICE_MAINTENANCE_STATUS_LIST: serviceMaintenanceStatus[] = [
