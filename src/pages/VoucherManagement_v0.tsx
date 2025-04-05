@@ -79,8 +79,7 @@ export default function VoucherManagement(): JSX.Element {
                 serviceType: null as unknown as serviceType,
                 roomType: null as unknown as roomType,
                 ageLimit: null as unknown as number,
-                durationMin: null as unknown as number
-
+                durationMin: null as unknown as ( 30 | 60 )
             },
             packageData: {
                 name: null as unknown as string,
