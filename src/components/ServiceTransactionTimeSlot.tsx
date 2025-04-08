@@ -83,6 +83,21 @@ export default function ServiceTransactionTimeSlot(
         documentData[ keyNameTo ] =
             ( parsedValue instanceof DateRange ) ? parsedValue.getEnd() : parsedValue
         ;
+        const { bookingCalendar } = pageData;
+        if( old instanceof Object ) {
+
+            const oldServiceTransactionData: ServiceTransactionData = {
+                ...documentData,
+                bookingFromDateTime: old.getStart(),
+                bookingToDateTime: old.getEnd()
+            };
+            bookingCalendar.deleteServiceTransaction(
+                oldServiceTransactionData, serviceTransactionId, clientId
+            );
+
+        }
+        if( parsedValue instanceof Object )
+            bookingCalendar.addServiceTransaction( documentData, serviceTransactionId, clientId );
         if( onChange ) await onChange( parsedValue, unparsedValueNew, old );
         reloadPageData();
 
