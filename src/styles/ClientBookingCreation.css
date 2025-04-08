@@ -2,7 +2,7 @@
 .booking-container {
     margin: 50px auto;
     padding: 50px;
-    max-width: 1500px;
+    width: 80%;
     background-color: #FBE3EB;
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);

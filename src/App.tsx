@@ -19,6 +19,7 @@ import VoucherMenu from "./pages/VoucherMenu_v0";
 import Homepage from "./pages/ClientIndex";
 import Booking1 from "./pages/Booking1";
 
+import NewHomepage from "./pages/NewClientIndex";
 function App() {
 
     return <>
@@ -45,6 +46,8 @@ function App() {
                 <Route path="management/vouchers/:id" element={ <VoucherManagement/> }/>
                 <Route path="management/employees/menu" element={ <EmployeeMenu/> }/>
                 <Route path="booking1" element={ <Booking1/> }/>
+
+                <Route path="newindex" element={ <NewHomepage/> }/>
             </Routes>
         </BrowserRouter>
     </>;
