@@ -1,5 +1,5 @@
-
-* {
+/* General Reset and Layout */
+* { 
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -8,28 +8,37 @@
 
 @font-face {
   font-family: sparadiseMainFont;
-  src: url(Product\ Sans\ Regular.ttf);
+  src: url("../styles/Product Sans Regular.ttf");
 }
 
-clientIndexbody {
-  background: url('../images/indexbackground.jpg') no-repeat center center/cover;
-  height: 100vh;
+/* BODY */
+body {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  color: #fff;
+  overflow-x: hidden;
 }
 
-/* Header Styling */
+/* Wrapper for background */
+.clientIndexBackgroundWrapper {
+  background: url("../images/indexbackground.jpg") no-repeat center center/cover;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* HEADER */
 .clientIndex-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 30px;
+  padding: 1rem 5%;
   background-color: #552B59;
 }
 
 .clientIndex-logo img {
-  height: 90px;
+  height: 60px;
+  max-width: 100%;
 }
 
 .clientIndex-nav {
@@ -41,19 +50,18 @@ clientIndexbody {
 .clientIndex-navList {
   display: flex;
   list-style: none;
+  flex-wrap: wrap;
 }
 
 .clientIndex-navItem {
-  margin: 0 15px;
-  position: relative;
+  margin: 0 1rem;
 }
 
 .clientIndex-link {
   text-decoration: none;
   color: white;
-  font-size: 1.5em;
+  font-size: 1.2rem;
   transition: color 0.3s ease;
-  margin: 40px;
 }
 
 .clientIndex-linkActive,
@@ -62,59 +70,39 @@ clientIndexbody {
   color: #FFCCBC;
 }
 
-/* Notification Bell */
-.clientIndex-notification img{
-  height: 30px; /* Adjust the distance from the right edge */
-  padding-left: 120px;
-}
-
-
-.clientIndex-notification {
-  height: 50px;
-}
-
-/* Hero Section */
+/* HERO SECTION */
 .clientIndex-hero {
   position: relative;
-  height: 100vh;
+  height: 80vh;
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
-  background: url('../images/indexbackground.jpg') no-repeat center center/cover;
-}
-
-.clientIndex-hero::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1;
+  background: url("../images/indexbackground.jpg") no-repeat center center/cover;
+  padding: 2rem;
 }
 
 .clientIndex-heroContent {
   position: relative;
   z-index: 2;
   color: white;
+  max-width: 90%;
 }
 
 .clientIndex-heading {
-  font-size: 5rem;
+  font-size: 3rem;
   margin-bottom: 20px;
 }
 
 .clientIndex-subText {
-  font-size: 2rem;
+  font-size: 1.5rem;
   margin-bottom: 20px;
 }
 
 .clientIndex-btn {
   display: inline-block;
-  padding: 20px 40px;
-  font-size: 2rem;
+  padding: 15px 30px;
+  font-size: 1.2rem;
   color: white;
   border: 2px solid white;
   text-decoration: none;
@@ -126,30 +114,31 @@ clientIndexbody {
   background-color: white;
   color: #6A1B9A;
 }
-/* Services Section */
+
+/* SERVICES */
 .clientIndex-services {
-  padding: 40px;
+  padding: 40px 5%;
   background-color: #F8E0E1;
   color: black;
   text-align: center;
 }
 
 .clientIndex-servicesHeading {
-  font-size: 4rem;
-  margin-bottom: 30px;
-  color: black;
+  font-size: 2rem;
+  margin-bottom: 20px;
 }
 
 .clientIndex-servicesContainer {
   display: flex;
   overflow-x: auto;
-  gap: 20px;
-  padding: 20px;
+  gap: 15px;
+  padding: 10px;
   scroll-behavior: smooth;
+  white-space: wrap;
 }
 
 .clientIndex-servicesContainer::-webkit-scrollbar {
-  height: 10px;
+  height: 8px;
 }
 
 .clientIndex-servicesContainer::-webkit-scrollbar-thumb {
@@ -159,123 +148,123 @@ clientIndexbody {
 
 .clientIndex-serviceCard {
   flex: 0 0 auto;
-  width: 300px;
+  width: 20%;
   height: 300px;
-  border-radius: 20px;
+  border-radius: 15px;
   background-size: cover;
   background-position: center;
   position: relative;
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.4);
   overflow: hidden;
-}
-
-/* Dark Overlay */
-.clientIndex-serviceOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
   display: flex;
-  flex-direction: column;
+  align-items: flex-end;
   justify-content: center;
-  align-items: center;
-  padding: 20px;
-  color: white;
   text-align: center;
-  opacity: 1;
-  transition: opacity 0.3s ease;
 }
 
-.clientIndex-serviceCard:hover .clientIndex-serviceOverlay {
-  opacity: 0.9;
-}
-
-.clientIndex-serviceOverlay h3 {
-  font-size: 3rem;
-  margin-bottom: 10px;
-}
-
-.clientIndex-serviceOverlay p {
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-
+/* OPENING HOURS */
 .clientIndex-openingHours {
-  padding: 40px;
+  padding: 3rem 5%;
   background-color: #552B59;
   text-align: center;
 }
 
 .clientIndex-openingHours h2 {
-  font-size: 4rem;
+  font-size: 2.5rem;
   margin-bottom: 20px;
-  color: #F8E0E1
+  color: #F8E0E1;
 }
 
 .clientIndex-hours {
-  font-size: 1.2rem;
+  font-size: 1rem;
   color: black;
 }
 
 .clientIndex-hoursMain {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: bold;
   color: #F8E0E1;
 }
 
 .clientIndex-hoursSub {
   font-size: 1rem;
-  color: #F8E0E1;
 }
 
-.clientIndex-location {
-  margin-top: 20px;
-  font-size: 1.1rem;
-  color: #F8E0E1;
-}
-
-.clientIndex-locationIcon {
-  margin-right: 8px;
-}
-
+/* CONTACT US */
 .clientIndex-contactUs {
-  padding: 40px;
+  padding: 3rem 5%;
   background-color: #F8E0E1;
   text-align: center;
+  color: black;
 }
 
 .clientIndex-contactUs h2 {
-  font-size: 4rem;
+  font-size: 2.5rem;
   margin-bottom: 20px;
-  color: black
 }
 
 .clientIndex-contactLinks {
-  font-size: 1.2rem;
-  color: black;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
 }
 
 .clientIndex-socialLink {
   text-decoration: none;
   color: black;
-  margin: 10px;
-  display: inline-block;
-  font-weight: bold;
-  transition: color 0.3s ease;
-}
-
-.clientIndex-socialLink:hover {
-  color: #6A1B9A;
-}
-
-.clientIndex-socialIcon {
-  margin-right: 10px;
+  font-size: 1.2rem;
 }
 
 .clientIndex-contactInfo {
-  margin: 10px 0;
-  color: black;
+  font-size: 1rem;
+}
+
+/* RESPONSIVENESS */
+@media (max-width: 768px) {
+  .clientIndex-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .clientIndex-nav {
+    margin-top: 10px;
+  }
+
+  .clientIndex-navList {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .clientIndex-navItem {
+    margin: 10px 0;
+  }
+
+  .clientIndex-hero {
+    height: 60vh;
+  }
+
+  .clientIndex-heading {
+    font-size: 2.5rem;
+  }
+
+  .clientIndex-subText {
+    font-size: 1.2rem;
+  }
+
+  .clientIndex-btn {
+    font-size: 1rem;
+    padding: 10px 20px;
+  }
+
+  .clientIndex-serviceCard {
+    height: 250px;
+  }
+
+  .clientIndex-serviceOverlay h3 {
+    font-size: 1.5rem;
+  }
+
+  .clientIndex-serviceOverlay p {
+    font-size: 0.9rem;
+  }
 }

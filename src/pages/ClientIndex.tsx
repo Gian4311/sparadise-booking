@@ -5,7 +5,7 @@ import Massage from "../images/massage.jpg";
 
 const ClientIndex = () => {
     return (
-        <div className="clientIndexBody">
+        <div className="clientIndexBackgroundWrapper">
             <header className="clientIndex-header">
                 <div className="clientIndex-logo">
                     <img src={SpaRadiseLogo} alt="SpaRadise Logo" />

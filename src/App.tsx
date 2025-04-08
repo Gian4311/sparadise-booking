@@ -17,6 +17,7 @@ import ServicePackageMenu from "./pages/ServicePackageMenu_v0";
 import VoucherManagement from "./pages/VoucherManagement_v0";
 import VoucherMenu from "./pages/VoucherMenu_v0";
 import Homepage from "./pages/ClientIndex";
+import Booking1 from "./pages/Booking1";
 
 function App() {
 
@@ -43,6 +44,7 @@ function App() {
                 <Route path="management/vouchers/menu" element={ <VoucherMenu/> }/>
                 <Route path="management/vouchers/:id" element={ <VoucherManagement/> }/>
                 <Route path="management/employees/menu" element={ <EmployeeMenu/> }/>
+                <Route path="booking1" element={ <Booking1/> }/>
             </Routes>
         </BrowserRouter>
     </>;
