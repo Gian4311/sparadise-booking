@@ -304,7 +304,7 @@ export default function EmployeeManagement(): JSX.Element {
                         </div>
                         <div className="employee-form-row">
                             <label htmlFor="employee-region">Region</label>
-                            <FormSelect documentData={pageData.employeeData} documentDefaultData={pageData.employeeData} documentId={documentId} name="employee-region" keyName="region" optionList={SpaRadiseEnv.REGION_LIST} pageData={pageData} required={true}>
+                            <FormSelect documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} name="employee-region" keyName="region" optionList={SpaRadiseEnv.REGION_LIST} pageData={pageData} required={true}>
                                 <option value="" disabled>Select region</option>
                                 <option value="XI">Davao Region (XI)</option>
                                 <option value="NCR">Metro Manila (NCR)</option>

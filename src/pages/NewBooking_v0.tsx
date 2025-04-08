@@ -68,17 +68,15 @@ export interface NewBookingPageData extends SpaRadisePageData {
     clientDataMap: ClientDataMap,
     clientIndex: number,
     clientIndexActive: number,
-    clientInfoMap: {
-        [clientIndex: number]: {
-            packageIncluded: { [packageId: documentId]: boolean },
-            serviceIncludedMap: { [serviceId: documentId]: number },
-            serviceTransactionDataMap: { [serviceTransactionId: string]: ServiceTransactionData },
-            serviceTransactionIndex: number,
-            showPackages: boolean,
-            showServices: boolean,
-            singleServiceIncluded: { [serviceId: documentId]: boolean }
-        }
-    },
+    clientInfoMap: { [ clientIndex: number ]: {
+        packageIncluded: { [ packageId: documentId ]: boolean },
+        serviceIncludedMap: { [ serviceId: documentId ]: number },
+        serviceTransactionDataMap: { [ serviceTransactionId: string ]: ServiceTransactionData },
+        serviceTransactionIndex: number,
+        showPackages: boolean,
+        showServices: boolean,
+        singleServiceIncluded: { [ serviceId: documentId ]: boolean }
+    } },
     date: Date,
     employeeDataMap: EmployeeDataMap,
     employeeLeaveOfDayDataMap: EmployeeLeaveDataMap,
@@ -167,8 +165,8 @@ export default function NewBooking(): JSX.Element {
         await loadMaintenanceData();
         const { date } = pageData;
         pageData.employeeLeaveOfDayDataMap =
-            await EmployeeLeaveUtils.getApprovedEmployeeLeaveDataMapByDay(date)
-            ;
+            await EmployeeLeaveUtils.getApprovedEmployeeLeaveDataMapByDay( date )
+        ;
         pageData.serviceTransactionOfDayDataMap =
             await ServiceTransactionUtils.getServiceTransactionDataMapByDay(date)
             ;
@@ -305,11 +303,11 @@ export default function NewBooking(): JSX.Element {
         {/* <EmployeeSidebar/> */}
         <form onSubmit={submit}>
             {
-                (pageData.formIndex === 0) ? <ChooseClients pageData={pageData} reloadPageData={reloadPageData} />
-                    : (pageData.formIndex === 1) ? <ChooseServices pageData={pageData} reloadPageData={reloadPageData} />
-                        : (pageData.formIndex === 2) ? <ChooseTimeSlots pageData={pageData} reloadPageData={reloadPageData} />
-                            // other form indexes
-                            : <button type="button" onClick={() => { pageData.formIndex--; reloadPageData(); }}>None, Go Back</button>
+                ( pageData.formIndex === 0 ) ? <ChooseClients pageData={ pageData } reloadPageData={ reloadPageData }/>
+                : ( pageData.formIndex === 1 ) ? <ChooseServices pageData={ pageData } reloadPageData={ reloadPageData }/>
+                : ( pageData.formIndex === 2 ) ? <ChooseTimeSlots pageData={ pageData } reloadPageData={ reloadPageData }/>
+                // other form indexes
+                : <button type="button" onClick={ () => { pageData.formIndex--; reloadPageData(); } }>None, Go Back</button>
             }
 
             <button type="button" onClick={() => console.log(pageData)}>Log page data</button>
@@ -513,8 +511,8 @@ function ChooseServices({ pageData, reloadPageData }: {
             employee: null,
             notes: null
         };
-        serviceIncludedMap[serviceId] = serviceTransactionIndex;
-        clientInfoMap[clientIndexActive].serviceTransactionIndex++;
+        serviceIncludedMap[ serviceId ] = serviceTransactionIndex;
+        clientInfoMap[ clientIndexActive ].serviceTransactionIndex++;
 
     }
 
@@ -785,17 +783,17 @@ function ChooseServices({ pageData, reloadPageData }: {
 function ChooseTimeSlots({ pageData, reloadPageData }: {
     pageData: NewBookingPageData,
     reloadPageData: () => void
-}): JSX.Element {
+} ): JSX.Element {
 
     const
         {
             clientDataMap, clientIndexActive, clientInfoMap, date
         } = pageData,
         weekDay: number = date.getDay()
-        ;
+    ;
 
-    async function checkFormValidity(): Promise<boolean> {
-
+    async function checkFormValidity(): Promise< boolean > {
+    
         return true;
 
     }
@@ -823,7 +821,7 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
 
     return <>
         <h1>Choose Time Slots</h1>
-        <h1>Date: {DateUtils.toString(pageData.date, "Mmmm dd, yyyy")}</h1>
+        <h1>Date: { DateUtils.toString( pageData.date, "Mmmm dd, yyyy" ) }</h1>
         <ul>{
             Object.keys(clientDataMap).sort().map(clientIndex =>
                 <li
