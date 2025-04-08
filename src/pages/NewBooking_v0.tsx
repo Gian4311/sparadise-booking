@@ -57,6 +57,7 @@ import NotificationSymbol from "../images/Notification Symbol.png";
 import SpaRadiseLogo from "../images/SpaRadise Logo.png"
 import "../styles/ClientBookingCreation2.css";
 import "../styles/ClientBookingCreation.css";
+import NavBar from "../components/ClientNavBar";
 
 import "../styles/NewBooking_v0.css"
 import DateRange from "../utils/DateRange";
@@ -414,6 +415,7 @@ function ChooseClients({ pageData, reloadPageData }: {
     }
 
     return <>
+        <NavBar></NavBar>
         <main className="booking-container">
             <section className="booking-form">
                 <h1 className="booking-title">Who are the Clients?</h1>
@@ -647,6 +649,7 @@ function ChooseServices({ pageData, reloadPageData }: {
     }
 
     return <>
+        <NavBar></NavBar>
         <main className="booking-container">
             <section className="form-section client-date-section">
                 <div className="date-input">
@@ -820,6 +823,7 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
     }
 
     return <>
+        <NavBar></NavBar>
         <main className="booking-container">
             <section className="form-section client-date-section">
                 <div className="time-slot-date">{DateUtils.toString(date, "Mmmm dd, yyyy")}</div>
@@ -921,6 +925,7 @@ function Summary({ pageData, reloadPageData }: {
     }
 
     return <>
+        <NavBar></NavBar>
         <main className="booking-container">
             <section className="form-section client-date-section">
                 <div className="time-slot-date">{DateUtils.toString(date, "Mmmm dd, yyyy")}</div>

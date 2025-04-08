@@ -45,7 +45,6 @@ function App() {
                 <Route path="management/vouchers/menu" element={ <VoucherMenu/> }/>
                 <Route path="management/vouchers/:id" element={ <VoucherManagement/> }/>
                 <Route path="management/employees/menu" element={ <EmployeeMenu/> }/>
-                <Route path="booking1" element={ <Booking1/> }/>
 
                 <Route path="newindex" element={ <NewHomepage/> }/>
             </Routes>
