@@ -214,10 +214,8 @@ export default function EmployeeManagement(): JSX.Element {
 
     return <>
         <PopupModal pageData={pageData} reloadPageData={reloadPageData} />
+        <EmployeeSidebar />
         <form onSubmit={submit}>
-            <EmployeeSidebar />
-            
-
             <div className="employee-main-content">
                 <label htmlFor="employee-main-content" className="employee-management-location">Employees - {PersonUtils.format(pageData.employeeDefaultData, "f mi l")}</label>
                 <div className="employee-form-section">

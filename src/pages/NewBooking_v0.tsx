@@ -18,15 +18,18 @@ import {
 } from "../firebase/SpaRadiseTypes";
 import AccountUtils from "../firebase/AccountUtils";
 import BookingCalendar from "../utils/BookingCalendar";
+import BookingReceipt from "../components/BookingReceipt";
 import BookingUtils from "../firebase/BookingUtils";
 import Bullet from "../components/Bullet";
 import DateUtils from "../utils/DateUtils";
-import { documentId, DocumentReference } from "firebase/firestore/lite";
+import { DocumentReference } from "firebase/firestore/lite";
 import EmployeeLeaveUtils from "../firebase/EmployeeLeaveUtils";
+import EmployeeSidebar from "../components/EmployeeSidebar";
 import EmployeeUtils from "../firebase/EmployeeUtils";
 import FormDateInput from "../components/FormDateInput";
 import {
     FormEvent,
+    Fragment,
     useEffect,
     useState
 } from "react";
@@ -49,7 +52,6 @@ import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import StringUtils from "../utils/StringUtils";
 import { useParams } from "react-router-dom";
-import EmployeeSidebar from "../components/EmployeeSidebar";
 
 import "../styles/NewBooking_v0.css"
 import DateRange from "../utils/DateRange";
@@ -81,7 +83,7 @@ export interface NewBookingPageData extends SpaRadisePageData {
     packageDataMap: PackageDataMap,
     packageServiceDataMap: PackageServiceDataMap,
     packageServiceKeyMap: {
-        [ packageId: documentId ]: { [ packageServiceId: documentId ]: documentId }
+        [ packageId: documentId ]: { [ serviceId: documentId ]: documentId }
     },
     serviceDataMap: ServiceDataMap,
     serviceTransactionOfDayDataMap: ServiceTransactionDataMap
@@ -271,7 +273,7 @@ export default function NewBooking(): JSX.Element {
             const {
                 package: { id: packageId }, service: { id: serviceId }
             } = packageServiceDataMap[ packageServiceId ];
-            packageServiceKeyMap[ packageId ][ packageServiceId ] = serviceId;
+            packageServiceKeyMap[ packageId ][ serviceId ] = packageServiceId;
 
         }
 
@@ -450,13 +452,8 @@ function ChooseServices( { pageData, reloadPageData }: {
     async function addPackage( packageId: documentId ): Promise< void > {
 
         if( isConflictingPackage( packageId ) ) return;
-        const packageServiceMap = packageServiceKeyMap[ packageId ];
-        for( let packageServiceId in packageServiceMap ) {
-
-            const serviceId: string = packageServiceMap[ packageServiceId ];
+        for( let serviceId in packageServiceKeyMap[ packageId ] )
             await addServiceTransaction( serviceId, packageId );
-
-        }
         packageIncluded[ packageId ] = true;
         reloadPageData();
 
@@ -465,7 +462,8 @@ function ChooseServices( { pageData, reloadPageData }: {
     async function addServiceTransaction(
         serviceId: documentId, packageId?: documentId
     ): Promise< void > {
-
+        
+        if( pageData.maintenanceDataMap[ serviceId ].status === "inactive" ) return;
         const
             { serviceTransactionIndex } = clientInfoMap[ clientIndexActive ],
             serviceTransactionId: string = getServiceTransactionId(
@@ -531,13 +529,8 @@ function ChooseServices( { pageData, reloadPageData }: {
 
     async function deletePackage( packageId: documentId ): Promise< void > {
 
-        const packageServiceMap = packageServiceKeyMap[ packageId ];
-        for( let packageServiceId in packageServiceMap ) {
-
-            const serviceId: string = packageServiceMap[ packageServiceId ];
+        for( let serviceId in packageServiceKeyMap[ packageId ] )
             await deleteServiceTransaction( serviceId );
-
-        }
         delete packageIncluded[ packageId ];
         reloadPageData();
 
@@ -568,13 +561,8 @@ function ChooseServices( { pageData, reloadPageData }: {
 
     function isConflictingPackage( packageId: documentId ): boolean {
 
-        const packageServiceMap = packageServiceKeyMap[ packageId ];
-        for( let packageServiceId in packageServiceMap ) {
-
-            const serviceId: string = packageServiceMap[ packageServiceId ];
+        for( let serviceId in packageServiceKeyMap[ packageId ] )
             if( isConflictingService( serviceId ) ) return true;
-
-        }
         return false;
 
     }
@@ -623,7 +611,7 @@ function ChooseServices( { pageData, reloadPageData }: {
         <NewBookingDateInput pageData={ pageData } reloadPageData={ reloadPageData }/>
         <h1>Choose services</h1>
         <ul>{
-            Object.keys( clientDataMap ).sort().map( clientIndex => 
+            Object.keys( clientDataMap ).sort().map( clientIndex =>
                 <li
                     className={ ( +clientIndex == clientIndexActive ) ? `active` : `` }
                     key={ clientIndex }
@@ -642,17 +630,9 @@ function ChooseServices( { pageData, reloadPageData }: {
                     { name, description } = packageDataMap[ packageId ],
                     serviceKeyMap = packageServiceKeyMap[ packageId ],
                     serviceKeyList = Object.keys( serviceKeyMap )
-                        .filter( packageServiceId => {
-
-                            const
-                                serviceId: string = serviceKeyMap[ packageServiceId ],
-                                { status } = maintenanceDataMap[ serviceId ]
-                            ;
-                            return ( status === "active" );
-
-                        } ).map( packageServiceId => serviceKeyMap[ packageServiceId ] )
+                        .filter( serviceId => ( maintenanceDataMap[ serviceId ].status === "active" ) )
                 ;
-                if( serviceKeyList.length <= 1 ) return <></>;
+                if( serviceKeyList.length <= 1 ) return undefined;
 
                 return <div className="package-box" key={ packageId }>
                     <h3>{ name }</h3>
@@ -832,6 +812,8 @@ function Summary( { pageData, reloadPageData }: {
         { date, clientDataMap, clientInfoMap, maintenanceDataMap } = pageData
     ;
 
+
+
     async function checkFormValidity(): Promise< boolean > {
     
         return true;
@@ -855,7 +837,8 @@ function Summary( { pageData, reloadPageData }: {
     return <>
         <h1>Summary</h1>
         <h1>Date: { DateUtils.toString( date, "Mmmm dd, yyyy" ) }</h1>
-        <Receipt pageData={ pageData } reloadPageData={ reloadPageData }/>
+        {/* <Receipt pageData={ pageData } reloadPageData={ reloadPageData }/> */}
+        <BookingReceipt pageData={ pageData }/>
         Voucher/s:
         <div>
 
@@ -891,8 +874,8 @@ function Receipt( { pageData, reloadPageData }: {
                     { packageIncluded, singleServiceIncluded, serviceTransactionDataMap, serviceIncludedMap } = clientInfoMap[ +clientIndex ]
                 ;
 
-                return <>
-                    <tr key={ clientIndex }><td colSpan={ 2 }>{ name }</td></tr>
+                return <Fragment key={ clientIndex }>
+                    <tr><td colSpan={ 2 }>{ name }</td></tr>
                     {
                         Object.keys( packageIncluded ).map( packageKey => {
 
@@ -904,17 +887,16 @@ function Receipt( { pageData, reloadPageData }: {
                                 <td>
                                     { name }
                                     <ul>{
-                                        Object.keys( packageServiceKeyMap[ packageKey ] ).map( packageServiceId => {
+                                        Object.keys( packageServiceKeyMap[ packageKey ] ).map( serviceId => {
                                             
                                             const
-                                                serviceId: string = packageServiceKeyMap[ packageKey ][ packageServiceId ],
                                                 { name } = serviceDataMap[ serviceId ],
                                                 serviceTransactionId = serviceIncludedMap[ serviceId ],
                                                 { bookingFromDateTime, bookingToDateTime } = serviceTransactionDataMap[ serviceTransactionId ],
                                                 dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime )
                                             ;
-                                            return <li key={ packageServiceId }>
-                                                { `> ` }{ name }{ `(${ dateRange.toString( "h:mmAM-h:mmAM" ) })` }
+                                            return <li key={ serviceId }>
+                                                { `> ` }{ name }{ ` (${ dateRange.toString( "h:mmAM-h:mmAM" ) })` }
                                             </li>;
 
                                         } )
@@ -925,7 +907,7 @@ function Receipt( { pageData, reloadPageData }: {
 
                         } )
                     }
-                </>;
+                </Fragment>;
 
             } )
         }</tbody>
