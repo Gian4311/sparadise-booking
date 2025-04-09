@@ -1,25 +1,26 @@
 /* Reusing the navbar styles from ClientIndex.css */
 .account-container {
-    max-width: 1500px;
-    margin: 20px auto;
+    width: 70%;
+    margin: 2% auto;
     background-color: #ffe4e6; /* Soft pink background */
-    padding: 20px;
-    border-radius: 12px;
+    padding: 2%;
+    border-radius: 3%;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
   }
   
   .account-details h1 {
     text-align: center;
     font-size: 4rem;
-    margin-bottom: 20px;
+    margin-bottom: 5%;
     color: black;
   }
   
   .form-row-group {
     display: flex;
     justify-content: space-between;
-    gap: 10px; /* Adds space between inputs */
-    margin-bottom: 15px;
+    gap: 3%; /* Adds space between inputs */
+    margin-bottom: 2%;
   }
   
   .form-row {
@@ -29,16 +30,16 @@
   }
   
   label {
-    margin-bottom: 5px;
+    margin-bottom: 2%;
     font-size: 1.2rem;
     font-weight: bold;
   }
   
   .account-input, .account-select {
-    padding: 10px;
+    padding: 5%;
     border: none;
-    border-radius: 10px;
-    font-size: 14px;
+    border-radius: 0%;
+    font-size: 150%;
     background-color: rgba(255,255,255, .7);
   }
   
@@ -50,41 +51,60 @@
   .divider {
     border: none;
     border-top: 2px solid black;
-    margin: 20px 0;
+    margin: 2% 0;
   }
   
   .action-buttons {
     display: flex;
     justify-content: space-between;
-    margin-top: 20px;
+    align-items: center;
+    margin-top: 4%;
   }
   
-  .delete-account-btn, .save-changes-btn {
-    margin-top: 60px;
-    padding: 10px 20px;
+  .left-buttons,
+  .right-buttons {
+    display: flex;
+    gap: 20%;
+  }
+  
+  .delete-account-btn,
+  .save-changes-btn,
+  .cancel-account-btn {
+    padding: 10% 10%;
     border: none;
     border-radius: 10px;
-    font-size: 14px;
+    font-size: 100%;
     cursor: pointer;
   }
   
   .delete-account-btn {
     background-color: #e63946;
+    color: black;
+  }
+  
+  .cancel-account-btn {
+    background-color: #4a2c54;
     color: white;
   }
   
   .save-changes-btn {
-    background-color: #4a2c54;
+    background-color: #00771a;
     color: white;
+    white-space: nowrap;
   }
   
   .delete-account-btn:hover {
     background-color: #c22c39;
   }
   
-  .save-changes-btn:hover {
+  .cancel-account-btn:hover {
     background-color: #371f40;
   }
+  
+  .save-changes-btn:hover {
+    background-color: #004417;
+  }
+  
   
   .notification-container {
     align-items: center;

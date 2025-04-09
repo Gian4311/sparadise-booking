@@ -16,7 +16,7 @@ export default function EmployeeSidebar(): JSX.Element {
                 <div className="client-home-nav-center">
                     <Link to="/newindex" className="client-home-link">Home</Link>
                     <a href="#" className="client-home-link">Bookings</a>
-                    <a href="#" className="client-home-link">Account</a>
+                    <Link to="clients/:accountId/account" className="client-home-link">Account</Link>
                     <a href="#" className="client-home-link">Log-In</a>
                 </div>
 

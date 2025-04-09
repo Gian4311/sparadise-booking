@@ -16,7 +16,7 @@ import ServiceMenu from "./pages/ServiceMenu_v0";
 import ServicePackageMenu from "./pages/ServicePackageMenu_v0";
 import VoucherManagement from "./pages/VoucherManagement_v0";
 import VoucherMenu from "./pages/VoucherMenu_v0";
-import Homepage from "./pages/ClientIndex";
+import Homepage from "./pages/NewClientIndex";
 import Booking1 from "./pages/Booking1";
 
 import NewHomepage from "./pages/NewClientIndex";

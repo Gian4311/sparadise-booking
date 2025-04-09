@@ -15,27 +15,13 @@ import Pedicure from "../images/pedcure.jpg";
 import Waxing from "../images/waxing.jpg";
 import Gluta from "../images/gluta.jpeg";
 
+import NavBar from "../components/ClientNavBar";
+
 
 export default function ClientHomePage() {
     return (<div className="client-home-container">
 
-        {/* Navbar */}
-        <nav className="client-home-navbar">
-            <div className="client-home-nav-left">
-                <img src={SparadiseLogo} alt="SpaRadise Logo" className="client-home-logo" />
-            </div>
-
-            <div className="client-home-nav-center">
-                <a href="#" className="client-home-link">Home</a>
-                <a href="#" className="client-home-link">Bookings</a>
-                <a href="#" className="client-home-link">Account</a>
-                <a href="#" className="client-home-link">Log-In</a>
-            </div>
-
-            <div className="client-home-nav-right">
-                <img src={NotificationSymbol} alt="Notifications" className="client-home-icon" />
-            </div>
-        </nav>
+        <NavBar></NavBar>
 
         {/* Hero Section */}
         <div className="client-home-hero">
