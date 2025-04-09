@@ -1,0 +1,229 @@
+body,
+html {
+    height: 100%;
+}
+
+/* Navbar */
+/* Sticky Navbar */
+.client-home-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 2rem;
+    background-color:  rgba(91, 27, 102, 0.8);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    position: sticky;
+    top: 0;  /* This will stick the navbar to the top of the viewport */
+    width: 100%;  /* Ensure the navbar takes up the full width */
+}
+
+
+.client-home-nav-left {
+    flex: 1;
+}
+
+.client-home-logo {
+    height: 60px;
+}
+
+.client-home-nav-center {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.client-home-link {
+    text-decoration: none;
+    color: white;
+    font-weight: 500;
+    font-size: 120%;
+    transition: color 0.3s ease;
+    margin: 2%;
+}
+
+.client-home-link:hover {
+    color: #eabcff;
+}
+
+.client-home-nav-right {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.client-home-icon {
+    height: 24px;
+    width: 24px;
+    cursor: pointer;
+}
+
+.client-home-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Navbar */
+.client-home-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 2rem;
+    background-color: #5B1B66;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+/* Hero Section */
+.client-home-hero {
+    position: relative;
+    height: 100vh;
+    /* Ensures hero section takes full viewport height */
+    overflow: hidden;
+}
+
+.client-home-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+}
+
+.client-home-hero-overlay {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    background: rgba(0, 0, 0, 0.4);
+    text-align: center;
+}
+
+.client-home-title {
+    font-size: 5rem;
+    margin-bottom: 0.5rem;
+}
+
+.client-home-subtitle {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.client-home-button {
+    padding: 1.5rem 2.5rem;
+    font-size: 1.2rem;
+    border: 2px solid white;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    border-radius: 30px;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+.client-home-button:hover {
+    background: white;
+    color: #000;
+}
+
+/* Services Section */
+
+/* Services Section */
+
+.services-container::-webkit-scrollbar {
+    height: 8px;  /* Set the height of the horizontal scrollbar */
+}
+
+.services-container::-webkit-scrollbar-thumb {
+    background-color: #000;  /* Set the color of the scrollbar thumb (draggable part) */
+    border-radius: 10px;  /* Optional: Round the corners of the scrollbar thumb */
+}
+
+.services-container::-webkit-scrollbar-track {
+    background: #f1f1f1;  /* Set the color of the scrollbar track */
+    border-radius: 10px;  /* Optional: Round the corners of the scrollbar track */
+}
+
+.services-section {
+    padding: 2rem;
+    background-color: #F8E0E1;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.services-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 1.5rem;
+}
+
+.service-item {
+    flex: 0 0 auto;
+    width: 200px;
+    text-align: center;
+}
+
+.service-image {
+    width: 200px;  /* Set a fixed width */
+    height: 200px; /* Set a fixed height */
+    object-fit: cover; /* Ensure the image covers the entire container without stretching */
+    border-radius: 10px;
+}
+
+.service-title {
+    font-size: 1.5rem;
+    margin: 0.5rem 0;
+}
+
+.service-description {
+    font-size: 1rem;
+    color: #555;
+}
+
+
+/* Opening Hours Section */
+.hours-section {
+    background-color: rgba(91, 27, 102);
+    padding: 2rem;
+    text-align: center;
+    color: #F8E0E1;
+}
+
+.hours-section ul {
+    list-style-type: none;
+    padding: 0;
+    font-size: 1.2rem;
+    margin: 3%;
+}
+
+.hours-section li {
+    margin: 2%;
+}
+
+/* Contact Us Section */
+.contact-section {
+    background-color: #F8E0E1;
+    padding: 2rem;
+    text-align: center;
+}
+
+.contact-section p {
+    font-size: 1.2rem;
+    margin: 0.5rem 0;
+}
+
+.contact-section a {
+    text-decoration: none; /* Removes the underline */
+    color: inherit;
+}
