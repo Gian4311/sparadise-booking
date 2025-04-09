@@ -400,8 +400,9 @@ export default class BookingCalendar {
         ;
         for( let index: number = 0; index < timeSlotIdList.length; index++ ) {
 
+            const timeSlotId: string = timeSlotIdList[ index ];
+            if( !( timeSlotId in timeSlotDataMap ) ) continue;
             const
-                timeSlotId: string = timeSlotIdList[ index ],
                 { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
                 timeSlotIdAbove: string | undefined = this.getTimeSlotIdAbove( timeSlotId ),
                 timeSlotIdBelow: string | undefined = this.getTimeSlotIdBelow( timeSlotId ),
