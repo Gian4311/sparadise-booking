@@ -75,7 +75,7 @@ export interface NewBookingPageData extends SpaRadisePageData {
     clientInfoMap: {
         [clientIndex: number]: {
             packageIncluded: { [packageId: documentId]: boolean },
-            serviceIncludedMap: { [serviceId: documentId]: string },
+            serviceIncludedMap: { [serviceId: documentId]: documentId },
             serviceTransactionDataMap: { [serviceTransactionId: string]: ServiceTransactionData },
             serviceTransactionIndex: number,
             showPackages: boolean,
@@ -656,7 +656,7 @@ function ChooseServices({ pageData, reloadPageData }: {
                                 data-client={`client${clientIndex}`}
                                 onClick={() => handleChangeClientActive(+clientIndex)}
                             >
-                                {clientDataMap[clientIndex].name}
+                                {clientDataMap[+clientIndex].name}
                             </div>
                         )
                     }
@@ -669,13 +669,13 @@ function ChooseServices({ pageData, reloadPageData }: {
                 <div className={showPackages ? "package-scroll-container" : "hidden"}>
                     {Object.keys(packageDataMap).map(packageId => {
                         const { price, status } = maintenanceDataMap[packageId];
-                        if (status === "inactive") return null;
+                        if (status === "inactive") return undefined;
 
                         const { name, description } = packageDataMap[packageId];
                         const serviceKeyMap = packageServiceKeyMap[packageId];
                         const serviceKeyList = Object.keys(serviceKeyMap)
                             .filter(serviceId => maintenanceDataMap[serviceId].status === "active" )
-                            .map(packageServiceId => serviceKeyMap[packageServiceId]);
+                        ;
 
                         if (serviceKeyList.length <= 1) return undefined;
 
@@ -718,7 +718,7 @@ function ChooseServices({ pageData, reloadPageData }: {
                     {Object.keys(serviceDataMap).map(serviceId => {
                         const { name, description } = serviceDataMap[serviceId];
                         const { price, status } = maintenanceDataMap[serviceId];
-                        if (status === "inactive") return null;
+                        if (status === "inactive") return undefined;
 
                         return (
                             <div className="service-scroll-item" key={serviceId}>
@@ -980,11 +980,10 @@ function Receipt({ pageData, reloadPageData }: {
                                 <td>
                                     <div className="package-name-summary">{packageName}</div>
                                     {Object.keys(packageServiceKeyMap[packageKey]).map(
-                                        (packageServiceId) => {
-                                            const serviceId =
-                                                packageServiceKeyMap[packageKey][packageServiceId];
+                                        serviceId => {
                                             const { name: serviceName } = serviceDataMap[serviceId];
                                             const serviceTransactionId = serviceIncludedMap[serviceId];
+                                            if( !serviceTransactionId ) return undefined;
                                             const {
                                                 bookingFromDateTime,
                                                 bookingToDateTime,
@@ -994,7 +993,7 @@ function Receipt({ pageData, reloadPageData }: {
                                                 bookingToDateTime
                                             );
                                             return (
-                                                <div key={packageServiceId}>
+                                                <div key={serviceId}>
                                                     {'> '}{serviceName} ({dateRange.toString("h:mmAM-h:mmAM")})
                                                 </div>
                                             );
