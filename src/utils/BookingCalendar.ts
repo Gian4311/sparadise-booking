@@ -188,7 +188,7 @@ export default class BookingCalendar {
         if( !( timeSlotId in timeSlotDataMap ) ) return false;
 
         // checking if there's available rooms/chairs
-        if( !this.hasAvailableRoomTypeCount( serviceTransactionData, clientId ) )
+        if( !this.hasAvailableRoomTypeCount( serviceTransactionData, serviceTransactionId, clientId ) )
             return false;
 
         // checking if there is assignable employee
@@ -197,7 +197,9 @@ export default class BookingCalendar {
                 clientId, serviceTransactionId, serviceTransactionData, rowPosition
             },
             timeSlotDataList: TimeSlotData[] = [
-                ...this.getPossibleConflictingTimeSlotDataList( serviceTransactionData ),
+                ...this.getPossibleConflictingTimeSlotDataList(
+                    serviceTransactionData, serviceTransactionId
+                ),
                 timeSlotData
             ],
             serviceTransactionEmployeeListKeyMap: ServiceTransactionEmployeeListKeyMap = {},
@@ -323,110 +325,76 @@ export default class BookingCalendar {
 
     }
 
-    private getAvailableChairs( timeSlotId: string ): number {
+    private getAvailableChairs( timeSlotId: string, clientIdIgnore: documentId ): number {
 
         const
             clientMap: { [ clientId: documentId ]: undefined } = {},
             { chairs, chairTimeSlotDataList } = this.timeSlotDataMap[ timeSlotId ]
         ;
-        for( let { clientId } of chairTimeSlotDataList ) clientMap[ clientId ] = undefined;
+        for( let { clientId } of chairTimeSlotDataList )
+            if( clientId !== clientIdIgnore ) clientMap[ clientId ] = undefined;
         return ( chairs - ObjectUtils.keyLength( clientMap ) );
 
     }
 
-    private getAvailableRooms( timeSlotId: string ): number {
+    private getAvailableRooms( timeSlotId: string, clientIdIgnore: documentId ): number {
 
         const
             clientMap: { [ clientId: documentId ]: undefined } = {},
             { rooms, roomTimeSlotDataList } = this.timeSlotDataMap[ timeSlotId ]
         ;
-        for( let { clientId } of roomTimeSlotDataList ) clientMap[ clientId ] = undefined;
+        for( let { clientId } of roomTimeSlotDataList )
+            if( clientId !== clientIdIgnore ) clientMap[ clientId ] = undefined;
         return ( rooms - ObjectUtils.keyLength( clientMap ) );
 
     }
 
     private getPossibleConflictingTimeSlotDataList(
-        serviceTransactionData: ServiceTransactionData
+        serviceTransactionData: ServiceTransactionData,
+        serviceTransactionId: documentId
     ): TimeSlotData[] {
 
         const
-            timeSlotIdList: string[] = [],
-            serviceTransactionDataList = this.preprocessServiceTransactionData(
-                serviceTransactionData
-            )
-        ;
-        switch( serviceTransactionDataList.length ) {
-            
-            case 2:
-                const
-                    {
-                        bookingFromDateTime: bookingFromDateTime1,
-                        bookingToDateTime: bookingToDateTime1
-                    } = serviceTransactionDataList[ 0 ],
-                    {
-                        bookingFromDateTime: bookingFromDateTime2,
-                        bookingToDateTime: bookingToDateTime2
-                    } = serviceTransactionDataList[ 1 ],
-                    dateRange1: DateRange = new DateRange(
-                        bookingFromDateTime1, bookingToDateTime1
-                    ),
-                    dateRange2: DateRange = new DateRange(
-                        bookingFromDateTime2, bookingToDateTime2
-                    ),
-                    timeSlotId1: string = dateRange1.toString( DATE_RANGE_FORMAT ),
-                    timeSlotId2: string = dateRange2.toString( DATE_RANGE_FORMAT )
-                ;
-                timeSlotIdList.push( timeSlotId1 );
-                timeSlotIdList.push( timeSlotId2 );
-                break;
-            
-            case 0: return [];
-
-            default:
-                const
-                    { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
-                    dateRange: DateRange = new DateRange(
-                        bookingFromDateTime, bookingToDateTime
-                    ),
-                    timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
-                ;
-                serviceTransactionData = serviceTransactionDataList[ 0 ];
-                timeSlotIdList.push( timeSlotId );
-
-        }
-        const
             { timeSlotDataMap } = this,
+            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
+            timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT ),
+            timeSlotIdList: string[] = [ timeSlotId ],
             timeSlotDataList: TimeSlotData[] = []
         ;
         for( let index: number = 0; index < timeSlotIdList.length; index++ ) {
 
-            const timeSlotId: string = timeSlotIdList[ index ];
-            if( !( timeSlotId in timeSlotDataMap ) ) continue;
             const
+                timeSlotId: string = timeSlotIdList[ index ],
                 { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
                 timeSlotIdAbove: string | undefined = this.getTimeSlotIdAbove( timeSlotId ),
                 timeSlotIdBelow: string | undefined = this.getTimeSlotIdBelow( timeSlotId ),
                 rowTimeSlotDataList: TimeSlotData[] = [
                     ...chairTimeSlotDataList, ...roomTimeSlotDataList
-                ]
+                ].filter( ( { serviceTransactionId: serviceTransactionIdCompare } ) =>
+                    ( serviceTransactionId !== serviceTransactionIdCompare )
+                )
             ;
             timeSlotDataList.push( ...rowTimeSlotDataList );
             let
                 mightConflictWithAbove: boolean = false, 
                 mightConflictWithBelow: boolean = false
             ;
-            for( let { rowPosition } of timeSlotDataList ) {
+            for( let { rowPosition } of rowTimeSlotDataList ) {
 
                 switch( rowPosition ) {
     
                     case "down":
+                        if( mightConflictWithAbove ) break;
                         if( timeSlotIdAbove && !timeSlotIdList.includes( timeSlotIdAbove ) )
                         mightConflictWithAbove = true;
                         break;
                     
                     case "up":
+                        if( mightConflictWithBelow ) break;
                         if( timeSlotIdBelow && !timeSlotIdList.includes( timeSlotIdBelow ) )
                         mightConflictWithBelow = true;
+                        console.log( timeSlotDataList )
                         break;
     
                 }
@@ -534,6 +502,7 @@ export default class BookingCalendar {
 
     private hasAvailableRoomTypeCount(
         serviceTransactionData: ServiceTransactionData,
+        serviceTransactionId: documentId,
         clientId: documentId
     ): boolean {
 
@@ -550,8 +519,12 @@ export default class BookingCalendar {
         ;
         for( let timeSlotData of timeSlotDataList ) {
 
-            const { clientId: clientIdCompare } = timeSlotData;
-            if( clientId !== clientIdCompare ) continue;
+            const {
+                serviceTransactionId: serviceTransactionIdCompare,
+                clientId: clientIdCompare
+            } = timeSlotData;
+            if( clientId !== clientIdCompare || serviceTransactionId === serviceTransactionIdCompare )
+                continue;
             compatibleTimeSlotDataList.push( timeSlotData );
             if( compatibleTimeSlotDataList.length >= 2 ) return false;
 
@@ -570,8 +543,8 @@ export default class BookingCalendar {
         const
             { roomType } = serviceDataMap[ serviceId ],
             roomTypeAvailableCount: number =
-                ( roomType === "chair" ) ? this.getAvailableChairs( timeSlotId )
-                : this.getAvailableRooms( timeSlotId )
+                ( roomType === "chair" ) ? this.getAvailableChairs( timeSlotId, clientId )
+                : this.getAvailableRooms( timeSlotId, clientId )
         ;
         return ( roomTypeAvailableCount > 0 );
 
@@ -751,11 +724,13 @@ export default class BookingCalendar {
                 inBetween: Date = DateUtils.addTime( bookingFromDateTime, { min: 30 } ),
                 serviceTransactionData1 = {
                     ...serviceTransactionData,
+                    bookingFromDateTime,
                     bookingToDateTime: inBetween
                 },
                 serviceTransactionData2 = {
                     ...serviceTransactionData,
-                    bookingFromDateTime: inBetween
+                    bookingFromDateTime: inBetween,
+                    bookingToDateTime
                 }
             ;
             serviceTransactionDataList.push( serviceTransactionData1, serviceTransactionData2 );
