@@ -11,6 +11,7 @@ import {
 } from "../firebase/SpaRadiseTypes";
 import ObjectUtils from "./ObjectUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
+import StringUtils from "./StringUtils";
 
 type timeSlotRowPosition = ( "single" | "up" | "down" );
 
@@ -188,7 +189,7 @@ export default class BookingCalendar {
         if( !( timeSlotId in timeSlotDataMap ) ) return false;
 
         // checking if there's available rooms/chairs
-        if( !this.hasAvailableRoomTypeCount( serviceTransactionData, serviceTransactionId, clientId ) )
+        if( !this.hasAvailableRoomType( serviceTransactionData, serviceTransactionId, clientId ) )
             return false;
 
         // checking if there is assignable employee
@@ -196,8 +197,8 @@ export default class BookingCalendar {
             timeSlotData: TimeSlotData = {
                 clientId, serviceTransactionId, serviceTransactionData, rowPosition
             },
-            timeSlotDataList: TimeSlotData[] = [
-                ...this.getPossibleConflictingTimeSlotDataList(
+            timeSlotDataConflictingList: TimeSlotData[] = [
+                ...this.getTimeSlotDataConflictingList(
                     serviceTransactionData, serviceTransactionId
                 ),
                 timeSlotData
@@ -205,7 +206,7 @@ export default class BookingCalendar {
             serviceTransactionEmployeeListKeyMap: ServiceTransactionEmployeeListKeyMap = {},
             timeSlotServiceEmployeeListKeyMap: TimeSlotServiceEmployeeListKeyMap = {}
         ;
-        for( let timeSlotData of timeSlotDataList ) {
+        for( let timeSlotData of timeSlotDataConflictingList ) {
 
             const
                 {
@@ -222,22 +223,27 @@ export default class BookingCalendar {
                     this.getServiceEmployeeKeyMap( dateRange )
                 ;
             serviceTransactionEmployeeListKeyMap[ serviceTransactionId ] =
-                timeSlotServiceEmployeeListKeyMap[ timeSlotId ][ serviceId ]
+                ( serviceTransactionId in serviceTransactionEmployeeListKeyMap ) ?
+                    StringUtils.arrayIntersection(
+                        serviceTransactionEmployeeListKeyMap[ serviceTransactionId ],
+                        timeSlotServiceEmployeeListKeyMap[ timeSlotId ][ serviceId ]
+                    )
+                : timeSlotServiceEmployeeListKeyMap[ timeSlotId ][ serviceId ]
             ;
 
         }
         const
-            employeeAssignedIdList: number[] = timeSlotDataList.map( () => 0 ),
+            employeeAssignedIdList: number[] = timeSlotDataConflictingList.map( () => 0 ),
             employeeAssignedIndexMap: EmployeeAssignedIndexMap = {}
         ;
         for(
             let timeSlotIndex: number = 0;
-            timeSlotIndex >= 0 && timeSlotIndex < timeSlotDataList.length;
+            timeSlotIndex >= 0 && timeSlotIndex < timeSlotDataConflictingList.length;
             timeSlotIndex++
         ) {
 
             const
-                { serviceTransactionId } = timeSlotDataList[ timeSlotIndex ],
+                { serviceTransactionId } = timeSlotDataConflictingList[ timeSlotIndex ],
                 serviceEmployeeList = serviceTransactionEmployeeListKeyMap[ serviceTransactionId ]
             ;
             let
@@ -266,7 +272,9 @@ export default class BookingCalendar {
             }
 
         }
-        return ( timeSlotDataList.length === ObjectUtils.keyLength( employeeAssignedIndexMap ) );
+        return (
+            timeSlotDataConflictingList.length === ObjectUtils.keyLength( employeeAssignedIndexMap )
+        );
 
     }
 
@@ -325,87 +333,27 @@ export default class BookingCalendar {
 
     }
 
-    private getAvailableChairs( timeSlotId: string, clientIdIgnore: documentId ): number {
+    private getAvailableChairs( timeSlotId: string, clientIdIgnoreList: documentId[] = [] ): number {
 
         const
             clientMap: { [ clientId: documentId ]: undefined } = {},
             { chairs, chairTimeSlotDataList } = this.timeSlotDataMap[ timeSlotId ]
         ;
         for( let { clientId } of chairTimeSlotDataList )
-            if( clientId !== clientIdIgnore ) clientMap[ clientId ] = undefined;
+            if( !clientIdIgnoreList.includes( clientId ) ) clientMap[ clientId ] = undefined;
         return ( chairs - ObjectUtils.keyLength( clientMap ) );
 
     }
 
-    private getAvailableRooms( timeSlotId: string, clientIdIgnore: documentId ): number {
+    private getAvailableRooms( timeSlotId: string, clientIdIgnoreList: documentId[] = [] ): number {
 
         const
             clientMap: { [ clientId: documentId ]: undefined } = {},
             { rooms, roomTimeSlotDataList } = this.timeSlotDataMap[ timeSlotId ]
         ;
         for( let { clientId } of roomTimeSlotDataList )
-            if( clientId !== clientIdIgnore ) clientMap[ clientId ] = undefined;
+            if( !clientIdIgnoreList.includes( clientId ) ) clientMap[ clientId ] = undefined;
         return ( rooms - ObjectUtils.keyLength( clientMap ) );
-
-    }
-
-    private getPossibleConflictingTimeSlotDataList(
-        serviceTransactionData: ServiceTransactionData,
-        serviceTransactionId: documentId
-    ): TimeSlotData[] {
-
-        const
-            { timeSlotDataMap } = this,
-            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
-            timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT ),
-            timeSlotIdList: string[] = [ timeSlotId ],
-            timeSlotDataList: TimeSlotData[] = []
-        ;
-        for( let index: number = 0; index < timeSlotIdList.length; index++ ) {
-
-            const
-                timeSlotId: string = timeSlotIdList[ index ],
-                { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
-                timeSlotIdAbove: string | undefined = this.getTimeSlotIdAbove( timeSlotId ),
-                timeSlotIdBelow: string | undefined = this.getTimeSlotIdBelow( timeSlotId ),
-                rowTimeSlotDataList: TimeSlotData[] = [
-                    ...chairTimeSlotDataList, ...roomTimeSlotDataList
-                ].filter( ( { serviceTransactionId: serviceTransactionIdCompare } ) =>
-                    ( serviceTransactionId !== serviceTransactionIdCompare )
-                )
-            ;
-            timeSlotDataList.push( ...rowTimeSlotDataList );
-            let
-                mightConflictWithAbove: boolean = false, 
-                mightConflictWithBelow: boolean = false
-            ;
-            for( let { rowPosition } of rowTimeSlotDataList ) {
-
-                switch( rowPosition ) {
-    
-                    case "down":
-                        if( mightConflictWithAbove ) break;
-                        if( timeSlotIdAbove && !timeSlotIdList.includes( timeSlotIdAbove ) )
-                        mightConflictWithAbove = true;
-                        break;
-                    
-                    case "up":
-                        if( mightConflictWithBelow ) break;
-                        if( timeSlotIdBelow && !timeSlotIdList.includes( timeSlotIdBelow ) )
-                        mightConflictWithBelow = true;
-                        console.log( timeSlotDataList )
-                        break;
-    
-                }
-                if( mightConflictWithAbove && mightConflictWithBelow ) break;
-    
-            }
-            if( timeSlotIdAbove && mightConflictWithAbove ) timeSlotIdList.push( timeSlotIdAbove );
-            if( timeSlotIdBelow && mightConflictWithBelow ) timeSlotIdList.push( timeSlotIdBelow );
-
-        }
-        return timeSlotDataList;
 
     }
 
@@ -466,6 +414,65 @@ export default class BookingCalendar {
 
     }
 
+    private getTimeSlotDataConflictingList(
+        serviceTransactionData: ServiceTransactionData,
+        serviceTransactionId: documentId
+    ): TimeSlotData[] {
+
+        const
+            { timeSlotDataMap } = this,
+            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
+            timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT ),
+            timeSlotIdList: string[] = [ timeSlotId ],
+            timeSlotDataList: TimeSlotData[] = []
+        ;
+        for( let index: number = 0; index < timeSlotIdList.length; index++ ) {
+
+            const
+                timeSlotId: string = timeSlotIdList[ index ],
+                { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
+                timeSlotIdAbove: string | undefined = this.getTimeSlotIdAbove( timeSlotId ),
+                timeSlotIdBelow: string | undefined = this.getTimeSlotIdBelow( timeSlotId ),
+                rowTimeSlotDataList: TimeSlotData[] = [
+                    ...chairTimeSlotDataList, ...roomTimeSlotDataList
+                ].filter( ( { serviceTransactionId: serviceTransactionIdCompare } ) =>
+                    ( serviceTransactionId !== serviceTransactionIdCompare )
+                )
+            ;
+            timeSlotDataList.push( ...rowTimeSlotDataList );
+            let
+                mightConflictWithAbove: boolean = false, 
+                mightConflictWithBelow: boolean = false
+            ;
+            for( let { rowPosition } of rowTimeSlotDataList ) {
+
+                switch( rowPosition ) {
+    
+                    case "down":
+                        if( mightConflictWithAbove ) break;
+                        if( timeSlotIdAbove && !timeSlotIdList.includes( timeSlotIdAbove ) )
+                        mightConflictWithAbove = true;
+                        break;
+                    
+                    case "up":
+                        if( mightConflictWithBelow ) break;
+                        if( timeSlotIdBelow && !timeSlotIdList.includes( timeSlotIdBelow ) )
+                        mightConflictWithBelow = true;
+                        break;
+    
+                }
+                if( mightConflictWithAbove && mightConflictWithBelow ) break;
+    
+            }
+            if( timeSlotIdAbove && mightConflictWithAbove ) timeSlotIdList.push( timeSlotIdAbove );
+            if( timeSlotIdBelow && mightConflictWithBelow ) timeSlotIdList.push( timeSlotIdBelow );
+
+        }
+        return timeSlotDataList;
+
+    }
+
     private getTimeSlotIdAbove( timeSlotId: string ): string | undefined {
 
         
@@ -500,7 +507,7 @@ export default class BookingCalendar {
 
     }
 
-    private hasAvailableRoomTypeCount(
+    private hasAvailableRoomType(
         serviceTransactionData: ServiceTransactionData,
         serviceTransactionId: documentId,
         clientId: documentId
@@ -543,8 +550,8 @@ export default class BookingCalendar {
         const
             { roomType } = serviceDataMap[ serviceId ],
             roomTypeAvailableCount: number =
-                ( roomType === "chair" ) ? this.getAvailableChairs( timeSlotId, clientId )
-                : this.getAvailableRooms( timeSlotId, clientId )
+                ( roomType === "chair" ) ? this.getAvailableChairs( timeSlotId, [ clientId ] )
+                : this.getAvailableRooms( timeSlotId, [ clientId ] )
         ;
         return ( roomTypeAvailableCount > 0 );
 
