@@ -19,6 +19,8 @@ import VoucherMenu from "./pages/VoucherMenu_v0";
 import Homepage from "./pages/NewClientIndex";
 import Booking1 from "./pages/Booking1";
 
+import Dashboard from "./pages/EmployeeDashboard";
+
 import NewHomepage from "./pages/NewClientIndex";
 function App() {
 
@@ -47,6 +49,7 @@ function App() {
                 <Route path="management/employees/menu" element={ <EmployeeMenu/> }/>
 
                 <Route path="newindex" element={ <NewHomepage/> }/>
+                <Route path="dashboard" element={ <Dashboard/> }/>
             </Routes>
         </BrowserRouter>
     </>;
