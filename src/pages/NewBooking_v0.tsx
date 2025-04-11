@@ -74,13 +74,13 @@ export interface NewBookingPageData extends SpaRadisePageData {
     clientIndexActive: number,
     clientInfoMap: {
         [clientIndex: number]: {
-            packageIncluded: { [packageId: documentId]: boolean },
+            packageIncludedMap: { [packageId: documentId]: boolean },
             serviceIncludedMap: { [serviceId: documentId]: documentId },
             serviceTransactionDataMap: { [serviceTransactionId: string]: ServiceTransactionData },
             serviceTransactionIndex: number,
             showPackages: boolean,
             showServices: boolean,
-            singleServiceIncluded: { [serviceId: documentId]: boolean }
+            singleServiceIncludedMap: { [serviceId: documentId]: boolean }
         }
     },
     date: Date,
@@ -190,7 +190,7 @@ export default function NewBooking(): JSX.Element {
                 employeeLeaveDataMap: employeeLeaveOfDayDataMap,
                 serviceTransactionDataMap
             }
-            ;
+        ;
         pageData.bookingCalendar = new BookingCalendar(bookingCalendarPageData);
 
     }
@@ -215,13 +215,13 @@ export default function NewBooking(): JSX.Element {
             notes: null
         };
         pageData.clientInfoMap[-1] = {
-            packageIncluded: {},
+            packageIncludedMap: {},
             serviceIncludedMap: {},
             serviceTransactionDataMap: {},
             serviceTransactionIndex: 0,
             showPackages: true,
             showServices: false,
-            singleServiceIncluded: {}
+            singleServiceIncludedMap: {}
         };
 
     }
@@ -304,14 +304,12 @@ export default function NewBooking(): JSX.Element {
 
     useEffect(() => { loadPageData(); }, []);
 
-    useEffect(() => { handleChangeDate(); }, [pageData.date]);
-
     return <>
         {/* <EmployeeSidebar/> */}
         <form onSubmit={submit}>
             {
                 (pageData.formIndex === 0) ? <ChooseClients pageData={pageData} reloadPageData={reloadPageData} />
-                    : (pageData.formIndex === 1) ? <ChooseServices pageData={pageData} reloadPageData={reloadPageData} />
+                    : (pageData.formIndex === 1) ? <ChooseServices pageData={pageData} handleChangeDate={ handleChangeDate } reloadPageData={reloadPageData} />
                         : (pageData.formIndex === 2) ? <ChooseTimeSlots pageData={pageData} reloadPageData={reloadPageData} />
                             : (pageData.formIndex === 3) ? <Summary pageData={pageData} reloadPageData={reloadPageData} />
                                 // other form indexes
@@ -345,13 +343,13 @@ function ChooseClients({ pageData, reloadPageData }: {
             notes: null
         };
         clientInfoMap[clientIndex] = {
-            packageIncluded: {},
+            packageIncludedMap: {},
             serviceIncludedMap: {},
             serviceTransactionDataMap: {},
             serviceTransactionIndex: 0,
             showPackages: true,
             showServices: false,
-            singleServiceIncluded: {}
+            singleServiceIncludedMap: {}
         };
         pageData.clientIndex++;
         reloadPageData();
@@ -423,11 +421,10 @@ function ChooseClients({ pageData, reloadPageData }: {
                 <h1 className="booking-title">Who are the Clients?</h1>
 
                 {
-                    Object.keys(clientDataMap).sort().map((clientIndex, index) => {
+                    Object.keys(clientDataMap).sort().map( clientIndex => {
                         const clientData: ClientData = clientDataMap[clientIndex];
                         return (
-                            <div className="client-row">
-                                <div key={index}></div>
+                            <div className="client-row" key={ clientIndex }>
                                 <div className="client-input">
                                     <label>Name</label>
                                     <FormTinyTextInput documentData={clientData} keyName="name" pageData={pageData} required={true} />
@@ -463,8 +460,9 @@ function ChooseClients({ pageData, reloadPageData }: {
 
 }
 
-function ChooseServices({ pageData, reloadPageData }: {
+function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
     pageData: NewBookingPageData,
+    handleChangeDate: () => Promise< void >,
     reloadPageData: () => void
 }): JSX.Element {
 
@@ -474,7 +472,7 @@ function ChooseServices({ pageData, reloadPageData }: {
             packageServiceKeyMap, serviceDataMap
         } = pageData,
         {
-            packageIncluded, serviceIncludedMap, serviceTransactionDataMap, singleServiceIncluded,
+            packageIncludedMap, serviceIncludedMap, serviceTransactionDataMap, singleServiceIncludedMap,
             showPackages, showServices
         } = clientInfoMap[clientIndexActive]
         ;
@@ -484,7 +482,7 @@ function ChooseServices({ pageData, reloadPageData }: {
         if( isConflictingPackage( packageId ) ) return;
         for( let serviceId in packageServiceKeyMap[ packageId ] )
             await addServiceTransaction( serviceId, packageId );
-        packageIncluded[ packageId ] = true;
+        packageIncludedMap[ packageId ] = true;
         reloadPageData();
 
     }
@@ -508,11 +506,12 @@ function ChooseServices({ pageData, reloadPageData }: {
             package: packageId ? SpaRadiseFirestore.getDocumentReference(
                 packageId, SpaRadiseEnv.PACKAGE_COLLECTION
             ) : null,
-            status: "uncanceled",
-            bookingFromDateTime: null as unknown as Date,
-            bookingToDateTime: null as unknown as Date,
-            actualBookingFromDateTime: null,
-            actualBookingToDateTime: null,
+            canceled: false,
+            free: false,
+            bookingDateTimeStart: null as unknown as Date,
+            bookingDateTimeEnd: null as unknown as Date,
+            actualBookingDateTimeStart: null,
+            actualBookingDateTimeEnd: null,
             employee: null,
             notes: null
         };
@@ -527,7 +526,7 @@ function ChooseServices({ pageData, reloadPageData }: {
 
         if (isConflictingService(serviceId)) return;
         await addServiceTransaction(serviceId);
-        singleServiceIncluded[serviceId] = true;
+        singleServiceIncludedMap[serviceId] = true;
         reloadPageData();
 
     }
@@ -561,7 +560,7 @@ function ChooseServices({ pageData, reloadPageData }: {
 
         for( let serviceId in packageServiceKeyMap[ packageId ] )
             await deleteServiceTransaction( serviceId );
-        delete packageIncluded[ packageId ];
+        delete packageIncludedMap[ packageId ];
         reloadPageData();
 
     }
@@ -577,7 +576,7 @@ function ChooseServices({ pageData, reloadPageData }: {
     async function deleteSingleService(serviceId: documentId): Promise<void> {
 
         await deleteServiceTransaction(serviceId);
-        delete singleServiceIncluded[serviceId];
+        delete singleServiceIncludedMap[serviceId];
         reloadPageData();
 
     }
@@ -642,7 +641,7 @@ function ChooseServices({ pageData, reloadPageData }: {
             <section className="form-section client-date-section">
                 <div className="date-input">
                     <label className="input-label">Choose date</label>
-                    <NewBookingDateInput pageData={pageData} reloadPageData={reloadPageData} />
+                    <NewBookingDateInput pageData={pageData} onChange={handleChangeDate} reloadPageData={reloadPageData}/>
                 </div>
             </section>
             <div className="client-input">
@@ -696,7 +695,7 @@ function ChooseServices({ pageData, reloadPageData }: {
                                 </div>
                                 <div className="package-description">{description}</div>
                                 {
-                                    (packageId in packageIncluded) ? (
+                                    (packageId in packageIncludedMap) ? (
                                         <button className="remove-btn" type="button" onClick={() => deletePackage(packageId)}>Remove</button>
                                     ) : isConflictingPackage(packageId) ? (
                                         <button className="conf-btn" type="button">In Conflict</button>
@@ -726,7 +725,7 @@ function ChooseServices({ pageData, reloadPageData }: {
                                 <div className="service-name">{name}</div>
                                 <div className="service-description">{description}</div>
                                 {
-                                    (serviceId in singleServiceIncluded) ? (
+                                    (serviceId in singleServiceIncludedMap) ? (
                                         <button className="remove-btn" type="button" onClick={() => deleteSingleService(serviceId)}>Remove</button>
                                     ) : isConflictingService(serviceId) ? (
                                         <button className="conf-btn" type="button">In Conflict</button>
@@ -768,13 +767,13 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
             for (let serviceTransactionId in serviceTransactionDataMap) {
 
                 const
-                    { bookingFromDateTime, bookingToDateTime } = serviceTransactionDataMap[
+                    { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionDataMap[
                         serviceTransactionId
                     ]
                     ;
-                if (!bookingFromDateTime)
+                if (!bookingDateTimeStart)
                     throw new Error(`Booking from date time in ${serviceTransactionId} is undefined.`);
-                if (!bookingToDateTime)
+                if (!bookingDateTimeEnd)
                     throw new Error(`Booking to date time in ${serviceTransactionId} is undefined.`);
 
             }
@@ -860,7 +859,7 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
                             }</td>
                             <td>{name}</td>
                             <td>
-                                <ServiceTransactionTimeSlot clientId={clientIndexActive.toString()} documentData={serviceTransactionData} duration={durationMin} keyNameFrom="bookingFromDateTime" keyNameTo="bookingToDateTime" pageData={pageData} serviceTransactionId={serviceTransactionId} reloadPageData={reloadPageData}>
+                                <ServiceTransactionTimeSlot clientId={clientIndexActive.toString()} documentData={serviceTransactionData} duration={durationMin} keyNameFrom="bookingDateTimeStart" keyNameTo="bookingDateTimeEnd" pageData={pageData} serviceTransactionId={serviceTransactionId} reloadPageData={reloadPageData}>
                                     <option value="" disabled>Select time slot</option>
                                 </ServiceTransactionTimeSlot>
                             </td>
@@ -872,7 +871,7 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
             </table>
             <section className="action-buttons">
                 <button className="back-btn" type="button" onClick={previousPage}>Back</button>
-                <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (2/4)</button>
+                <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (3/4)</button>
             </section>
         </main>
     </>;
@@ -916,7 +915,9 @@ function Summary({ pageData, reloadPageData }: {
             </section>
             <h2 className="summary-label">Booking Summary</h2>
             <section className="form-section booking-summary-section">
-                <Receipt pageData={pageData} reloadPageData={reloadPageData} />            </section>
+                {/* <Receipt pageData={pageData} reloadPageData={reloadPageData} /> */}
+                <BookingReceipt pageData={ pageData }/>
+            </section>
 
             Voucher/s:
             <div>
@@ -924,7 +925,7 @@ function Summary({ pageData, reloadPageData }: {
             </div>
             <section className="action-buttons">
                 <button className="back-btn" type="button" onClick={previousPage}>Back</button>
-                <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (3/4)</button>
+                <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (4/4)</button>
             </section>
         </main>
     </>;
@@ -956,14 +957,14 @@ function Receipt({ pageData, reloadPageData }: {
                     const clientData = clientDataMap[+clientIndex];
                     const { name } = clientData;
                     const {
-                        packageIncluded,
-                        singleServiceIncluded,
+                        packageIncludedMap,
+                        singleServiceIncludedMap,
                         serviceTransactionDataMap,
                         serviceIncludedMap,
                     } = clientInfoMap[+clientIndex];
 
                     // Get total rows needed for rowspan
-                    const packageKeys = Object.keys(packageIncluded);
+                    const packageKeys = Object.keys(packageIncludedMap);
                     const totalRows = packageKeys.length;
 
                     return packageKeys.map((packageKey, idx) => {
@@ -985,12 +986,12 @@ function Receipt({ pageData, reloadPageData }: {
                                             const serviceTransactionId = serviceIncludedMap[serviceId];
                                             if( !serviceTransactionId ) return undefined;
                                             const {
-                                                bookingFromDateTime,
-                                                bookingToDateTime,
+                                                bookingDateTimeStart,
+                                                bookingDateTimeEnd,
                                             } = serviceTransactionDataMap[serviceTransactionId];
                                             const dateRange = new DateRange(
-                                                bookingFromDateTime,
-                                                bookingToDateTime
+                                                bookingDateTimeStart,
+                                                bookingDateTimeEnd
                                             );
                                             return (
                                                 <div key={serviceId}>

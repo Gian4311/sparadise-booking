@@ -84,16 +84,16 @@ export default function EmployeeLeaveMenu(): JSX.Element {
                 const
                     {
                         employee: { id: employeeId },
-                        fromDateTime, toDateTime, reason
+                        dateTimeStart, dateTimeEnd, reason
                     } = employeeLeaveDataMap[ employeeLeaveId ]
                 ;
                 return <Link key={ index } to={ "/management/employeeLeaves/" + employeeLeaveId }>
                     <div>
                         { PersonUtils.format( employeeDataMap[ employeeId ], "f mi l" ) }
                         { ` | ` }
-                        { DateUtils.toString( fromDateTime, "Mmmm dd, yyyy - hh:mm" ) }
+                        { DateUtils.toString( dateTimeStart, "Mmmm dd, yyyy - hh:mm" ) }
                         { ` | ` }
-                        { DateUtils.toString( toDateTime, "Mmmm dd, yyyy - hh:mm" ) }
+                        { DateUtils.toString( dateTimeEnd, "Mmmm dd, yyyy - hh:mm" ) }
                         { ` | `}
                         { reason }
                     </div>

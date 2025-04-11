@@ -124,8 +124,8 @@ export default class BookingCalendar {
         }
         const
             { timeSlotDataMap } = this,
-            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
+            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
             timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
         ;
         if( !( timeSlotId in timeSlotDataMap ) ) return false;
@@ -182,8 +182,8 @@ export default class BookingCalendar {
         // checking if time slot exists
         const
             { timeSlotDataMap } = this,
-            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
+            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
             timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
         ;
         if( !( timeSlotId in timeSlotDataMap ) ) return false;
@@ -211,11 +211,11 @@ export default class BookingCalendar {
             const
                 {
                     serviceTransactionData: {
-                        bookingFromDateTime, bookingToDateTime, service: { id: serviceId }
+                        bookingDateTimeStart, bookingDateTimeEnd, service: { id: serviceId }
                     },
                     serviceTransactionId
                 } = timeSlotData,
-                dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
+                dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
                 timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
             ;
             if( !( timeSlotId in timeSlotServiceEmployeeListKeyMap ) )
@@ -311,8 +311,8 @@ export default class BookingCalendar {
         }
         const
             { timeSlotDataMap } = this,
-            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
+            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
             timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
         ;
         if( !( timeSlotId in timeSlotDataMap ) ) return false;
@@ -359,10 +359,10 @@ export default class BookingCalendar {
 
     public getRowCount( serviceTransactionData: ServiceTransactionData ): number {
 
-        let { bookingFromDateTime, bookingToDateTime } = serviceTransactionData;
-        bookingFromDateTime = DateUtils.toFloorByMin( bookingFromDateTime, 30 );
-        bookingToDateTime = DateUtils.toCeilByMin( bookingToDateTime, 30 );
-        const minDiff: number = DateUtils.getMinDiff( bookingToDateTime, bookingFromDateTime );
+        let { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData;
+        bookingDateTimeStart = DateUtils.toFloorByMin( bookingDateTimeStart, 30 );
+        bookingDateTimeEnd = DateUtils.toCeilByMin( bookingDateTimeEnd, 30 );
+        const minDiff: number = DateUtils.getMinDiff( bookingDateTimeEnd, bookingDateTimeStart );
         return ( minDiff / 30 );
 
     }
@@ -373,8 +373,8 @@ export default class BookingCalendar {
             { jobDataMap, jobServiceDataMap, serviceDataMap } = this.pageData,
             employeeLeaveDataMap = ObjectUtils.filter(
                 this.pageData.employeeLeaveDataMap,
-                ( employeeLeaveId, { fromDateTime, toDateTime } ) => dateRange.overlapsWith(
-                    new DateRange( fromDateTime, toDateTime )
+                ( employeeLeaveId, { dateTimeStart, dateTimeEnd } ) => dateRange.overlapsWith(
+                    new DateRange( dateTimeStart, dateTimeEnd )
                 )
             ),
             employeeOnLeaveIdMap: { [ employeeId: string ]: undefined } = {},
@@ -421,8 +421,8 @@ export default class BookingCalendar {
 
         const
             { timeSlotDataMap } = this,
-            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
+            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
             timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT ),
             timeSlotIdList: string[] = [ timeSlotId ],
             timeSlotDataList: TimeSlotData[] = []
@@ -515,8 +515,8 @@ export default class BookingCalendar {
 
         const
             { timeSlotDataMap, pageData: { serviceDataMap } } = this,
-            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
+            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
             timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT ),
             { service: { id: serviceId } } = serviceTransactionData,
             serviceData = serviceDataMap[ serviceId ],
@@ -579,8 +579,8 @@ export default class BookingCalendar {
         }
         const
             { timeSlotDataMap } = this,
-            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
+            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
             timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
         ;
         if( !( timeSlotId in timeSlotDataMap ) ) return false;
@@ -616,8 +616,8 @@ export default class BookingCalendar {
         }
         const
             { timeSlotDataMap } = this,
-            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
+            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
             timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
         ;
         if( !( timeSlotId in timeSlotDataMap ) ) return -1;
@@ -718,33 +718,33 @@ export default class BookingCalendar {
         serviceTransactionData: ServiceTransactionData
     ): ServiceTransactionData[] {
 
-        let { bookingFromDateTime, bookingToDateTime } = serviceTransactionData;
-        bookingFromDateTime = DateUtils.toFloorByMin( bookingFromDateTime, 30 );
-        bookingToDateTime = DateUtils.toCeilByMin( bookingToDateTime, 30 );
+        let { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData;
+        bookingDateTimeStart = DateUtils.toFloorByMin( bookingDateTimeStart, 30 );
+        bookingDateTimeEnd = DateUtils.toCeilByMin( bookingDateTimeEnd, 30 );
         const
-            minDiff: number = DateUtils.getMinDiff( bookingToDateTime, bookingFromDateTime ),
+            minDiff: number = DateUtils.getMinDiff( bookingDateTimeEnd, bookingDateTimeStart ),
             serviceTransactionDataList: ServiceTransactionData[] = []
         ;
         if( minDiff === 60 ) {
 
             const
-                inBetween: Date = DateUtils.addTime( bookingFromDateTime, { min: 30 } ),
+                inBetween: Date = DateUtils.addTime( bookingDateTimeStart, { min: 30 } ),
                 serviceTransactionData1 = {
                     ...serviceTransactionData,
-                    bookingFromDateTime,
-                    bookingToDateTime: inBetween
+                    bookingDateTimeStart,
+                    bookingDateTimeEnd: inBetween
                 },
                 serviceTransactionData2 = {
                     ...serviceTransactionData,
-                    bookingFromDateTime: inBetween,
-                    bookingToDateTime
+                    bookingDateTimeStart: inBetween,
+                    bookingDateTimeEnd
                 }
             ;
             serviceTransactionDataList.push( serviceTransactionData1, serviceTransactionData2 );
 
         } else if( minDiff === 30 )
             serviceTransactionDataList.push( {
-                ...serviceTransactionData, bookingFromDateTime, bookingToDateTime
+                ...serviceTransactionData, bookingDateTimeStart, bookingDateTimeEnd
             } );
         return serviceTransactionDataList;
 

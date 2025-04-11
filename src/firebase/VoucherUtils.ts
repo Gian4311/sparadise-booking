@@ -115,7 +115,13 @@ export default class VoucherUtils {
             name: data.name,
             code: data.code,
             amount: data.amount,
-            percentage: data.percentage
+            percentage: data.percentage,
+            dateValid: SpaRadiseFirestore.getDateFromSnapshot(
+                snapshot, "dateValid"
+            ),
+            dateExpiry: SpaRadiseFirestore.getDateFromSnapshot(
+                snapshot, "dateExpiry"
+            )
         };
 
     }

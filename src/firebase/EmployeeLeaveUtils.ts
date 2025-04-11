@@ -106,8 +106,8 @@ export default class EmployeeLeaveUtils {
             employeeLeaveQuery = query(
                 employeeLeaveCollection,
                 and(
-                    where( "toDateTime", ">", dateTimeStart ),
-                    where( "fromDateTime", "<", dateTimeEnd ),
+                    where( "dateTimeEnd", ">", dateTimeStart ),
+                    where( "dateTimeStart", "<", dateTimeEnd ),
                     where( "status", "==", "approved" )
                 )
             ),
@@ -164,8 +164,8 @@ export default class EmployeeLeaveUtils {
         const data = snapshot.data();
         return {
             employee: data.employee,
-            fromDateTime: SpaRadiseFirestore.getDateFromSnapshot( snapshot, "fromDateTime" ),
-            toDateTime: SpaRadiseFirestore.getDateFromSnapshot( snapshot, "toDateTime" ),
+            dateTimeStart: SpaRadiseFirestore.getDateFromSnapshot( snapshot, "dateTimeStart" ),
+            dateTimeEnd: SpaRadiseFirestore.getDateFromSnapshot( snapshot, "dateTimeEnd" ),
             status: data.status,
             reason: data.reason
         };
@@ -180,8 +180,8 @@ export default class EmployeeLeaveUtils {
             ),
             employeeLeaveQuery = query(
                 employeeLeaveCollection,
-                orderBy( "fromDateTime", "desc" ),
-                orderBy( "toDateTime", "desc" )
+                orderBy( "dateTimeStart", "desc" ),
+                orderBy( "dateTimeEnd", "desc" )
             ),
             snapshotList: QueryDocumentSnapshot[] = ( await getDocs( employeeLeaveQuery ) ).docs,
             employeeLeaveDataMap: EmployeeLeaveDataMap = {}

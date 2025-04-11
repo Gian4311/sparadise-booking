@@ -104,18 +104,19 @@ export default class ServiceTransactionUtils {
             client: data.client,
             service: data.service,
             package: data.package,
-            status: data.status,
-            bookingFromDateTime: SpaRadiseFirestore.getDateFromSnapshot(
-                snapshot, "bookingFromDateTime"
+            canceled: data.canceled,
+            free: data.free,
+            bookingDateTimeStart: SpaRadiseFirestore.getDateFromSnapshot(
+                snapshot, "bookingDateTimeStart"
             ),
-            bookingToDateTime: SpaRadiseFirestore.getDateFromSnapshot(
-                snapshot, "bookingToDateTime"
+            bookingDateTimeEnd: SpaRadiseFirestore.getDateFromSnapshot(
+                snapshot, "bookingDateTimeEnd"
             ),
-            actualBookingFromDateTime: SpaRadiseFirestore.getDateFromSnapshot(
-                snapshot, "actualBookingFromDateTime"
+            actualBookingDateTimeStart: SpaRadiseFirestore.getDateFromSnapshot(
+                snapshot, "actualBookingDateTimeStart"
             ),
-            actualBookingToDateTime: SpaRadiseFirestore.getDateFromSnapshot(
-                snapshot, "actualBookingToDateTime"
+            actualBookingDateTimeEnd: SpaRadiseFirestore.getDateFromSnapshot(
+                snapshot, "actualBookingDateTimeEnd"
             ),
             employee: data.employee,
             notes: data.notes
@@ -160,13 +161,13 @@ export default class ServiceTransactionUtils {
             serviceTransactionCollection: CollectionReference =
                 SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.SERVICE_TRANSACTION_COLLECTION )
             ,
-            fromDateTime: Date = DateUtils.toFloorByDay( date ),
-            toDateTime: Date = DateUtils.toCeilByDay( date ),
+            dateTimeStart: Date = DateUtils.toFloorByDay( date ),
+            dateTimeEnd: Date = DateUtils.toCeilByDay( date ),
             serviceTransactionQuery = query(
                 serviceTransactionCollection,
-                where( "bookingFromDateTime", "<=", fromDateTime ),
-                where( "bookingToDateTime", ">", toDateTime ),
-                where( "status", "==", "uncanceled" )
+                where( "bookingDateTimeStart", "<=", dateTimeStart ),
+                where( "bookingDateTimeEnd", ">", dateTimeEnd ),
+                where( "canceled", "==", false )
             ),
             snapshotList: QueryDocumentSnapshot[] =
                 ( await getDocs( serviceTransactionQuery ) ).docs
