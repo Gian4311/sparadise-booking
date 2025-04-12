@@ -426,11 +426,11 @@ function ChooseClients({ pageData, reloadPageData }: {
                         return (
                             <div className="client-row" key={ clientIndex }>
                                 <div className="client-input">
-                                    <label>Name</label>
+                                    <label className="form-row-label" >Name</label>
                                     <FormTinyTextInput documentData={clientData} keyName="name" pageData={pageData} required={true} />
                                 </div>
                                 <div className="client-input">
-                                    <label>Birth Date</label>
+                                    <label className="form-row-label" >Birth Date</label>
                                     <FormDateInput documentData={clientData} keyName="birthDate" pageData={pageData} required={true} />
                                 </div>
                                 {

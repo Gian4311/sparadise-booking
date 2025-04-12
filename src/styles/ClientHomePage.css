@@ -153,6 +153,7 @@ html {
 
 .services-section {
     padding: 2rem;
+    color: black;
     background-color: #F8E0E1;
 }
 
@@ -216,6 +217,7 @@ html {
     background-color: #F8E0E1;
     padding: 2rem;
     text-align: center;
+    color: black;
 }
 
 .contact-section p {
