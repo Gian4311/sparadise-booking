@@ -49,6 +49,7 @@ export default class SpaRadiseEnv {
     public static VOUCHER_COLLECTION = "vouchers";
     public static VOUCHER_PACKAGE_COLLECTION = "voucherPackages";
     public static VOUCHER_SERVICE_COLLECTION = "voucherServices";
+    public static VOUCHER_TRANSACTION_COLLECTION = "voucherTransactions";
     public static ZIP_CODE_REGEX = `^[0-9]{4}$`;
 
     public static isRoomType( string: roomType ): boolean {

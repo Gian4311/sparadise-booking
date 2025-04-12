@@ -1,4 +1,10 @@
+import {
+    AccountData,
+    SpaRadisePageData
+} from "../firebase/SpaRadiseTypes";
+import AccountUtils from "../firebase/AccountUtils";
 import { DocumentReference } from "firebase/firestore/lite";
+import FormContactNumberInput from "../components/FormContactNumberInput";
 import FormDateInput from "../components/FormDateInput";
 import FormEmailInput from "../components/FormEmailInput";
 import {
@@ -11,15 +17,13 @@ import FormTextArea from "../components/FormTextArea";
 import FormTinyTextInput from "../components/FormTinyTextInput";
 import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
-import {
-    AccountData,
-    SpaRadisePageData
-} from "../firebase/SpaRadiseTypes";
-import AccountUtils from "../firebase/AccountUtils";
-import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
-import { useParams } from "react-router-dom";
 import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
-import FormContactNumberInput from "../components/FormContactNumberInput";
+import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
+import {
+    useNavigate,
+    useParams
+} from "react-router-dom";
+
 import "../styles/ClientAccount.css";
 import NavBar from "../components/ClientNavBar";
 
@@ -49,12 +53,13 @@ export default function MyAccount(): JSX.Element {
             loaded: false,
             updateMap: {}
         }),
-        accountId: string | undefined = useParams().accountId
-        ;
+        accountId: string | undefined = useParams().accountId,
+        navigate = useNavigate()
+    ;
 
     async function cancelAccountForm(): Promise<void> {
 
-        window.open(`/home`, `_self`);
+        
 
     }
 
@@ -71,7 +76,7 @@ export default function MyAccount(): JSX.Element {
         await AccountUtils.deleteAccount(accountId);
         // note: logout
         alert(`Deleted!`); // note: remove later
-        window.open(`/home`, `_self`);
+        navigate( "/" );
 
     }
 

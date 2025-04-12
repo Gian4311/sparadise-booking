@@ -14,9 +14,11 @@ import {
     ServiceMaintenanceData,
     ServiceTransactionData,
     ServiceTransactionDataMap,
-    SpaRadisePageData
+    SpaRadisePageData,
+    VoucherDataMap,
+    VoucherPackageDataMap,
+    VoucherServiceDataMap
 } from "../firebase/SpaRadiseTypes";
-import React from "react";
 import "../styles/ClientIndex.css";
 import "../styles/ClientBookingCreation.css";
 import AccountUtils from "../firebase/AccountUtils";
@@ -27,7 +29,6 @@ import Bullet from "../components/Bullet";
 import DateUtils from "../utils/DateUtils";
 import { DocumentReference } from "firebase/firestore/lite";
 import EmployeeLeaveUtils from "../firebase/EmployeeLeaveUtils";
-import EmployeeSidebar from "../components/EmployeeSidebar";
 import EmployeeUtils from "../firebase/EmployeeUtils";
 import FormDateInput from "../components/FormDateInput";
 import {
@@ -54,7 +55,14 @@ import ServiceUtils from "../firebase/ServiceUtils";
 import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import StringUtils from "../utils/StringUtils";
-import { useParams } from "react-router-dom";
+import {
+    useNavigate,
+    useParams
+} from "react-router-dom";
+import VoucherPackageUtils from "../firebase/VoucherPackageUtils";
+import VoucherServiceUtils from "../firebase/VoucherServiceUtils";
+import VoucherUtils from "../firebase/VoucherUtils";
+
 import NotificationSymbol from "../images/Notification Symbol.png";
 import SpaRadiseLogo from "../images/SpaRadise Logo.png"
 import "../styles/ClientBookingCreation2.css";
@@ -96,7 +104,18 @@ export interface NewBookingPageData extends SpaRadisePageData {
         [ packageId: documentId ]: { [ serviceId: documentId ]: documentId }
     },
     serviceDataMap: ServiceDataMap,
-    serviceTransactionOfDayDataMap: ServiceTransactionDataMap
+    serviceTransactionOfDayDataMap: ServiceTransactionDataMap,
+    voucherDataMap: VoucherDataMap,
+    voucherDataOfDayMap: VoucherDataMap,
+    voucherIncludedMap: { [ voucherId: documentId ]: boolean },
+    voucherPackageKeyMap: {
+        [ voucherId: documentId ]: { [ packageId: documentId ]: documentId }
+    },
+    voucherPackageMap: VoucherPackageDataMap,
+    voucherServiceKeyMap: {
+        [ voucherId: documentId ]: { [ serviceId: documentId ]: documentId }
+    },
+    voucherServiceMap: VoucherServiceDataMap
 }
 
 export default function NewBooking(): JSX.Element {
@@ -129,10 +148,17 @@ export default function NewBooking(): JSX.Element {
             packageServiceKeyMap: {},
             serviceDataMap: {} as ServiceDataMap,
             serviceTransactionOfDayDataMap: {},
-            updateMap: {}
+            updateMap: {},
+            voucherDataMap: {},
+            voucherDataOfDayMap: {},
+            voucherIncludedMap: {},
+            voucherPackageKeyMap: {},
+            voucherPackageMap: {},
+            voucherServiceMap: {},
+            voucherServiceKeyMap: {}
         }),
         accountId: string | undefined = useParams().accountId
-        ;
+    ;
 
     function addFormIndex(value: number = 1): void {
 
@@ -173,7 +199,8 @@ export default function NewBooking(): JSX.Element {
         await loadEmployeeData();
         pageData.serviceTransactionOfDayDataMap =
             await ServiceTransactionUtils.getServiceTransactionDataMapByDay(date)
-            ;
+        ;
+        await loadVoucherDataOfDayData();
         await loadBookingCalendar();
 
     }
@@ -235,23 +262,15 @@ export default function NewBooking(): JSX.Element {
 
     async function loadMaintenanceData(): Promise<void> {
 
-        const { date } = pageData;
-        if (!date) {
-
-            pageData.maintenanceDataMap = {};
-            reloadPageData();
-            return;
-
-        }
         const
+            { date } = pageData,
             packageMaintenanceDataMap =
                 await PackageMaintenanceUtils.getPackageMaintenanceDataMapByDate(date)
             ,
             serviceMaintenanceDataMap =
                 await ServiceMaintenanceUtils.getServiceMaintenanceDataMapByDate(date)
-            ;
+        ;
         pageData.maintenanceDataMap = { ...packageMaintenanceDataMap, ...serviceMaintenanceDataMap };
-        reloadPageData();
 
     }
 
@@ -265,6 +284,7 @@ export default function NewBooking(): JSX.Element {
         await loadFirstClient();
         await loadServiceData();
         await loadJobData();
+        await loadVoucherData();
         pageData.loaded = true;
         await handleChangeDate();
         reloadPageData();
@@ -289,6 +309,67 @@ export default function NewBooking(): JSX.Element {
 
     }
 
+    async function loadVoucherDataOfDayData(): Promise< void > {
+
+        pageData.voucherDataOfDayMap = {};
+        const
+            { date, voucherDataMap, voucherDataOfDayMap, voucherIncludedMap } = pageData,
+            dateTimeStart: Date = DateUtils.toFloorByDay( date ),
+            dateTimeEnd: Date = DateUtils.toCeilByDay( date ),
+            dateRange: DateRange = new DateRange( dateTimeStart, dateTimeEnd )
+        ;
+        for( let voucherId in voucherDataMap ) {
+
+            const
+                voucherData = voucherDataMap[ voucherId ],
+                { dateValid, dateExpiry } = voucherData,
+                dateRangeCompare: DateRange = new DateRange( dateValid, dateExpiry )
+            ;
+            if( dateRange.overlapsWith( dateRangeCompare ) )
+                voucherDataOfDayMap[ voucherId ] = voucherData;
+
+        }
+        for( let voucherId in voucherIncludedMap )
+            if( !( voucherId in voucherDataOfDayMap ) ) delete voucherIncludedMap[ voucherId ]; 
+
+    }
+
+    async function loadVoucherData(): Promise< void > {
+
+        const
+            { voucherPackageKeyMap, voucherServiceKeyMap } = pageData,
+            voucherDataMap = await VoucherUtils.getVoucherDataMapAll(),
+            voucherPackageDataMap = await VoucherPackageUtils.getVoucherPackageDataMapAll(),
+            voucherServiceDataMap = await VoucherServiceUtils.getVoucherServiceDataMapAll()
+        ;
+        pageData.voucherDataMap = voucherDataMap;
+        pageData.voucherPackageMap = voucherPackageDataMap;
+        pageData.voucherServiceMap = voucherServiceDataMap;
+        for( let voucherId in voucherDataMap ) {
+
+            voucherPackageKeyMap[ voucherId ] = {};
+            voucherServiceKeyMap[ voucherId ] = {};
+
+        }
+        for( let voucherPackageId in voucherPackageDataMap ) {
+
+            const {
+                voucher: { id: voucherId }, package: { id: packageId }
+            } = voucherPackageDataMap[ voucherPackageId ];
+            voucherPackageKeyMap[ voucherId ][ packageId ] = voucherPackageId;
+
+        }
+        for( let voucherServiceId in voucherServiceDataMap ) {
+
+            const {
+                voucher: { id: voucherId }, service: { id: serviceId }
+            } = voucherServiceDataMap[ voucherServiceId ];
+            voucherServiceKeyMap[ voucherId ][ serviceId ] = voucherServiceId;
+
+        }
+        
+    }
+
     function reloadPageData(): void {
 
         setPageData({ ...pageData });
@@ -309,11 +390,11 @@ export default function NewBooking(): JSX.Element {
         <form onSubmit={submit}>
             {
                 (pageData.formIndex === 0) ? <ChooseClients pageData={pageData} reloadPageData={reloadPageData} />
-                    : (pageData.formIndex === 1) ? <ChooseServices pageData={pageData} handleChangeDate={ handleChangeDate } reloadPageData={reloadPageData} />
-                        : (pageData.formIndex === 2) ? <ChooseTimeSlots pageData={pageData} reloadPageData={reloadPageData} />
-                            : (pageData.formIndex === 3) ? <Summary pageData={pageData} reloadPageData={reloadPageData} />
-                                // other form indexes
-                                : <button type="button" onClick={() => { pageData.formIndex--; reloadPageData(); }}>None, Go Back</button>
+                : (pageData.formIndex === 1) ? <ChooseServices pageData={pageData} handleChangeDate={ handleChangeDate } reloadPageData={reloadPageData} />
+                : (pageData.formIndex === 2) ? <ChooseTimeSlots pageData={pageData} reloadPageData={reloadPageData} />
+                : (pageData.formIndex === 3) ? <Summary pageData={pageData} reloadPageData={reloadPageData} />
+                // other form indexes
+                : <button type="button" onClick={() => { pageData.formIndex--; reloadPageData(); }}>None, Go Back</button>
             }
 
             <button type="button" onClick={() => console.log(pageData)}>Log page data</button>
@@ -330,8 +411,9 @@ function ChooseClients({ pageData, reloadPageData }: {
 
     const
         { clientDataMap, clientInfoMap } = pageData,
-        clientLength: number = ObjectUtils.keyLength(clientDataMap)
-        ;
+        clientLength: number = ObjectUtils.keyLength(clientDataMap),
+        navigate = useNavigate()
+    ;
 
     async function addClient(): Promise<void> {
 
@@ -410,7 +492,7 @@ function ChooseClients({ pageData, reloadPageData }: {
 
     async function previousPage(): Promise<void> {
 
-        window.open(`/home`, `_self`);
+        navigate( "/" );
 
     }
 
