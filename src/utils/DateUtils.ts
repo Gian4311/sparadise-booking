@@ -127,7 +127,7 @@ export default class DateUtils {
             newDate: Date = new Date( date ),
             min: number = newDate.getMinutes()
         ;
-        newDate.setMinutes( ceilByMin * Math.ceil( min / ceilByMin ) );
+        newDate.setMinutes( ceilByMin * Math.ceil( min / ceilByMin ), 0 );
         return newDate;
 
     }
@@ -138,7 +138,7 @@ export default class DateUtils {
             newDate: Date = new Date( date ),
             min: number = newDate.getMinutes()
         ;
-        newDate.setMinutes( floorByMin * Math.floor( min / floorByMin ) );
+        newDate.setMinutes( floorByMin * Math.floor( min / floorByMin ), 0 );
         return newDate;
 
     }

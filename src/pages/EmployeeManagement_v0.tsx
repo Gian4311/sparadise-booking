@@ -214,10 +214,8 @@ export default function EmployeeManagement(): JSX.Element {
 
     return <>
         <PopupModal pageData={pageData} reloadPageData={reloadPageData} />
+        <EmployeeSidebar />
         <form onSubmit={submit}>
-            <EmployeeSidebar />
-            
-
             <div className="employee-main-content">
                 <label htmlFor="employee-main-content" className="employee-management-location">Employees - {PersonUtils.format(pageData.employeeDefaultData, "f mi l")}</label>
                 <div className="employee-form-section">
@@ -304,7 +302,7 @@ export default function EmployeeManagement(): JSX.Element {
                         </div>
                         <div className="employee-form-row">
                             <label htmlFor="employee-region">Region</label>
-                            <FormSelect documentData={pageData.employeeData} documentDefaultData={pageData.employeeData} documentId={documentId} name="employee-region" keyName="region" optionList={SpaRadiseEnv.REGION_LIST} pageData={pageData} required={true}>
+                            <FormSelect documentData={pageData.employeeData} documentDefaultData={pageData.employeeDefaultData} documentId={documentId} name="employee-region" keyName="region" optionList={SpaRadiseEnv.REGION_LIST} pageData={pageData} required={true}>
                                 <option value="" disabled>Select region</option>
                                 <option value="XI">Davao Region (XI)</option>
                                 <option value="NCR">Metro Manila (NCR)</option>

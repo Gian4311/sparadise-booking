@@ -11,6 +11,7 @@ import {
 } from "../firebase/SpaRadiseTypes";
 import ObjectUtils from "./ObjectUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
+import StringUtils from "./StringUtils";
 
 type timeSlotRowPosition = ( "single" | "up" | "down" );
 
@@ -53,12 +54,24 @@ interface ServiceEmployeeListKeyMap {
 
 }
 
+interface ServiceTransactionEmployeeListKeyMap {
+
+    [ serviceTransactionId: string ]: documentId[]
+
+}
+
 interface TimeSlotData {
 
     clientId: documentId,
     serviceTransactionData: ServiceTransactionData,
     serviceTransactionId: string,
     rowPosition: timeSlotRowPosition
+
+}
+
+interface TimeSlotServiceEmployeeListKeyMap {
+
+    [ timeSlotId: string ]: ServiceEmployeeListKeyMap
 
 }
 
@@ -111,9 +124,9 @@ export default class BookingCalendar {
         }
         const
             { timeSlotDataMap } = this,
-            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
-            timeSlotId: string = dateRange.toString( "hh:mm-hh:mm" )
+            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
+            timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
         ;
         if( !( timeSlotId in timeSlotDataMap ) ) return false;
         const
@@ -169,50 +182,79 @@ export default class BookingCalendar {
         // checking if time slot exists
         const
             { timeSlotDataMap } = this,
-            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
-            timeSlotId: string = dateRange.toString( "hh:mm-hh:mm" )
+            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
+            timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
         ;
         if( !( timeSlotId in timeSlotDataMap ) ) return false;
 
         // checking if there's available rooms/chairs
-        if( !this.hasAvailableRoomTypeCount( serviceTransactionData, clientId ) )
+        if( !this.hasAvailableRoomType( serviceTransactionData, serviceTransactionId, clientId ) )
             return false;
 
         // checking if there is assignable employee
         const
-            { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
             timeSlotData: TimeSlotData = {
                 clientId, serviceTransactionId, serviceTransactionData, rowPosition
             },
-            timeSlotDataList: TimeSlotData[] = [
-                ...chairTimeSlotDataList, ...roomTimeSlotDataList, timeSlotData
+            timeSlotDataConflictingList: TimeSlotData[] = [
+                ...this.getTimeSlotDataConflictingList(
+                    serviceTransactionData, serviceTransactionId
+                ),
+                timeSlotData
             ],
-            serviceEmployeeListKeyMap: ServiceEmployeeListKeyMap = this.getServiceEmployeeKeyMap(
-                dateRange
-            ),
-            employeeAssignedIdList: number[] = timeSlotDataList.map( () => 0 ),
+            serviceTransactionEmployeeListKeyMap: ServiceTransactionEmployeeListKeyMap = {},
+            timeSlotServiceEmployeeListKeyMap: TimeSlotServiceEmployeeListKeyMap = {}
+        ;
+        for( let timeSlotData of timeSlotDataConflictingList ) {
+
+            const
+                {
+                    serviceTransactionData: {
+                        bookingDateTimeStart, bookingDateTimeEnd, service: { id: serviceId }
+                    },
+                    serviceTransactionId
+                } = timeSlotData,
+                dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
+                timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
+            ;
+            if( !( timeSlotId in timeSlotServiceEmployeeListKeyMap ) )
+                timeSlotServiceEmployeeListKeyMap[ timeSlotId ] =
+                    this.getServiceEmployeeKeyMap( dateRange )
+                ;
+            serviceTransactionEmployeeListKeyMap[ serviceTransactionId ] =
+                ( serviceTransactionId in serviceTransactionEmployeeListKeyMap ) ?
+                    StringUtils.arrayIntersection(
+                        serviceTransactionEmployeeListKeyMap[ serviceTransactionId ],
+                        timeSlotServiceEmployeeListKeyMap[ timeSlotId ][ serviceId ]
+                    )
+                : timeSlotServiceEmployeeListKeyMap[ timeSlotId ][ serviceId ]
+            ;
+
+        }
+        const
+            employeeAssignedIdList: number[] = timeSlotDataConflictingList.map( () => 0 ),
             employeeAssignedIndexMap: EmployeeAssignedIndexMap = {}
         ;
         for(
             let timeSlotIndex: number = 0;
-            timeSlotIndex >= 0 && timeSlotIndex < timeSlotDataList.length;
+            timeSlotIndex >= 0 && timeSlotIndex < timeSlotDataConflictingList.length;
             timeSlotIndex++
         ) {
 
             const
-                serviceId = timeSlotDataList[ timeSlotIndex ].serviceTransactionData.service.id,
-                serviceEmployeeIdList = serviceEmployeeListKeyMap[ serviceId ]
+                { serviceTransactionId } = timeSlotDataConflictingList[ timeSlotIndex ],
+                serviceEmployeeList = serviceTransactionEmployeeListKeyMap[ serviceTransactionId ]
             ;
             let
                 oldEmployeeIndex: number = employeeAssignedIdList[ timeSlotIndex ],
-                oldEmployeeId: string = serviceEmployeeIdList[ oldEmployeeIndex ],
+                oldEmployeeId: string = serviceEmployeeList[ oldEmployeeIndex ],
                 employeeIndex: number = oldEmployeeIndex,
                 employeeId: string = ""
             ;
-            for( ; employeeIndex < serviceEmployeeIdList.length; employeeIndex++ ) {
+            for( ; employeeIndex < serviceEmployeeList.length; employeeIndex++ ) {
 
-                employeeId = serviceEmployeeIdList[ employeeIndex ];
+                employeeId = serviceEmployeeList[ employeeIndex ];
                 if( !( employeeId in employeeAssignedIndexMap ) ) {
 
                     delete employeeAssignedIndexMap[ oldEmployeeId ];
@@ -222,7 +264,7 @@ export default class BookingCalendar {
                 }
 
             }
-            if( employeeIndex >= serviceEmployeeIdList.length ) {
+            if( employeeIndex >= serviceEmployeeList.length ) {
 
                 employeeAssignedIdList[ timeSlotIndex ] = 0;
                 timeSlotIndex -= 2;
@@ -230,7 +272,9 @@ export default class BookingCalendar {
             }
 
         }
-        return ( timeSlotDataList.length === ObjectUtils.keyLength( employeeAssignedIndexMap ) );
+        return (
+            timeSlotDataConflictingList.length === ObjectUtils.keyLength( employeeAssignedIndexMap )
+        );
 
     }
 
@@ -267,9 +311,9 @@ export default class BookingCalendar {
         }
         const
             { timeSlotDataMap } = this,
-            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
-            timeSlotId: string = dateRange.toString( "hh:mm-hh:mm" )
+            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
+            timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
         ;
         if( !( timeSlotId in timeSlotDataMap ) ) return false;
         const
@@ -289,82 +333,36 @@ export default class BookingCalendar {
 
     }
 
-    private getAvailableChairs( timeSlotId: string ): number {
+    private getAvailableChairs( timeSlotId: string, clientIdIgnoreList: documentId[] = [] ): number {
 
         const
             clientMap: { [ clientId: documentId ]: undefined } = {},
             { chairs, chairTimeSlotDataList } = this.timeSlotDataMap[ timeSlotId ]
         ;
-        for( let { clientId } of chairTimeSlotDataList ) clientMap[ clientId ] = undefined;
+        for( let { clientId } of chairTimeSlotDataList )
+            if( !clientIdIgnoreList.includes( clientId ) ) clientMap[ clientId ] = undefined;
         return ( chairs - ObjectUtils.keyLength( clientMap ) );
 
     }
 
-    private getAvailableRooms( timeSlotId: string ): number {
+    private getAvailableRooms( timeSlotId: string, clientIdIgnoreList: documentId[] = [] ): number {
 
         const
             clientMap: { [ clientId: documentId ]: undefined } = {},
             { rooms, roomTimeSlotDataList } = this.timeSlotDataMap[ timeSlotId ]
         ;
-        for( let { clientId } of roomTimeSlotDataList ) clientMap[ clientId ] = undefined;
+        for( let { clientId } of roomTimeSlotDataList )
+            if( !clientIdIgnoreList.includes( clientId ) ) clientMap[ clientId ] = undefined;
         return ( rooms - ObjectUtils.keyLength( clientMap ) );
-
-    }
-
-    private getPossibleConflictingTimeSlotDataList(
-        serviceTransactionData: ServiceTransactionData,
-        serviceTransactionId: documentId,
-        rowPosition?: timeSlotRowPosition,
-        timeSlotIdIgnoreList: { [ timeSlotId: string ]: undefined } = {}
-    ): TimeSlotData[] {
-
-        if( !rowPosition ) {
-
-            const serviceTransactionDataList = this.preprocessServiceTransactionData(
-                serviceTransactionData
-            );
-            switch( serviceTransactionDataList.length ) {
-    
-                case 2: return (
-                    this.getPossibleConflictingTimeSlotDataList(
-                        serviceTransactionDataList[ 0 ], serviceTransactionId, "up"
-                    ) && this.getPossibleConflictingTimeSlotDataList(
-                        serviceTransactionDataList[ 1 ], serviceTransactionId, "down"
-                    )
-                );
-                
-                case 0: return [];
-    
-                default:
-                    serviceTransactionData = serviceTransactionDataList[ 0 ];
-                    rowPosition = "single";
-    
-            }
-
-        }
-
-        const
-            { timeSlotDataMap } = this,
-            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
-            timeSlotId: string = dateRange.toString( "hh:mm-hh:mm" ),
-            { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ]
-        ;
-        for( let { rowPosition } of [ ...chairTimeSlotDataList, ...roomTimeSlotDataList ] ) {
-
-
-
-        }
-        return []
 
     }
 
     public getRowCount( serviceTransactionData: ServiceTransactionData ): number {
 
-        let { bookingFromDateTime, bookingToDateTime } = serviceTransactionData;
-        bookingFromDateTime = DateUtils.toFloorByMin( bookingFromDateTime, 30 );
-        bookingToDateTime = DateUtils.toCeilByMin( bookingToDateTime, 30 );
-        const minDiff: number = DateUtils.getMinDiff( bookingToDateTime, bookingFromDateTime );
+        let { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData;
+        bookingDateTimeStart = DateUtils.toFloorByMin( bookingDateTimeStart, 30 );
+        bookingDateTimeEnd = DateUtils.toCeilByMin( bookingDateTimeEnd, 30 );
+        const minDiff: number = DateUtils.getMinDiff( bookingDateTimeEnd, bookingDateTimeStart );
         return ( minDiff / 30 );
 
     }
@@ -375,8 +373,8 @@ export default class BookingCalendar {
             { jobDataMap, jobServiceDataMap, serviceDataMap } = this.pageData,
             employeeLeaveDataMap = ObjectUtils.filter(
                 this.pageData.employeeLeaveDataMap,
-                ( employeeLeaveId, { fromDateTime, toDateTime } ) => dateRange.overlapsWith(
-                    new DateRange( fromDateTime, toDateTime )
+                ( employeeLeaveId, { dateTimeStart, dateTimeEnd } ) => dateRange.overlapsWith(
+                    new DateRange( dateTimeStart, dateTimeEnd )
                 )
             ),
             employeeOnLeaveIdMap: { [ employeeId: string ]: undefined } = {},
@@ -416,16 +414,110 @@ export default class BookingCalendar {
 
     }
 
-    private hasAvailableRoomTypeCount(
+    private getTimeSlotDataConflictingList(
         serviceTransactionData: ServiceTransactionData,
+        serviceTransactionId: documentId
+    ): TimeSlotData[] {
+
+        const
+            { timeSlotDataMap } = this,
+            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
+            timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT ),
+            timeSlotIdList: string[] = [ timeSlotId ],
+            timeSlotDataList: TimeSlotData[] = []
+        ;
+        for( let index: number = 0; index < timeSlotIdList.length; index++ ) {
+
+            const
+                timeSlotId: string = timeSlotIdList[ index ],
+                { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
+                timeSlotIdAbove: string | undefined = this.getTimeSlotIdAbove( timeSlotId ),
+                timeSlotIdBelow: string | undefined = this.getTimeSlotIdBelow( timeSlotId ),
+                rowTimeSlotDataList: TimeSlotData[] = [
+                    ...chairTimeSlotDataList, ...roomTimeSlotDataList
+                ].filter( ( { serviceTransactionId: serviceTransactionIdCompare } ) =>
+                    ( serviceTransactionId !== serviceTransactionIdCompare )
+                )
+            ;
+            timeSlotDataList.push( ...rowTimeSlotDataList );
+            let
+                mightConflictWithAbove: boolean = false, 
+                mightConflictWithBelow: boolean = false
+            ;
+            for( let { rowPosition } of rowTimeSlotDataList ) {
+
+                switch( rowPosition ) {
+    
+                    case "down":
+                        if( mightConflictWithAbove ) break;
+                        if( timeSlotIdAbove && !timeSlotIdList.includes( timeSlotIdAbove ) )
+                        mightConflictWithAbove = true;
+                        break;
+                    
+                    case "up":
+                        if( mightConflictWithBelow ) break;
+                        if( timeSlotIdBelow && !timeSlotIdList.includes( timeSlotIdBelow ) )
+                        mightConflictWithBelow = true;
+                        break;
+    
+                }
+                if( mightConflictWithAbove && mightConflictWithBelow ) break;
+    
+            }
+            if( timeSlotIdAbove && mightConflictWithAbove ) timeSlotIdList.push( timeSlotIdAbove );
+            if( timeSlotIdBelow && mightConflictWithBelow ) timeSlotIdList.push( timeSlotIdBelow );
+
+        }
+        return timeSlotDataList;
+
+    }
+
+    private getTimeSlotIdAbove( timeSlotId: string ): string | undefined {
+
+        
+        const { timeSlotDataMap } = this;
+        if( !( timeSlotId in timeSlotDataMap ) ) return;
+        const
+            [ hr1, min1, hr2, min2 ] =
+                timeSlotId.replace( "-", ":" ).split( ":" ).map( value => +value )
+            ,
+            date1: Date = DateUtils.setTime( new Date(), { hr: hr1, min: min1 - 30 } ),
+            date2: Date = DateUtils.setTime( new Date(), { hr: hr2, min: min2 - 30 } ),
+            dateRange: DateRange = new DateRange( date1, date2 )
+        ;
+        return dateRange.toString( DATE_RANGE_FORMAT );
+
+    }
+
+    private getTimeSlotIdBelow( timeSlotId: string ): string | undefined {
+
+        
+        const { timeSlotDataMap } = this;
+        if( !( timeSlotId in timeSlotDataMap ) ) return;
+        const
+            [ hr1, min1, hr2, min2 ] =
+                timeSlotId.replace( "-", ":" ).split( ":" ).map( value => +value )
+            ,
+            date1: Date = DateUtils.setTime( new Date(), { hr: hr1, min: min1 + 30 } ),
+            date2: Date = DateUtils.setTime( new Date(), { hr: hr2, min: min2 + 30 } ),
+            dateRange: DateRange = new DateRange( date1, date2 )
+        ;
+        return dateRange.toString( DATE_RANGE_FORMAT );
+
+    }
+
+    private hasAvailableRoomType(
+        serviceTransactionData: ServiceTransactionData,
+        serviceTransactionId: documentId,
         clientId: documentId
     ): boolean {
 
         const
             { timeSlotDataMap, pageData: { serviceDataMap } } = this,
-            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
-            timeSlotId: string = dateRange.toString( "hh:mm-hh:mm" ),
+            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
+            timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT ),
             { service: { id: serviceId } } = serviceTransactionData,
             serviceData = serviceDataMap[ serviceId ],
             { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
@@ -434,8 +526,12 @@ export default class BookingCalendar {
         ;
         for( let timeSlotData of timeSlotDataList ) {
 
-            const { clientId: clientIdCompare } = timeSlotData;
-            if( clientId !== clientIdCompare ) continue;
+            const {
+                serviceTransactionId: serviceTransactionIdCompare,
+                clientId: clientIdCompare
+            } = timeSlotData;
+            if( clientId !== clientIdCompare || serviceTransactionId === serviceTransactionIdCompare )
+                continue;
             compatibleTimeSlotDataList.push( timeSlotData );
             if( compatibleTimeSlotDataList.length >= 2 ) return false;
 
@@ -454,8 +550,8 @@ export default class BookingCalendar {
         const
             { roomType } = serviceDataMap[ serviceId ],
             roomTypeAvailableCount: number =
-                ( roomType === "chair" ) ? this.getAvailableChairs( timeSlotId )
-                : this.getAvailableRooms( timeSlotId )
+                ( roomType === "chair" ) ? this.getAvailableChairs( timeSlotId, [ clientId ] )
+                : this.getAvailableRooms( timeSlotId, [ clientId ] )
         ;
         return ( roomTypeAvailableCount > 0 );
 
@@ -483,9 +579,9 @@ export default class BookingCalendar {
         }
         const
             { timeSlotDataMap } = this,
-            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
-            timeSlotId: string = dateRange.toString( "hh:mm-hh:mm" )
+            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
+            timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
         ;
         if( !( timeSlotId in timeSlotDataMap ) ) return false;
         const
@@ -520,9 +616,9 @@ export default class BookingCalendar {
         }
         const
             { timeSlotDataMap } = this,
-            { bookingFromDateTime, bookingToDateTime } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingFromDateTime, bookingToDateTime ),
-            timeSlotId: string = dateRange.toString( "hh:mm-hh:mm" )
+            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
+            timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
         ;
         if( !( timeSlotId in timeSlotDataMap ) ) return -1;
         const
@@ -622,31 +718,33 @@ export default class BookingCalendar {
         serviceTransactionData: ServiceTransactionData
     ): ServiceTransactionData[] {
 
-        let { bookingFromDateTime, bookingToDateTime } = serviceTransactionData;
-        bookingFromDateTime = DateUtils.toFloorByMin( bookingFromDateTime, 30 );
-        bookingToDateTime = DateUtils.toCeilByMin( bookingToDateTime, 30 );
+        let { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData;
+        bookingDateTimeStart = DateUtils.toFloorByMin( bookingDateTimeStart, 30 );
+        bookingDateTimeEnd = DateUtils.toCeilByMin( bookingDateTimeEnd, 30 );
         const
-            minDiff: number = DateUtils.getMinDiff( bookingToDateTime, bookingFromDateTime ),
+            minDiff: number = DateUtils.getMinDiff( bookingDateTimeEnd, bookingDateTimeStart ),
             serviceTransactionDataList: ServiceTransactionData[] = []
         ;
         if( minDiff === 60 ) {
 
             const
-                inBetween: Date = DateUtils.addTime( bookingFromDateTime, { min: 30 } ),
+                inBetween: Date = DateUtils.addTime( bookingDateTimeStart, { min: 30 } ),
                 serviceTransactionData1 = {
                     ...serviceTransactionData,
-                    bookingToDateTime: inBetween
+                    bookingDateTimeStart,
+                    bookingDateTimeEnd: inBetween
                 },
                 serviceTransactionData2 = {
                     ...serviceTransactionData,
-                    bookingFromDateTime: inBetween
+                    bookingDateTimeStart: inBetween,
+                    bookingDateTimeEnd
                 }
             ;
             serviceTransactionDataList.push( serviceTransactionData1, serviceTransactionData2 );
 
         } else if( minDiff === 30 )
             serviceTransactionDataList.push( {
-                ...serviceTransactionData, bookingFromDateTime, bookingToDateTime
+                ...serviceTransactionData, bookingDateTimeStart, bookingDateTimeEnd
             } );
         return serviceTransactionDataList;
 

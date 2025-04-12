@@ -58,8 +58,8 @@ export default function EmployeeLeaveManagement(): JSX.Element {
             employeeDataMap: {},
             employeeLeaveData: {
                 employee: null as unknown as DocumentReference,
-                fromDateTime: null as unknown as Date,
-                toDateTime: null as unknown as Date,
+                dateTimeStart: null as unknown as Date,
+                dateTimeEnd: null as unknown as Date,
                 status: "pending",
                 reason: null as unknown as string
             },
@@ -81,24 +81,24 @@ export default function EmployeeLeaveManagement(): JSX.Element {
         async function validateUniqueDateRange(): Promise< void > {
 
             const
-                { employeeLeaveData: { employee, fromDateTime, toDateTime } } = pageData,
+                { employeeLeaveData: { employee, dateTimeStart, dateTimeEnd } } = pageData,
                 employeeLeaveDataMap =
                     await EmployeeLeaveUtils.getApprovedEmployeeLeaveDataMapByEmployee( employee )
                 ,
-                dateRange1: DateRange = new DateRange( fromDateTime, toDateTime ),
+                dateRange1: DateRange = new DateRange( dateTimeStart, dateTimeEnd ),
                 DATE_FORMAT = "Mmmm dd, yyyy - hh:mm a.m."
             ;
             for( let employeeLeaveId in employeeLeaveDataMap ) {
 
                 const
-                    { fromDateTime, toDateTime } = employeeLeaveDataMap[ employeeLeaveId ],
-                    dateRange2: DateRange = new DateRange( fromDateTime, toDateTime )
+                    { dateTimeStart, dateTimeEnd } = employeeLeaveDataMap[ employeeLeaveId ],
+                    dateRange2: DateRange = new DateRange( dateTimeStart, dateTimeEnd )
                 ;
                 if( dateRange1.overlapsWith( dateRange2 ) ) errorList.push(
                     `The date range overlaps with an approved ${
-                        DateUtils.toString( fromDateTime, DATE_FORMAT )
+                        DateUtils.toString( dateTimeStart, DATE_FORMAT )
                     } - ${
-                        DateUtils.toString( toDateTime, DATE_FORMAT )
+                        DateUtils.toString( dateTimeEnd, DATE_FORMAT )
                     } leave.`
                 );
 
@@ -232,11 +232,11 @@ export default function EmployeeLeaveManagement(): JSX.Element {
                         <option value="" disabled>Select employee</option>
                     </FormEntitySelect>
                     <label>From Date Time: </label>
-                    <FormDateTime30MinStepInput documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="fromDateTime" pageData={pageData} readOnly={ canceled } required={true} onChange={ reloadPageData }/>
+                    <FormDateTime30MinStepInput documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="dateTimeStart" pageData={pageData} readOnly={ canceled } required={true} onChange={ reloadPageData }/>
                     <label>To Date Time: </label>
                     <FormDateTime30MinStepInput
-                        documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="toDateTime"
-                        min={ pageData.employeeLeaveData.fromDateTime ? DateUtils.addTime( pageData.employeeLeaveData.fromDateTime, { min: 30 } ) : undefined }
+                        documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="dateTimeEnd"
+                        min={ pageData.employeeLeaveData.dateTimeStart ? DateUtils.addTime( pageData.employeeLeaveData.dateTimeStart, { min: 30 } ) : undefined }
                         pageData={pageData} readOnly={ canceled } required={true}
                     />
                     <label>Reason: </label>

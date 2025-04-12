@@ -34,6 +34,8 @@ import ServiceUtils from "../firebase/ServiceUtils";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
+import SideBar from "../components/EmployeeSidebar";
+
 interface EmployeeLeaveMenuPageData extends SpaRadisePageData {
 
     employeeDataMap: EmployeeDataMap,
@@ -45,17 +47,17 @@ interface EmployeeLeaveMenuPageData extends SpaRadisePageData {
 export default function EmployeeLeaveMenu(): JSX.Element {
 
     const
-        [ pageData, setPageData ] = useState< EmployeeLeaveMenuPageData >( {
+        [pageData, setPageData] = useState<EmployeeLeaveMenuPageData>({
             employeeDataMap: {},
             employeeLeaveDataMap: {},
             loaded: false,
             updateMap: {}
-        } ),
+        }),
         employeeId: string | undefined = useParams().employeeId,
         { employeeDataMap, employeeLeaveDataMap } = pageData
-    ;
+        ;
 
-    async function loadPageData(): Promise< void > {
+    async function loadPageData(): Promise<void> {
 
         pageData.employeeDataMap = await EmployeeUtils.getEmployeeDataMapAll();
         pageData.employeeLeaveDataMap = await EmployeeLeaveUtils.getEmployeeLeaveDataMapAll();
@@ -66,42 +68,46 @@ export default function EmployeeLeaveMenu(): JSX.Element {
 
     function reloadPageData(): void {
 
-        setPageData( { ...pageData } );
+        setPageData({ ...pageData });
 
     }
 
-    useEffect( () => { loadPageData(); }, [] );
+    useEffect(() => { loadPageData(); }, []);
 
     return <>
-        <Link to="/management/employeeLeaves">
-            <h1>New</h1>
-        </Link>
-        Employee search to add later: { employeeId ?? "None" }
-        {
 
-            employeeLeaveDataMap ? Object.keys( employeeLeaveDataMap ).map( ( employeeLeaveId, index ) => {
-                
-                const
-                    {
-                        employee: { id: employeeId },
-                        fromDateTime, toDateTime, reason
-                    } = employeeLeaveDataMap[ employeeLeaveId ]
-                ;
-                return <Link key={ index } to={ "/management/employeeLeaves/" + employeeLeaveId }>
-                    <div>
-                        { PersonUtils.format( employeeDataMap[ employeeId ], "f mi l" ) }
-                        { ` | ` }
-                        { DateUtils.toString( fromDateTime, "Mmmm dd, yyyy - hh:mm" ) }
-                        { ` | ` }
-                        { DateUtils.toString( toDateTime, "Mmmm dd, yyyy - hh:mm" ) }
-                        { ` | `}
-                        { reason }
-                    </div>
-                </Link>
+        <SideBar></SideBar>
 
-            } ) : undefined
+            <Link to="/management/employeeLeaves">
+                <h1>New</h1>
+            </Link>
+            <div className="service-menu-main-content">
+                <div className="service-menu-form-section">
+            Employee search to add later: {employeeId ?? "None"}
+            {
 
-        }
+                employeeLeaveDataMap ? Object.keys(employeeLeaveDataMap).map((employeeLeaveId, index) => {
+
+                    const
+                        {
+                            employee: { id: employeeId },
+                            dateTimeStart, dateTimeEnd, reason
+                        } = employeeLeaveDataMap[employeeLeaveId]
+                        ;
+                    return <Link key={index} to={"/management/employeeLeaves/" + employeeLeaveId}>
+                        <div>
+                            {PersonUtils.format(employeeDataMap[employeeId], "f mi l")}
+                            {` | `}
+                            {DateUtils.toString(dateTimeStart, "Mmmm dd, yyyy - hh:mm")}
+                            {` | `}
+                            {DateUtils.toString(dateTimeEnd, "Mmmm dd, yyyy - hh:mm")}
+                            {` | `}
+                            {reason}
+                        </div>
+                    </Link>
+            }) : undefined
+
+        }</div></div>
     </>;
 
 }

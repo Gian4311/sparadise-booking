@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="../styles/Dashboard.css" />
+</head>
+<body>
+  <div class="dashboard-container">
+    <aside class="dashboard-sidebar" id="sidebar-area">
+      <!-- Optional sidebar content -->
+    </aside>
+
+    <main class="dashboard-main-content" id="main-content-area">
+      <h1 class="dashboard-title">Dashboard</h1>
+
+      <section class="dashboard-top-section" id="top-section">
+        <div class="dashboard-schedule-box" id="schedule-box">
+          <div class="dashboard-schedule-header" id="schedule-date">December 8, 2025</div>
+          <div class="dashboard-appointment-details" id="appointment-details">
+            <div class="appointment-label">#</div>
+            <div class="appointment-label">Client/s</div>
+            <div class="appointment-label">Time</div>
+            <div class="appointment-label">Status</div>
+            <div class="appointment-value">1</div>
+            <div class="appointment-value">Tom Cruz</div>
+            <div class="appointment-value">09:00 - 09:30</div>
+            <div class="appointment-value">On-going</div>
+          </div>
+        </div>
+
+        <div class="dashboard-stats-panel" id="stats-panel">
+          <div class="dashboard-stat-box" id="stat-today">
+            <strong class="stat-number">1</strong>
+            <span class="stat-label">Bookings today</span>
+          </div>
+          <div class="dashboard-stat-box" id="stat-week">
+            <strong class="stat-number">6</strong>
+            <span class="stat-label">Bookings this week</span>
+          </div>
+          <div class="dashboard-stat-box" id="stat-month">
+            <strong class="stat-number">18</strong>
+            <span class="stat-label">Bookings this month</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="dashboard-grid-section" id="grid-section">
+        <div class="dashboard-card" id="employees-card">
+          <div class="dashboard-card-header">
+            <span class="card-title">Employees</span>
+            <span class="card-arrow">&rarr;</span>
+          </div>
+          <table class="dashboard-table" id="employees-table">
+            <tr><th>#</th><th>Name</th><th>Job</th></tr>
+            <tr><td>1</td><td>Apostol, Gian Tristian G.</td><td>Nail Technician</td></tr>
+            <tr><td>2</td><td>Cabangbang, R-Man Rey S.</td><td>Eyelash Technician</td></tr>
+          </table>
+        </div>
+
+        <div class="dashboard-card" id="clients-card">
+          <div class="dashboard-card-header">
+            <span class="card-title">Clients</span>
+            <span class="card-arrow">&rarr;</span>
+          </div>
+          <table class="dashboard-table" id="clients-table">
+            <tr><th>#</th><th>Name</th></tr>
+            <tr><td>1</td><td>Cruz, Tom</td></tr>
+            <tr><td>2</td><td>James, LeBron R.</td></tr>
+          </table>
+        </div>
+
+        <div class="dashboard-card" id="services-card">
+          <div class="dashboard-card-header">
+            <span class="card-title">Services & Packages</span>
+            <span class="card-arrow">&rarr;</span>
+          </div>
+          <table class="dashboard-table" id="services-table">
+            <tr><th>#</th><th>Name</th><th>Price</th></tr>
+            <tr><td>1</td><td>December Promo</td><td>₱700</td></tr>
+            <tr><td>2</td><td>Full Eyelash Extensions</td><td>₱400</td></tr>
+          </table>
+        </div>
+
+        <div class="dashboard-card" id="vouchers-card">
+          <div class="dashboard-card-header">
+            <span class="card-title">Vouchers</span>
+            <span class="card-arrow">&rarr;</span>
+          </div>
+          <table class="dashboard-table" id="vouchers-table">
+            <tr><th>#</th><th>Name</th></tr>
+            <tr><td>1</td><td>Christmas Promo Voucher</td></tr>
+            <tr><td>2</td><td>New Year's Day 2025 Massage Voucher</td></tr>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -2,12 +2,20 @@
 .booking-container {
     margin: 50px auto;
     padding: 50px;
-    max-width: 1500px;
+    width: 80%;
     background-color: #FBE3EB;
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
   
+  .client-booking-delete-btn{
+    background-color: #ccc;
+    border-radius: 5px;
+    border: none;
+    padding: 10px;
+    height: 70%;
+    margin-top: 2.2%;
+  }
   /* Section for Form */
   .booking-form {
     display: flex;

@@ -1,4 +1,5 @@
 import { DocumentReference } from "firebase/firestore/lite";
+import FormDateInput from "../components/FormDateInput";
 import {
     FormEvent,
     useEffect,
@@ -62,7 +63,9 @@ export default function VoucherManagement(): JSX.Element {
                 name: null as unknown as string,
                 code: null as unknown as string,
                 amount: null,
-                percentage: null
+                percentage: null,
+                dateValid: null as unknown as Date,
+                dateExpiry: null as unknown as Date
             },
             voucherDefaultData: {} as VoucherData,
             voucherPackageDataMap: {},
@@ -503,20 +506,32 @@ export default function VoucherManagement(): JSX.Element {
                             <FormMoneyOrPercentageInput documentData={pageData.voucherData} documentDefaultData={pageData.voucherDefaultData} documentId={documentId} keyNameMoney="amount" keyNamePercentage="percentage" name="amount" pageData={pageData} required={true} />
                         </div>
                     </div>
+                    <div className="service-form-row-group">
+                        <div className="service-form-row">
+                            <label htmlFor="voucher-date-valid">Valid From</label>
+                            <FormDateInput documentData={pageData.voucherData} documentDefaultData={pageData.voucherDefaultData} documentId={documentId} keyName="dateValid" name="voucher-date-valid" pageData={pageData} required={true} />
+                        </div>
+                    </div>
+                    <div className="service-form-row-group">
+                        <div className="service-form-row">
+                            <label htmlFor="voucher-date-end">Expires On</label>
+                            <FormDateInput documentData={pageData.voucherData} documentDefaultData={pageData.voucherDefaultData} documentId={documentId} keyName="dateExpiry" name="voucher-date-end" pageData={pageData} required={true} />
+                        </div>
+                    </div>
 
                     <div className="section-label"> Select Services:
                         <div id="services-list">
                             <div className="service-scroll-container">
                                 {
-                                    Object.keys(pageData.serviceDataMap).map((serviceId, key) => {
+                                    Object.keys(pageData.serviceDataMap).map(serviceId => {
                                         const service = pageData.serviceDataMap[serviceId];
                                         const packageServiceId: string | number = pageData.voucherServiceIncludedMap[serviceId];
 
                                         return (
-                                            <div className="service-scroll-item">
-                                                <div className="service-name" key={key}>
+                                            <div className="service-scroll-item" key={ serviceId }>
+                                                <div className="service-name">
                                                     {service.name}</div>
-                                                <div className="service-description" key={key}>
+                                                <div className="service-description">
                                                     {service.description}</div>
 
                                                 {

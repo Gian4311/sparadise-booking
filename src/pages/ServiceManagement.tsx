@@ -447,7 +447,11 @@ export default function ServiceManagement(): JSX.Element {
                             <div className="service-form-row-group">
                                 <div className="service-form-row">
                                     <label htmlFor="service-duration">Duration (minutes)</label>
-                                    <FormNaturalNumberInput documentData={pageData.serviceData} documentDefaultData={pageData.serviceDefaultData} documentId={documentId} keyName="durationMin" max={120} min={30} name="service-duration" pageData={pageData} required={true} step={30} />
+                                    <FormSelect documentData={pageData.serviceData} documentDefaultData={pageData.serviceDefaultData} documentId={documentId} keyName="durationMin" name="service-duration" optionList={ SpaRadiseEnv.SERVICE_DURATION_LIST } pageData={pageData} required={true}>
+                                        <option value="" disabled>Select duration</option>
+                                        <option value="30">30</option>
+                                        <option value="60">60</option>
+                                    </FormSelect>
                                 </div>
                                 <div className="service-form-row">
                                     <label htmlFor="service-age-limit">Age Limit</label>

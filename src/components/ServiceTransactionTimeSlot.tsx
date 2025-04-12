@@ -17,12 +17,6 @@ interface DateRangeOptionMap {
 
 }
 
-interface EmployeeAssignableMap {
-
-    [ serviceTransactionId: string ]: string[]
-
-}
-
 const
     TIME_RANGE_REGEX = /^([0-1][0-9]|2[0-3]):[0-5][0-9]-([0-1][0-9]|2[0-3]):[0-5][0-9]$/,
     OPTION_ADD = { min: 30 }
@@ -83,6 +77,21 @@ export default function ServiceTransactionTimeSlot(
         documentData[ keyNameTo ] =
             ( parsedValue instanceof DateRange ) ? parsedValue.getEnd() : parsedValue
         ;
+        const { bookingCalendar } = pageData;
+        if( old instanceof Object ) {
+
+            const oldServiceTransactionData: ServiceTransactionData = {
+                ...documentData,
+                bookingDateTimeStart: old.getStart(),
+                bookingDateTimeEnd: old.getEnd()
+            };
+            bookingCalendar.deleteServiceTransaction(
+                oldServiceTransactionData, serviceTransactionId, clientId
+            );
+
+        }
+        if( parsedValue instanceof Object )
+            bookingCalendar.addServiceTransaction( documentData, serviceTransactionId, clientId );
         if( onChange ) await onChange( parsedValue, unparsedValueNew, old );
         reloadPageData();
 
@@ -94,19 +103,19 @@ export default function ServiceTransactionTimeSlot(
             { date, bookingCalendar } = pageData,
             optionMap = await loadOptionMap()
         ;
-        let { bookingFromDateTime, bookingToDateTime } = documentData;
-        if( !bookingFromDateTime && !bookingToDateTime ) return;
+        let { bookingDateTimeStart, bookingDateTimeEnd } = documentData;
+        if( !bookingDateTimeStart && !bookingDateTimeEnd ) return;
         let
             dateTimeRange: DateRange | null = (
-                ( bookingFromDateTime && bookingToDateTime ) ? new DateRange(
-                    bookingFromDateTime, bookingToDateTime
+                ( bookingDateTimeStart && bookingDateTimeEnd ) ? new DateRange(
+                    bookingDateTimeStart, bookingDateTimeEnd
                 ) : null
             ),
             unparsedValue: string = await unparseValue( dateTimeRange )
         ;
         if(
-            DateUtils.areSameByDay( date, bookingFromDateTime )
-            || DateUtils.areSameByDay( date, bookingToDateTime )
+            DateUtils.areSameByDay( date, bookingDateTimeStart )
+            || DateUtils.areSameByDay( date, bookingDateTimeEnd )
         ) {
 
             setUnparsedValue( unparsedValue );
@@ -118,25 +127,25 @@ export default function ServiceTransactionTimeSlot(
             mon: date.getMonth(),
             day: date.getDate()
         };
-        bookingFromDateTime = DateUtils.setTime( bookingFromDateTime, dayData );
-        bookingToDateTime = DateUtils.setTime( bookingToDateTime, dayData );
+        bookingDateTimeStart = DateUtils.setTime( bookingDateTimeStart, dayData );
+        bookingDateTimeEnd = DateUtils.setTime( bookingDateTimeEnd, dayData );
         dateTimeRange = (
-            ( bookingFromDateTime && bookingToDateTime ) ? new DateRange(
-                bookingFromDateTime, bookingToDateTime
+            ( bookingDateTimeStart && bookingDateTimeEnd ) ? new DateRange(
+                bookingDateTimeStart, bookingDateTimeEnd
             ) : null
         );
         unparsedValue = await unparseValue( dateTimeRange );
         bookingCalendar.deleteServiceTransaction( documentData, serviceTransactionId, clientId );
         if( !( unparsedValue in optionMap ) ) {
 
-            documentData.bookingFromDateTime = null as unknown as Date;
-            documentData.bookingToDateTime = null as unknown as Date;
+            documentData.bookingDateTimeStart = null as unknown as Date;
+            documentData.bookingDateTimeEnd = null as unknown as Date;
             setUnparsedValue( "" );
 
         } else {
 
-            documentData.bookingFromDateTime = bookingFromDateTime;
-            documentData.bookingToDateTime = bookingToDateTime;
+            documentData.bookingDateTimeStart = bookingDateTimeStart;
+            documentData.bookingDateTimeEnd = bookingDateTimeEnd;
             bookingCalendar.addServiceTransaction( documentData, serviceTransactionId, clientId );
             setUnparsedValue( unparsedValue );
 
@@ -169,8 +178,8 @@ export default function ServiceTransactionTimeSlot(
                 end: Date = DateUtils.addTime( optionDate, DURATION_ADD ),
                 serviceTransactionData: ServiceTransactionData = {
                     ...documentData,
-                    bookingFromDateTime: optionDate,
-                    bookingToDateTime: end
+                    bookingDateTimeStart: optionDate,
+                    bookingDateTimeEnd: end
                 }
             ;
             if(

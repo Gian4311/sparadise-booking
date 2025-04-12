@@ -16,8 +16,12 @@ import ServiceMenu from "./pages/ServiceMenu_v0";
 import ServicePackageMenu from "./pages/ServicePackageMenu_v0";
 import VoucherManagement from "./pages/VoucherManagement_v0";
 import VoucherMenu from "./pages/VoucherMenu_v0";
-import Homepage from "./pages/ClientIndex";
+import Homepage from "./pages/NewClientIndex";
+import Booking1 from "./pages/Booking1";
 
+import Dashboard from "./pages/EmployeeDashboard";
+
+import NewHomepage from "./pages/NewClientIndex";
 function App() {
 
     return <>
@@ -43,6 +47,9 @@ function App() {
                 <Route path="management/vouchers/menu" element={ <VoucherMenu/> }/>
                 <Route path="management/vouchers/:id" element={ <VoucherManagement/> }/>
                 <Route path="management/employees/menu" element={ <EmployeeMenu/> }/>
+
+                <Route path="newindex" element={ <NewHomepage/> }/>
+                <Route path="dashboard" element={ <Dashboard/> }/>
             </Routes>
         </BrowserRouter>
     </>;

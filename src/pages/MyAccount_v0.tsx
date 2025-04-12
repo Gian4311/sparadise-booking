@@ -20,9 +20,11 @@ import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import { useParams } from "react-router-dom";
 import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import FormContactNumberInput from "../components/FormContactNumberInput";
+import "../styles/ClientAccount.css";
+import NavBar from "../components/ClientNavBar";
 
 interface AccountManagementPageData extends SpaRadisePageData {
-    
+
     accountData: AccountData,
     accountDefaultData: AccountData,
     accountDocumentReference?: DocumentReference
@@ -32,7 +34,7 @@ interface AccountManagementPageData extends SpaRadisePageData {
 export default function MyAccount(): JSX.Element {
 
     const
-        [ pageData, setPageData ] = useState< AccountManagementPageData >( {
+        [pageData, setPageData] = useState<AccountManagementPageData>({
             accountData: {
                 lastName: null as unknown as string,
                 firstName: null as unknown as string,
@@ -46,47 +48,47 @@ export default function MyAccount(): JSX.Element {
             accountDefaultData: {} as AccountData,
             loaded: false,
             updateMap: {}
-        } ),
+        }),
         accountId: string | undefined = useParams().accountId
-    ;
+        ;
 
-    async function cancelAccountForm(): Promise< void > {
+    async function cancelAccountForm(): Promise<void> {
 
-        window.open( `/home`, `_self`);
+        window.open(`/home`, `_self`);
 
     }
 
-    async function checkFormValidity(): Promise< boolean > {
-    
+    async function checkFormValidity(): Promise<boolean> {
+
         // check if duplicate email
         return true;
 
     }
 
-    async function deleteAccount(): Promise< void > {
+    async function deleteAccount(): Promise<void> {
 
-        if( !accountId ) return;
-        await AccountUtils.deleteAccount( accountId );
+        if (!accountId) return;
+        await AccountUtils.deleteAccount(accountId);
         // note: logout
-        alert( `Deleted!` ); // note: remove later
-        window.open( `/home`, `_self`);
+        alert(`Deleted!`); // note: remove later
+        window.open(`/home`, `_self`);
 
     }
 
-    async function loadAccount(): Promise< void > {
+    async function loadAccount(): Promise<void> {
 
-        if( !accountId ) return;
+        if (!accountId) return;
         pageData.accountDocumentReference = SpaRadiseFirestore.getDocumentReference(
             accountId, SpaRadiseEnv.ACCOUNT_COLLECTION
         );
-        pageData.accountData = await AccountUtils.getAccountData( accountId );
+        pageData.accountData = await AccountUtils.getAccountData(accountId);
         pageData.accountDefaultData = { ...pageData.accountData };
 
     }
 
-    async function loadPageData(): Promise< void > {
+    async function loadPageData(): Promise<void> {
 
-        if( !accountId ) return;
+        if (!accountId) return;
         await loadAccount();
         pageData.loaded = true;
         reloadPageData();
@@ -95,64 +97,101 @@ export default function MyAccount(): JSX.Element {
 
     function reloadPageData(): void {
 
-        setPageData( { ...pageData } );
+        setPageData({ ...pageData });
 
     }
 
-    async function submit( event: FormEvent< HTMLFormElement > ): Promise< void > {
+    async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
 
         event.preventDefault();
         await updateAccount();
 
     }
 
-    async function updateAccount(): Promise< void > {
+    async function updateAccount(): Promise<void> {
 
-        if( !accountId ) return;
+        if (!accountId) return;
         await checkFormValidity();
         const { updateMap } = pageData;
-        if( accountId in updateMap ) {
-        
-            await AccountUtils.updateAccount( accountId, pageData.accountData );
+        if (accountId in updateMap) {
+
+            await AccountUtils.updateAccount(accountId, pageData.accountData);
             pageData.accountDefaultData = { ...pageData.accountData };
 
         }
-        delete updateMap[ accountId ];
+        delete updateMap[accountId];
         reloadPageData();
-        alert( `Updated!` ); // note: remove later
+        alert(`Updated!`); // note: remove later
 
     }
 
-    useEffect( () => { loadPageData(); }, [] );
+    useEffect(() => { loadPageData(); }, []);
 
     return <>
-        <form onSubmit={ submit }>
-            <h1>ID: { accountId }</h1>
-            <label>Last Name</label>
-            <FormTinyTextInput documentData={ pageData.accountData } documentDefaultData={ pageData.accountDefaultData } documentId={ accountId } keyName="lastName" pageData={ pageData } required={ true }/>
-            <label>First Name</label>
-            <FormTinyTextInput documentData={ pageData.accountData } documentDefaultData={ pageData.accountDefaultData } documentId={ accountId } keyName="firstName" pageData={ pageData } required={ true }/>
-            <label>Middle Name</label>
-            <FormTinyTextInput documentData={ pageData.accountData } documentDefaultData={ pageData.accountDefaultData } documentId={ accountId } keyName="middleName" pageData={ pageData }/>
-            <label>Sex</label>
-            <FormSelect documentData={ pageData.accountData } documentDefaultData={ pageData.accountDefaultData } documentId={ accountId } keyName="sex" optionList={ SpaRadiseEnv.SEX_LIST } pageData={ pageData } required={ true }>
-                <option value="" disabled>Select Sex</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="others">Others</option>
-            </FormSelect>
-            <label>Birth Date</label>
-            <FormDateInput documentData={ pageData.accountData } documentDefaultData={ pageData.accountDefaultData } documentId={ accountId } keyName="birthDate" pageData={ pageData } required={ true }/>
-            <label>Email</label>
-            <FormEmailInput documentData={ pageData.accountData } documentDefaultData={ pageData.accountDefaultData } documentId={ accountId } keyName="email" pageData={ pageData } required={ true }/>
-            <label>Contact Number</label>
-            <FormContactNumberInput documentData={ pageData.accountData } documentDefaultData={ pageData.accountDefaultData } documentId={ accountId } keyName="contactNumber" pageData={ pageData } required={ true }/>
-            <label>Contact Number (Alternate)</label>
-            <FormContactNumberInput documentData={ pageData.accountData } documentDefaultData={ pageData.accountDefaultData } documentId={ accountId } keyName="contactNumberAlternate" pageData={ pageData }/>
-            <button type="button" onClick={ cancelAccountForm }>Cancel</button>
-            <button type="button" onClick={ () => console.log( pageData ) }>Log page data</button>
-            <button type="button" onClick={ deleteAccount }>Delete</button>
-            <button type="submit">Submit</button>
+
+        <NavBar />
+        <form onSubmit={submit}>
+            <main className="account-container">
+                <section className="account-details">
+                    <h1>Account Details</h1>
+                    <div className="form-row-group">
+                        <div className="form-row">
+                            <label htmlFor="last-name">Last Name</label>
+                            <FormTinyTextInput className="account-input" documentData={pageData.accountData} documentDefaultData={pageData.accountDefaultData} documentId={accountId} keyName="lastName" pageData={pageData} required={true} />
+                        </div>
+                        <div className="form-row">
+                            <label htmlFor="first-name">First Name</label>
+                            <FormTinyTextInput className="account-input" documentData={pageData.accountData} documentDefaultData={pageData.accountDefaultData} documentId={accountId} keyName="firstName" pageData={pageData} required={true} />
+                        </div>
+                        <div className="form-row">
+                            <label htmlFor="middle-name">Middle Name</label>
+                            <FormTinyTextInput className="account-input" documentData={pageData.accountData} documentDefaultData={pageData.accountDefaultData} documentId={accountId} keyName="middleName" pageData={pageData} />
+                        </div>
+                    </div>
+                    <div className="form-row-group">
+                        <div className="form-row">
+                            <label htmlFor="sex">Sex</label>
+                            <FormSelect className="account-select" documentData={pageData.accountData} documentDefaultData={pageData.accountDefaultData} documentId={accountId} keyName="sex" optionList={SpaRadiseEnv.SEX_LIST} pageData={pageData} required={true}>
+                                <option value="" disabled>Select Sex</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="others">Others</option>
+                            </FormSelect>
+                        </div>
+                        <div className="form-row">
+                            <label htmlFor="birthdate">Birth Date</label>
+                            <FormDateInput className="account-input" documentData={pageData.accountData} documentDefaultData={pageData.accountDefaultData} documentId={accountId} keyName="birthDate" pageData={pageData} required={true} />
+                        </div>
+                    </div>
+
+                    <hr className="divider" />
+
+                    <div className="form-row-group">
+                        <div className="form-row">
+                            <label htmlFor="email">Email</label>
+                            <FormEmailInput className="account-input" documentData={pageData.accountData} documentDefaultData={pageData.accountDefaultData} documentId={accountId} keyName="email" pageData={pageData} required={true} />
+                        </div>
+                        <div className="form-row">
+                            <label htmlFor="contact-number">Contact Number</label>
+                            <FormContactNumberInput  className="account-input" documentData={pageData.accountData} documentDefaultData={pageData.accountDefaultData} documentId={accountId} keyName="contactNumber" pageData={pageData} required={true} />
+                        </div>
+                        <div className="form-row">
+                            <label htmlFor="alt-contact-number">Alternate Contact Number (Optional)</label>
+                            <FormContactNumberInput className="account-input" documentData={pageData.accountData} documentDefaultData={pageData.accountDefaultData} documentId={accountId} keyName="contactNumberAlternate" pageData={pageData} />
+                        </div>
+                    </div>
+
+                    <div className="action-buttons">
+                        <div className="left-buttons">
+                            <button className="cancel-account-btn" type="button" onClick={cancelAccountForm}>Cancel</button>
+                            <button className="delete-account-btn" type="button" onClick={deleteAccount}>Delete</button>
+                        </div>
+                        <div className="right-buttons">
+                            <button className="save-changes-btn" type="submit">Save Changes</button>
+                        </div>
+                    </div>
+                </section>
+            </main>
         </form>
 
     </>
