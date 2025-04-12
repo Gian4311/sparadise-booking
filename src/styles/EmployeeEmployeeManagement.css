@@ -255,3 +255,28 @@ textarea {
   cursor: pointer;
 }
 
+.employee-history{
+  margin-top: 5%;
+}
+.employee-history-label{
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.employee-history-scrollable {
+  max-height: 10%;
+  overflow-y: auto;
+  margin-top: 1%;
+  border: 0px solid #ccc;
+  border-radius: 5px;
+  background-color: white;
+}
+
+.employee-history-table th,
+.employee-history-table td {
+  border: 0px solid #ddd;
+}
+
+.employee-history-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}

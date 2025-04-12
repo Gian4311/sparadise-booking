@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from "react-router-dom";
-
+import { NavLink } from 'react-router-dom';
 import '../styles/ClientHomePage.css';
 import SparadiseLogo from "../images/SpaRadise Logo.png";
 import NotificationSymbol from "../images/Notification Symbol.png";
@@ -34,7 +34,7 @@ export default function ClientHomePage() {
             <div className="client-home-hero-overlay">
                 <h1 className="client-home-title">Welcome to SpaRadise</h1>
                 <p className="client-home-subtitle">Beauty within your reach...</p>
-                <Link to={`/clients/bookings/new`}>
+                <Link to={`clients/A6xoQYfymODeKJdp8bnT/bookings/new`}>
                     <button className="client-home-button">Book Now</button>
                 </Link>
             </div>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commission</title>
+    <link rel="stylesheet" href="../styles/CommisionPage1.css">
+    <link rel="stylesheet" href="../styles/Sidebar.css">
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="../images/SpaRadise Logo.png" alt="SpaRadise Logo">
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Bookings</a></li>
+            <li><a href="#">Clients</a></li>
+            <li><a href="../pages/EmployeeEmployeeManagement.html">Employees</a></li>
+            <li><a href="../pages/EmployeeServicePackageMenu.html">Services & Packages</a></li>
+            <li><a href="#">Vouchers</a></li>
+            <li><a href="#">Rooms & Chairs</a></li>
+            <li><a href="../pages/CommisionPage.html" class="active">Commissions</a></li>
+            <li><a href="#">Log Out</a></li>
+        </ul>
+    </div>
+    <div class="container">
+        <div class="calendar-header">
+            <button id="prev-btn">&#8592;</button>
+            <span id="date-range">02 DECEMBER 2024 - 16 DECEMBER 2024</span>
+            <button id="next-btn">&#8594;</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Service</th>
+                    <th>Commission</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>12 December 2024</td>
+                    <td>9am-10am</td>
+                    <td>FootSpa</td>
+                    <th>₱350</th>
+                </tr>
+                <tr>
+                    <td>26 December 2024</td>
+                    <th>1pm-2pm</th>
+                    <th>FootSpa</th>
+                    <td>₱250</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const expandButtons = document.querySelectorAll(".expand-btn");
+            
+            expandButtons.forEach((button) => {
+                button.addEventListener("click", function () {
+                    const detailsRow = this.closest("tr").nextElementSibling;
+                    
+                    if (detailsRow.classList.contains("hidden")) {
+                        detailsRow.classList.remove("hidden");
+                        this.textContent = "Collapse";
+                    } else {
+                        detailsRow.classList.add("hidden");
+                        this.textContent = "Expand";
+                    }
+                });
+            });
+
+            document.getElementById("next-btn").addEventListener("click", function () {
+                alert("Next date range clicked (implement date logic)");
+            });
+
+            document.getElementById("prev-btn").addEventListener("click", function () {
+                alert("Previous date range clicked (implement date logic)");
+            });
+        });
+    </script>
+</body>
+</html>

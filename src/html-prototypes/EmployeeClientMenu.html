@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services & Packages</title>
+    <link rel="stylesheet" href="../styles/EmployeeServiceMenu.css">
+    <link rel="stylesheet" href="../styles/Sidebar.css">
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="../images/SpaRadise Logo.png" alt="SpaRadise Logo">
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Bookings</a></li>
+            <li><a href="#">Clients</a></li>
+            <li><a href="../pages/EmployeeEmployeeManagement.html">Employees</a></li>
+            <li><a href="../pages/EmployeeServicePackageMenu.html" class="active">Services & Packages</a></li>
+            <li><a href="#">Vouchers</a></li>
+            <li><a href="#">Rooms & Chairs</a></li>
+            <li><a href="#">Log Out</a></li>
+        </ul>
+    </div>
+
+    <div class="service-menu-main-content ">
+        <label for="service-menu-main-content" class="service-menu-main-content-location">Clients
+        </label>
+        <div class="service-menu-form-section">
+            <div class="service-stats">
+                <div class="service-stat">2<br><span>Clients</span></div>
+                <div class="service-stat">1<br><span>New clients this month</span></div>
+            </div>
+
+            <div class="controls">
+                <input type="text" placeholder="Search clients" class="search">
+                <select class="filter-btn" id="filter-select" name="services-packages">
+                    <option selected>A - Z</option>
+                    <option>Z - A</option>
+                </select>
+                <button class="action-btn">+ Add new client</button>
+            </div>
+
+            <table class="services-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Sex</th>
+                        <th>Birthdate</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Cruz, Tom</td>
+                        <td>Male</td>
+                        <td>3 July 1962</td>
+                        <td>tomcruz@gmail.com</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>James, LeBron R.</td>
+                        <td>Male</td>
+                        <td>30 December 1984</td>
+                        <td>lebronjames@gmail.com</td>
+                    </tr>
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+</body>
+
+</html>

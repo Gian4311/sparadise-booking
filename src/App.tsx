@@ -18,6 +18,9 @@ import VoucherManagement from "./pages/VoucherManagement_v0";
 import VoucherMenu from "./pages/VoucherMenu_v0";
 import Homepage from "./pages/NewClientIndex";
 import Booking1 from "./pages/Booking1";
+import ClientManagement from "./pages/EmployeeClientManagement";
+import ClientMenu from "./pages/EmployeeClientMenu";
+import ClientBookingList from "./pages/ClientBookingList";
 
 import Dashboard from "./pages/EmployeeDashboard";
 
@@ -27,8 +30,8 @@ function App() {
     return <>
         <BrowserRouter>
             <Routes>
-                <Route index element={ <DevMenu/> }/>
-                <Route path="home" element={ <Homepage/> }/>
+                <Route index element={ <Homepage/> }/>
+                <Route path="/devMenu" element={ <DevMenu/> }/>
                 <Route path="dayPlanner" element={ <DayPlannner/> }/>
                 <Route path="clients/:accountId/account" element={ <MyAccount/> }/>
                 <Route path="clients/:accountId/bookings/new" element={ <NewBooking/> }/>
@@ -47,9 +50,12 @@ function App() {
                 <Route path="management/vouchers/menu" element={ <VoucherMenu/> }/>
                 <Route path="management/vouchers/:id" element={ <VoucherManagement/> }/>
                 <Route path="management/employees/menu" element={ <EmployeeMenu/> }/>
-
+                <Route path="management/clients" element={ <ClientManagement/> }/>
+                <Route path="management/clients/menu" element={<ClientMenu/>}/>
                 <Route path="newindex" element={ <NewHomepage/> }/>
-                <Route path="dashboard" element={ <Dashboard/> }/>
+                <Route path="management/dashboard" element={ <Dashboard/> }/>
+
+                <Route path="bookingList" element={ <ClientBookingList/> }/>
             </Routes>
         </BrowserRouter>
     </>;
