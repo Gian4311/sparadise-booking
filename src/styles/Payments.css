@@ -188,3 +188,16 @@ h2 {
     width: 50px;
 }
 
+.customlink{
+    text-decoration: black;
+    cursor:pointer;
+    color: blaCK;
+    text-align:center;
+}
+
+.navibutton{
+    text-decoration: white;
+    cursor:pointer;
+    color: white;
+    background-color: #287233;
+}

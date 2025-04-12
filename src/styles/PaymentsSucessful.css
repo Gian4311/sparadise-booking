@@ -165,3 +165,19 @@ div {
 .back-btn img{
     width: 50px;
 }
+
+.customlink{
+    text-decoration: black;
+    cursor:pointer;
+    color: blaCK;
+    text-align:center;
+}
+
+.navibutton{
+    text-decoration: white;
+    cursor:pointer;
+    color: white;
+    background-color: #287233;
+    padding: 20px;
+    border-radius: 10px;
+}
