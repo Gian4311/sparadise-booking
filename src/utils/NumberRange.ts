@@ -1,4 +1,4 @@
-export class NumberRange {
+export default class NumberRange {
 
     public constructor(
         private readonly start: number,
@@ -76,7 +76,7 @@ export class NumberRange {
             start2: number = numberRange.getTrueStart(),
             end2: number = numberRange.getTrueEnd()
         ;
-        return ( end1 > start2 ) || ( end2 > start1 );
+        return ( end1 > start2 ) && ( end2 > start1 );
 
     }
 

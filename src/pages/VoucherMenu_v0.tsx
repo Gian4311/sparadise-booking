@@ -105,30 +105,67 @@ export default function VoucherMenu(): JSX.Element {
 
     return <>
         <div>
-        <EmployeeSidebar/>
+            <EmployeeSidebar />
+            <div className="sidebar">
+                <div className="sidebar-logo">
+                    <img src={SpaRadiseLogo} alt="SpaRadise Logo" />
+                </div>
+                <ul className="sidebar-menu">
+                    <li><Link to="../management/dashboard" >Dashboard</Link></li>
+                    <li><Link to="../management/bookings/menu" >Bookings</Link></li>
+                    <li><Link to="../management/clients/menu" >Clients</Link></li>
+                    <li><Link to="/management/employees/menu" >Employees</Link></li>
+                    <li><Link to="../management/servicesAndPackages/menu">Services & Packages</Link></li>
+                    <li><Link to="../management/vouchers/menu" className="active"  >Vouchers</Link></li>
+                    <li><Link to="../management/roomsAndChairs/menu" >Rooms & Chairs</Link></li>
+                    <li><Link to="../management/commissions/menu" >Commissions</Link></li>
+                    <li><a href="#">Log Out</a></li>
+                </ul>
+            </div>
+
             <div className="service-menu-main-content">
                 <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">Vouchers
                 </label>
-                <Link to="/management/vouchers/new">
+                <div className="service-menu-form-section">
 
+                    <div className="controls">
+                        <input placeholder="Search services or packages" className="search" value={search} onChange={event => handleChangeSearch(event)} />
+                        <button className="filter-btn" type="button" value={sortMode} onClick={toggleSortMode}>{
+                            (sortMode === "ascending") ? "A - Z" : "Z - A"
+                        }</button>
+                        <select className="filter-btn" id="filter-select" value={showMode} onChange={event => handleChangeShowMode(event)}>
+                            <option value="">Show All</option>
+                            <option value="service">Services only</option>
+                            <option value="package">Packages only</option>
+                        </select>
+                        <Link to="/management/vouchers/new"><button className="action-btn" type="button">+ Add new Voucher</button></Link>
+                    </div>
+                    <table className="services-table">
+                        <thead><tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Code</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                        </tr></thead>
+                        <tbody>                        {
 
-                    <h1>New</h1>
-                </Link>
+                            voucherDataMap ? Object.keys(voucherDataMap).map((voucherId, index) => {
+
+                                const voucherData = pageData.voucherDataMap[voucherId];
+                                return <Link key={index} to={"/management/vouchers/" + voucherId}>
+                                    <h1>{voucherData.name}</h1>
+                                </Link>
+
+                            }) : undefined
+
+                        }
+
+                        </tbody>
+                    </table>
+                </div>
+
             </div>
-
-
-            {
-
-                voucherDataMap ? Object.keys(voucherDataMap).map((voucherId, index) => {
-
-                    const voucherData = pageData.voucherDataMap[voucherId];
-                    return <Link key={index} to={"/management/vouchers/" + voucherId}>
-                        <h1>{voucherData.name}</h1>
-                    </Link>
-
-                }) : undefined
-
-            }
         </div>
     </>;
 

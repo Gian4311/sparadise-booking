@@ -104,6 +104,21 @@ export default class JobServiceUtils {
 
     }
 
+    public static async getJobServiceDataMapAll(): Promise< JobServiceDataMap > {
+        
+        const
+            jobServiceCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
+                SpaRadiseEnv.JOB_SERVICE_COLLECTION
+            ),
+            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( jobServiceCollection ) ).docs,
+            jobServiceDataMap: JobServiceDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            jobServiceDataMap[ snapshot.id ] = await JobServiceUtils.getJobServiceData( snapshot );
+        return jobServiceDataMap;
+
+    }
+
     public static async getJobServiceDataMapByJob(
         by: documentId | DocumentReference | DocumentSnapshot
     ): Promise< JobServiceDataMap > {

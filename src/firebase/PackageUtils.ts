@@ -14,7 +14,8 @@ import {
 } from "firebase/firestore/lite";
 import {
     PackageData,
-    PackageDataMap
+    PackageDataMap,
+    ServiceTransactionDataMap
 } from "./SpaRadiseTypes";
 import SpaRadiseEnv from "./SpaRadiseEnv";
 import SpaRadiseFirestore from "./SpaRadiseFirestore";

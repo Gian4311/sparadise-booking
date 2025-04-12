@@ -1,412 +1,447 @@
 /* General Styles */
 body {
-    font-family: Arial, sans-serif;
-    background-color: white;
-    margin: 0;
-    padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: white;
+  margin: 0;
+  padding: 0;
 }
 
 .booking-container {
-    margin: 50px auto;
-    padding: 50px;
-    max-width: 1500px;
-    background-color: #FBE3EB;
-    border-radius: 15px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 50px auto;
+  padding: 50px;
+  width: 80%;
+  background-color: #FBE3EB;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .date-input label {
-    margin-right: 10px;
-    font-weight: bold;
-    font-size: 2rem;
+  margin-right: 10px;
+  font-weight: bold;
+  font-size: 2rem;
 }
 
 .date-input input {
-    font-size: 1.5rem;
-    padding: 10px;
-    border-radius: 5px;
+  font-size: 1.5rem;
+  padding: 10px;
+  border-radius: 5px;
 }
 
 /* Client Selection */
 .client-selection {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .client-item {
-    cursor: pointer;
-    padding: 10px;
-    background-color: #fff;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    text-align: center;
-    font-size: 1.5rem;
+  cursor: pointer;
+  padding: 10px;
+  background-color: #fff;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 1.5rem;
 }
 
 .client-item:hover {
-    background-color: #e1bee7;
+  background-color: #e1bee7;
 }
 
 /* Section Buttons */
 .toggle-button {
-    font-size: 2rem;
-    font-weight: bold;
-    padding: 10px;
-    background-color: white;
-    color: black;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    width: 100%;
-    margin-bottom: 10px;
-    text-align: left;
-    padding: 20px;
+  font-size: 2rem;
+  font-weight: bold;
+  padding: 10px;
+  background-color: white;
+  color: black;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 10px;
+  text-align: left;
+  padding: 20px;
 }
 
 .toggle-button:hover {
-    background-color: whitesmoke;
+  background-color: whitesmoke;
 }
 
 /* Hidden by default */
 .hidden {
-    display: none;
+  display: none;
 }
 
 /* Package/Service Selection */
 .section-label {
-    font-size: 1.2rem;
-    margin-bottom: 10px;
-    font-weight: bold;
-    padding-top: 2%;
+  font-size: 120%;
+  margin-bottom: 1%;
+  font-weight: bold;
+  padding-top: 2%;
 }
 
 .clickable-bars {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 1%;
+  flex-wrap: wrap;
 }
 
 .package-scroll-container {
-    display: flex;
-    overflow-x: auto;
-    white-space: nowrap;
-    gap: 2%;
-    padding: 10px;
-  }
-  
-  .package-scroll-item {
-    flex: 0 0 auto;
-    width: 350px; /* Adjusted for content */
-    height: 350px;
-    flex-direction: column;
-    justify-content: space-between;
-    background-color: rgba(255, 255, 255, 0.7) ;
-    border-radius: 10px;
-    padding: 10px;
-    position: relative;
-    text-align: center;
-    display: flex;
-  }
-  
-  .package-price {
-    font-weight: bold;
-    color: #000000;
-    font-size: 2rem;
-    text-align: right;
-  }
-  
-  .package-name {
-    font-weight: bold;
-    font-size: 200%;
-  }
-  
-  .package-services {
-    margin-top: 5%;
-    margin-left: 2%;
-    font-size: 120%;
-    color: black;
-    margin-bottom: 5px;
-    text-align: left;
-  }
-  
-  .package-services-conflict {
-    color: #FF0000;
-  }
-  
-  
-  .package-description {
-    white-space: normal;
-    margin-top: 5%;
-    font-size: 100%;
-    color: #777;
-    margin-bottom: 5px;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-  }
-  
-  .service-scroll-container {
-    display: flex;
-    overflow-x: auto;
-    white-space: nowrap;
-    gap: 2%;
-    padding: 10px;
-  }
-  
-  .service-scroll-item {
-    flex: 0 0 auto;
-    width: 350px; /* Adjusted for content */
-    height: 350px;
-    flex-direction: column;
-    justify-content: space-between;
-    background-color: rgba(255, 255, 255, 0.7) ;
-    border-radius: 10px;
-    padding: 10px;
-    position: relative;
-    text-align: center;
-    display: flex;
-  }
-  
-  .service-price {
-    font-weight: bold;
-    color: #000000;
-    font-size: 2rem;
-    text-align: right;
-  }
-  
-  .service-name {
-    font-weight: bold;
-    font-size: 200%;
-  }
-  
-  .service-services {
-    margin-top: 5%;
-    margin-left: 2%;
-    font-size: 120%;
-    color: black;
-    margin-bottom: 5px;
-    text-align: left;
-  }
-  
-  .service-services-conflict {
-    color: #FF0000;
-  }
-  
-  
-  .service-description {
-    white-space: normal;
-    margin-top: 5%;
-    font-size: 100%;
-    color: #777;
-    margin-bottom: 5px;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-  }
-  
+  display: flex;
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 2%;
+  padding: 1%;
+}
 
-  .add-btn {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 5px;
-    font-size: 100%;
-    cursor: pointer;
-    border-radius: 5px;
-    margin-top: 20%;
-  }
-  
-  .add-btn:hover {
-    background-color: #45a049;
-  }
+.package-scroll-item {
+  flex: 0 0 auto;
+  width: 20%;
+  /* Adjusted for content */
+  height: 500px;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 1%;
+  padding: 1%;
+  position: relative;
+  text-align: center;
+  display: flex;
+}
 
-  .remove-btn {
-    background-color: #850D0D;
-    color: white;
-    border: none;
-    padding: 5px;
-    font-size: 100%;
-    cursor: pointer;
-    border-radius: 5px;
-    margin-top: 20%;
-  }
-  
-  .remove-btn:hover {
-    background-color: #451414;
-  }
+.package-price {
+  font-weight: bold;
+  color: #000000;
+  font-size: 200%;
+  text-align: right;
+}
 
-  .conflict-btn {
-    background-color: #cd8385;
-    color: white;
-    border: none;
-    padding: 5px;
-    font-size: 100%;
-    cursor: pointer;
-    border-radius: 5px;
-    margin-top: 20%;
-  }
-  
-  .conflict-btn:hover {
-    background-color: #a36668;
-  }
-  
-  
+.package-name {
+  font-weight: bold;
+  font-size: 200%;
+}
+
+.package-services {
+  margin-top: 5%;
+  margin-left: 2%;
+  font-size: 120%;
+  color: black;
+  text-align: left;
+}
+
+.package-services-conflict {
+  margin-top: 5%;
+  margin-left: 2%;
+  font-size: 120%;
+  color: rgb(255, 0, 0);
+  text-align: left;
+}
+
+.package-description {
+  white-space: normal;
+  margin-top: 5%;
+  font-size: 100%;
+  color: #777;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.service-scroll-container {
+  display: flex;
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 2%;
+  padding: 10px;
+}
+
+.service-scroll-item {
+  flex: 0 0 auto;
+  width: 20%;
+  /* Adjusted for content */
+  height: 500px;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 10px;
+  padding: 10px;
+  position: relative;
+  text-align: center;
+  display: flex;
+}
+
+.service-price {
+  font-weight: bold;
+  color: #000000;
+  font-size: 2rem;
+  text-align: right;
+}
+
+.service-name {
+  font-weight: bold;
+  font-size: 200%;
+}
+
+.service-services {
+  margin-top: 5%;
+  margin-left: 2%;
+  font-size: 120%;
+  color: black;
+  margin-bottom: 5px;
+  text-align: left;
+}
+
+.service-services-conflict {
+  color: #FF0000;
+}
+
+
+.service-description {
+  white-space: normal;
+  margin-top: 5%;
+  font-size: 100%;
+  color: #777;
+  margin-bottom: 5px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+
+.add-btn {
+  background-color: #4CAF50;
+}
+
+.add-btn:hover {
+  background-color: #45a049;
+}
+
+.conf-btn {
+  background-color: #cf8385;
+  color: white;
+  border: none;
+  padding: 2%;
+  font-size: 100%;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 20%;
+  margin-bottom: 5%;
+}
+
+.remove-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 5px;
+  font-size: 100%;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 20%;
+}
+
+.remove-btn:hover {
+  background-color: #451414;
+}
+
+.conflict-btn {
+  background-color: #cd8385;
+  color: white;
+  border: none;
+  padding: 5px;
+  font-size: 100%;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 20%;
+}
+
+.conflict-btn:hover {
+  background-color: #a36668;
+}
+
+
 
 .package-item:hover,
 .service-item:hover {
-    background-color: whitesmoke;
+  background-color: whitesmoke;
+}
+
+.summary-label{
+  font-size: 300%;
+}
+
+.time-slot-date{
+  font-size: 200%;
+  font-weight: bold;
+}
+.time-slot-note{
+  color: black;
+  margin-top: 2%;
 }
 
 .service-description {
-    margin-top: 10%;
-    font-size: .8rem;
+  margin-top: 10%;
+  font-size: .8rem;
 }
 
 .service-button {
-    background-color: green;
-    border-radius: 15px;
-    padding-top: 3%;
-    padding-left: 7%;
-    padding-right: 7%;
-    padding-bottom: 3%;
+  background-color: green;
+  border-radius: 15px;
+  padding-top: 3%;
+  padding-left: 7%;
+  padding-right: 7%;
+  padding-bottom: 3%;
 
 }
+
 /* Time Slot Table */
 
 .time-slot-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
 }
 
-.time-slot-table th{
-    font-weight: bold;
+.time-slot-table th {
+  font-weight: bold;
 }
 
-.time-slot-table th, .time-slot-table td {
-    padding: 15px;
-    text-align: center;
-    font-size: 1.2rem;
-    background-color: white;
+.time-slot-table th,
+.time-slot-table td {
+  padding: 15px;
+  text-align: center;
+  font-size: 1.2rem;
+  background-color: white;
 
 }
 
 .time-slot-dropdown {
-    font-size: 1rem;
-    padding: 8px;
-    border-radius: 5px;
-    width: 150px;
+  font-size: 1rem;
+  padding: 8px;
+  border-radius: 5px;
+  width: 150px;
 }
 
 /* Notes Section */
 .notes-section {
-    margin-bottom: 20px;
-    padding-top: 1%;
+  margin-bottom: 20px;
+  padding-top: 1%;
 }
 
 .notes-section label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
 }
 
 #notes {
-    width: 100%;
-    height: 80px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    resize: none;
+  width: 100%;
+  height: 80px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  resize: none;
 }
 
 /* Navigation Buttons */
 .action-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-    gap: 70%;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 70%;
 }
 
 .back-btn {
-    flex: 1;
-    margin-right: 10px;
-    padding: 10px;
-    font-size: 1em;
-    font-weight: bold;
-    background-color: #A89396;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    border-radius: 30px;
-    width: auto;
+  flex: 1;
+  margin-right: 10px;
+  padding: 10px;
+  font-size: 1em;
+  font-weight: bold;
+  background-color: #A89396;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-radius: 30px;
+  width: auto;
 }
 
 .back-btn:hover {
-    background-color: #8B7D7E;
+  background-color: #8B7D7E;
 }
 
 .proceed-btn {
-    flex: 1;
-    padding: 10px;
-    font-size: 1em;
-    font-weight: bold;
-    background-color: #552B59;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    border-radius: 30px;
-    width: auto;
+  flex: 1;
+  padding: 10px;
+  font-size: 1em;
+  font-weight: bold;
+  background-color: #552B59;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-radius: 30px;
+  width: auto;
 }
 
 .proceed-btn:hover {
-    background-color: #7E3B7A;
+  background-color: #7E3B7A;
 }
 
 .booking-summary-table {
-    padding: 10px;
-    margin-top: 2%;
-    background-color: white;
-    width: 100%;
-    color:black;
-    text-align: center;
-    font-size: 1.4rem;
+  padding: 10px;
+  margin-top: 2%;
+  background-color: white;
+  width: 100%;
+  color: black;
+  text-align: center;
+  font-size: 1.4rem;
 }
 
-.booking-summary-table th{
-    padding: 1%;
-    font-size: 1.4rem;
+.booking-summary-table th {
+  padding: 1%;
+  font-size: 1.4rem;
 }
 
-.booking-summary-table td{
-    font-size: 1rem;
+.booking-summary-table td {
+  font-size: 1rem;
 }
 
 .voucher-summary-table {
-    margin-top: 1%;
-    background-color: white;
-    width: 100%;
-    padding-right: 4%;
-    padding-left: 4%;
-    padding-bottom: 1%;
-    padding-top: 2%;
-    text-align: center;
-    align-items: center;
+  margin-top: 1%;
+  background-color: white;
+  width: 100%;
+  padding-right: 4%;
+  padding-left: 4%;
+  padding-bottom: 1%;
+  padding-top: 2%;
+  text-align: center;
+  align-items: center;
 }
 
-.voucher-summary-table td{
-    font-size: 1rem;
+.voucher-summary-table td {
+  font-size: 1rem;
 }
 
-.voucher-summary-table th{
-    padding-right: 1%;
-    font-size: 1.4rem;
+.voucher-summary-table th {
+  padding-right: 1%;
+  font-size: 1.4rem;
 }
 
 #voucher-code {
-    width: 40%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    resize: none;
+  width: 40%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  resize: none;
+}
+
+.package-name-summary{
+  margin-bottom: 2%;
+  font-weight: bold;
+  font-size: 100%;
+}
+
+.client-name-summary{
+  font-size: 100%;
+  align-items: center;
+  font-weight: bold;
 }

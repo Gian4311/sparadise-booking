@@ -84,8 +84,8 @@ export interface EmployeeDataMap extends SpaRadiseDataMap< EmployeeData > {
 export interface EmployeeLeaveData extends SpaRadiseDocumentData {
 
     employee: DocumentReference,
-    fromDateTime: Date,
-    toDateTime: Date,
+    dateTimeStart: Date,
+    dateTimeEnd: Date,
     status: leaveStatus,
     reason: string
 
@@ -171,7 +171,7 @@ export interface ServiceData extends SpaRadiseDocumentData {
     serviceType: serviceType,
     roomType: roomType,
     ageLimit: number,
-    durationMin: number
+    durationMin: 30 | 60
 
 }
 
@@ -202,11 +202,12 @@ export interface ServiceTransactionData extends SpaRadiseDocumentData {
     client: DocumentReference,
     service: DocumentReference,
     package: DocumentReference | null,
-    status: serviceTransactionStatus,
-    bookingFromDateTime: Date,
-    bookingToDateTime: Date,
-    actualBookingFromDateTime: Date | null,
-    actualBookingToDateTime: Date | null,
+    canceled: boolean,
+    free: boolean,
+    bookingDateTimeStart: Date,
+    bookingDateTimeEnd: Date,
+    actualBookingDateTimeStart: Date | null,
+    actualBookingDateTimeEnd: Date | null,
     employee: DocumentReference | null,
     notes: string | null
 
@@ -258,7 +259,9 @@ export interface VoucherData extends SpaRadiseDocumentData {
     name: string,
     code: string,
     amount: number | null,
-    percentage: number | null
+    percentage: number | null,
+    dateValid: Date,
+    dateExpiry: Date
 
 }
 

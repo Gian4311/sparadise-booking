@@ -1,8 +1,9 @@
 import DateUtils from "./DateUtils";
+import NumberRange from "./NumberRange";
 
 const DATETIME_FORMAT = "Mmmm dd, yyyy - hh:mm a.m.";
 
-export class DateRange {
+export default class DateRange {
 
     public constructor(
         private readonly start: Date,
@@ -63,9 +64,11 @@ export class DateRange {
             start1: number = this.getStart().getTime(),
             end1: number = this.getEnd().getTime(),
             start2: number = dateRange.getStart().getTime(),
-            end2: number = dateRange.getEnd().getTime()
+            end2: number = dateRange.getEnd().getTime(),
+            numberRange1: NumberRange = new NumberRange( start1, end1 ),
+            numberRange2: NumberRange = new NumberRange( start2, end2 )
         ;
-        return ( end1 > start2 ) || ( end2 > start1 );
+        return numberRange1.overlapsWith( numberRange2 );
 
     }
 

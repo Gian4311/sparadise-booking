@@ -1,10 +1,11 @@
 import "../styles/ClientIndex.css";
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 import NotificationSymbol from "../images/Notification Symbol.png";
+import Massage from "../images/massage.jpg";
 
 const ClientIndex = () => {
     return (
-        <div className="clientIndexBody">
+        <div className="clientIndexBackgroundWrapper">
             <header className="clientIndex-header">
                 <div className="clientIndex-logo">
                     <img src={SpaRadiseLogo} alt="SpaRadise Logo" />
@@ -38,7 +39,7 @@ const ClientIndex = () => {
                 <h2 className="clientIndex-servicesHeading">Our Services</h2>
                 <div className="clientIndex-servicesContainer">
                     {[
-                        { title: "Lashes", desc: "Enhance your natural beauty with voluminous, long-lasting lash extensions.", img: "massage.jpg" },
+                        { title: "Lashes", desc: "Enhance your natural beauty with voluminous, long-lasting lash extensions.", img: Massage },
                         { title: "Brows", desc: "Define your brows with precision shaping for a flawless, natural look.", img: "massage.jpg" },
                         { title: "Massages", desc: "Relieve stress and tension with a soothing full-body massage experience.", img: "massage.jpg" },
                         { title: "Facials", desc: "Refresh your skin with a deeply hydrating facial tailored to your needs.", img: "facial.jpeg" },

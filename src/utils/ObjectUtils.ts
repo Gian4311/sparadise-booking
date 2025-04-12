@@ -8,12 +8,12 @@ export default class ObjectUtils {
 
     public static filter< V >(
         object: ObjectParam< V >,
-        validate: ( keyName: string, value: V, object: ObjectParam< V > ) => boolean
+        filter: ( keyName: string, value: V, object: ObjectParam< V > ) => boolean
     ): ObjectParam< V > {
 
         const newObject: ObjectParam< V > = {};
         for( let keyName in object )
-            if( validate( keyName, object[ keyName ], object ) )
+            if( filter( keyName, object[ keyName ], object ) )
                 newObject[ keyName ] = object[ keyName ];
         return newObject;
 
@@ -28,6 +28,25 @@ export default class ObjectUtils {
     public static keyLength( object: Object ): number {
 
         return Object.keys( object ).length;
+
+    }
+
+    public static toArray< V, T >(
+        object: ObjectParam< V >,
+        map: ( keyName: string, value: V, object: ObjectParam< V > ) => T
+    ): T[] {
+
+        const array: T[] = [];
+        for( let keyName in object ) {
+
+            const
+                value: V = object[ keyName ],
+                add: T = map( keyName, value, object )
+            ;
+            array.push( add );
+
+        }
+        return array;
 
     }
 

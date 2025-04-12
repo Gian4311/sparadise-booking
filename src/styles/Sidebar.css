@@ -11,17 +11,18 @@
 }
 
 .sidebar {
-    width: 250px;
+    width: 17%;
     background-color: #552B59;
     color: white;
     height: 100%;
     position: fixed;
-    padding: 20px;
+    padding: 2%;
   }
   
   .sidebar-logo img {
-    height: 90px;
-    padding-top: 20px;
+    height: 80%;
+    width: 80%;
+    padding-top: 5%;
   }
 
   .sidebar li{
@@ -35,13 +36,13 @@
   }
 
   .sidebar-menu li {
-    margin: 20px 0;
+    margin: 10% 0;
   }
   
   .sidebar-menu li a {
     text-decoration: none;
     color: white;
-    font-size: 1.2em;
+    font-size: 140%;
   }
   
   .sidebar-menu li a.active {

@@ -1,5 +1,6 @@
 import {
     addDoc,
+    and,
     CollectionReference,
     deleteDoc,
     DocumentData,
@@ -13,6 +14,8 @@ import {
     WithFieldValue,
     where
 } from "firebase/firestore/lite";
+import DateRange from "../utils/DateRange"
+import DateUtils from "../utils/DateUtils";
 import {
     EmployeeLeaveData,
     EmployeeLeaveDataMap
@@ -90,6 +93,37 @@ export default class EmployeeLeaveUtils {
 
     }
 
+    public static async getApprovedEmployeeLeaveDataMapByDay(
+        date: Date
+    ): Promise< EmployeeLeaveDataMap > {
+
+        const
+            employeeLeaveCollection: CollectionReference =
+                SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.EMPLOYEE_LEAVE_COLLECTION )
+            ,
+            dateTimeStart: Date = DateUtils.toFloorByDay( date ),
+            dateTimeEnd: Date = DateUtils.toCeilByDay( date ),
+            employeeLeaveQuery = query(
+                employeeLeaveCollection,
+                and(
+                    where( "dateTimeEnd", ">", dateTimeStart ),
+                    where( "dateTimeStart", "<", dateTimeEnd ),
+                    where( "status", "==", "approved" )
+                )
+            ),
+            snapshotList: QueryDocumentSnapshot[] =
+                ( await getDocs( employeeLeaveQuery ) ).docs
+            ,
+            employeeLeaveDataMap: EmployeeLeaveDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            employeeLeaveDataMap[ snapshot.id ] =
+                await EmployeeLeaveUtils.getEmployeeLeaveData( snapshot )
+            ;
+        return employeeLeaveDataMap;
+
+    }
+
     public static async getApprovedEmployeeLeaveDataMapByEmployee(
         by: documentId | DocumentReference | DocumentSnapshot
     ): Promise< EmployeeLeaveDataMap > {
@@ -130,8 +164,8 @@ export default class EmployeeLeaveUtils {
         const data = snapshot.data();
         return {
             employee: data.employee,
-            fromDateTime: SpaRadiseFirestore.getDateFromSnapshot( snapshot, "fromDateTime" ),
-            toDateTime: SpaRadiseFirestore.getDateFromSnapshot( snapshot, "toDateTime" ),
+            dateTimeStart: SpaRadiseFirestore.getDateFromSnapshot( snapshot, "dateTimeStart" ),
+            dateTimeEnd: SpaRadiseFirestore.getDateFromSnapshot( snapshot, "dateTimeEnd" ),
             status: data.status,
             reason: data.reason
         };
@@ -146,8 +180,8 @@ export default class EmployeeLeaveUtils {
             ),
             employeeLeaveQuery = query(
                 employeeLeaveCollection,
-                orderBy( "fromDateTime", "desc" ),
-                orderBy( "toDateTime", "desc" )
+                orderBy( "dateTimeStart", "desc" ),
+                orderBy( "dateTimeEnd", "desc" )
             ),
             snapshotList: QueryDocumentSnapshot[] = ( await getDocs( employeeLeaveQuery ) ).docs,
             employeeLeaveDataMap: EmployeeLeaveDataMap = {}

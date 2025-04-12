@@ -32,7 +32,7 @@ import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import "../styles/EmployeeServiceManagement.css";
 import "../styles/Sidebar.css";
 import EmployeeSidebar from "../components/EmployeeSidebar";
-
+import BackButton from "../images/back button.png";
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 
 interface PackageManagementPageData extends SpaRadisePageData {
@@ -552,12 +552,14 @@ export default function PackageManagement(): JSX.Element {
 
     return <>
         <form onSubmit={submit}>
-            <EmployeeSidebar/>
+            <EmployeeSidebar />
             <div className="service-main-content">
                 <label htmlFor="service-main-content" className="service-management-location">Services & Packages - {pageData.packageName}</label>
                 <div className="service-form-section">
                     <div className="service-header">
-                        <a href="#" className="Service-back-arrow" aria-label="Back">&#8592;</a>
+                        <a href="#" className="service-back-arrow" aria-label="Back">
+                            <img src={BackButton} alt="Back" className="back-icon" />
+                        </a>
                         <h1>{pageData.packageName}</h1>
                     </div>
                     <div className="service-form-row-group">
@@ -587,6 +589,7 @@ export default function PackageManagement(): JSX.Element {
                                                     {service.name}</div>
                                                 <div className="service-description" key={key}>
                                                     {service.description}</div>
+                                                    
                                                 {
                                                     !(serviceId in pageData.packageServiceIncludedMap) ||
                                                         packageServiceId in pageData.packageServiceToDeleteMap ? (
@@ -610,7 +613,7 @@ export default function PackageManagement(): JSX.Element {
                     <label htmlFor="service-maintenance" className="service-maintenance-label">Package
                         Maintenance:
                     </label>
-                    <button className="service-save-btn" type="button" onClick={addPackageMaintenance}>Add Maintenance</button>
+                    <button className="addServiceMaintenanceButton" type="button" onClick={addPackageMaintenance}>+ Add Maintenance</button>
                     <table className="service-history-table">
                         <thead>
                             <tr>

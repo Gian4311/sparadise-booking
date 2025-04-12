@@ -30,19 +30,19 @@ import { Link } from "react-router-dom";
 import "../styles/EmployeeServiceManagement.css";
 import "../styles/Sidebar.css";
 import EmployeeSidebar from "../components/EmployeeSidebar";
-
+import BackButton from "../images/back button.png";
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 
 interface ServiceManagementPageData extends SpaRadisePageData {
-    
+
     serviceDefaultData: ServiceData,
     serviceData: ServiceData,
     serviceDocumentReference?: DocumentReference,
     serviceMaintenanceDefaultDataMap: ServiceMaintenanceDataMap,
     serviceMaintenanceDataMap: ServiceMaintenanceDataMap,
-    serviceMaintenanceDateKeyMap: { [ yyyymmdd: string ]: documentId | number },
+    serviceMaintenanceDateKeyMap: { [yyyymmdd: string]: documentId | number },
     serviceMaintenanceIndex: number,
-    serviceMaintenanceToDeleteMap: { [ serviceMaintenanceId: string ]: boolean },
+    serviceMaintenanceToDeleteMap: { [serviceMaintenanceId: string]: boolean },
     serviceName: string
 
 }
@@ -52,7 +52,7 @@ const IS_DEV_MODE = true;
 export default function ServiceManagement(): JSX.Element {
 
     const
-        [ pageData, setPageData ] = useState< ServiceManagementPageData >( {
+        [pageData, setPageData] = useState<ServiceManagementPageData>({
             loaded: false,
             serviceData: {
                 name: null as unknown as string,
@@ -60,7 +60,7 @@ export default function ServiceManagement(): JSX.Element {
                 serviceType: null as unknown as serviceType,
                 roomType: null as unknown as roomType,
                 ageLimit: null as unknown as number,
-                durationMin: null as unknown as number
+                durationMin: null as unknown as ( 30 | 60 )
             },
             serviceDefaultData: {} as ServiceData,
             serviceMaintenanceDataMap: {},
@@ -70,13 +70,13 @@ export default function ServiceManagement(): JSX.Element {
             serviceMaintenanceToDeleteMap: {},
             serviceName: "New Service",
             updateMap: {}
-        } ),
+        }),
         documentId: string | undefined = useParams().id,
-        isNewMode: boolean = ( documentId === "new" ),
-        isEditMode: boolean = ( documentId !== undefined && !isNewMode )
-    ;
+        isNewMode: boolean = (documentId === "new"),
+        isEditMode: boolean = (documentId !== undefined && !isNewMode)
+        ;
 
-    async function addServiceMaintenance(): Promise< void > {
+    async function addServiceMaintenance(): Promise<void> {
 
         const {
             serviceMaintenanceDateKeyMap,
@@ -84,23 +84,23 @@ export default function ServiceManagement(): JSX.Element {
         } = pageData;
         let
             date: Date = new Date(),
-            dateKey: string = getDateKey( date )
-        ;
-        while( dateKey in serviceMaintenanceDateKeyMap ) {
+            dateKey: string = getDateKey(date)
+            ;
+        while (dateKey in serviceMaintenanceDateKeyMap) {
 
-            const serviceMaintenanceId = serviceMaintenanceDateKeyMap[ dateKey ] as string;
-            if( serviceMaintenanceId in serviceMaintenanceToDeleteMap ) {
+            const serviceMaintenanceId = serviceMaintenanceDateKeyMap[dateKey] as string;
+            if (serviceMaintenanceId in serviceMaintenanceToDeleteMap) {
 
-                await restoreServiceMaintenance( serviceMaintenanceId );
+                await restoreServiceMaintenance(serviceMaintenanceId);
                 return;
 
             }
-            date = DateUtils.addTime( date, { day: 1 } );
-            dateKey = getDateKey( date );
+            date = DateUtils.addTime(date, { day: 1 });
+            dateKey = getDateKey(date);
 
         }
         const { serviceMaintenanceDataMap, serviceMaintenanceIndex } = pageData;
-        serviceMaintenanceDataMap[ serviceMaintenanceIndex ] = {
+        serviceMaintenanceDataMap[serviceMaintenanceIndex] = {
             service: null as unknown as DocumentReference,
             date,
             price: null as unknown as number,
@@ -108,53 +108,53 @@ export default function ServiceManagement(): JSX.Element {
             status: null as unknown as serviceMaintenanceStatus
         }
         pageData.serviceMaintenanceIndex++;
-        serviceMaintenanceDateKeyMap[ dateKey ] = serviceMaintenanceIndex;
+        serviceMaintenanceDateKeyMap[dateKey] = serviceMaintenanceIndex;
         reloadPageData();
 
     }
 
-    async function cancelServiceForm(): Promise< void > {
+    async function cancelServiceForm(): Promise<void> {
 
-        window.open( `/management/services/menu`, `_self`);
+        window.open(`/management/services/menu`, `_self`);
 
     }
 
-    async function checkFormValidity(): Promise< boolean > {
+    async function checkFormValidity(): Promise<boolean> {
 
         const {
             serviceData,
             serviceMaintenanceDateKeyMap,
             serviceMaintenanceToDeleteMap
         } = pageData;
-        if( serviceData.name === "New Service" )
-            throw new Error( `Service name cannot be "New Service"!` );
+        if (serviceData.name === "New Service")
+            throw new Error(`Service name cannot be "New Service"!`);
         // check if duplicate name
         const noMaintenances: number =
-            ObjectUtils.keyLength( serviceMaintenanceDateKeyMap )
-            - ObjectUtils.keyLength( serviceMaintenanceToDeleteMap )
-        ;
-        if( noMaintenances < 1 )
-            throw new Error( `There must be at least 1 service maintenance.` );
+            ObjectUtils.keyLength(serviceMaintenanceDateKeyMap)
+            - ObjectUtils.keyLength(serviceMaintenanceToDeleteMap)
+            ;
+        if (noMaintenances < 1)
+            throw new Error(`There must be at least 1 service maintenance.`);
         return true;
 
     }
 
-    async function createService(): Promise< void > {
-    
-        if( !isNewMode || !documentId ) return;
+    async function createService(): Promise<void> {
+
+        if (!isNewMode || !documentId) return;
         await checkFormValidity();
         const documentReference: DocumentReference = await ServiceUtils.createService(
             pageData.serviceData
         );
         pageData.serviceDocumentReference = documentReference;
         await updateServiceMaintenanceList();
-        delete pageData.updateMap[ "new" ];
-        alert( `Created!` ); // note: remove later
-        window.open( `/management/services/${ documentReference.id }`, `_self`);
+        delete pageData.updateMap["new"];
+        alert(`Created!`); // note: remove later
+        window.open(`/management/services/${documentReference.id}`, `_self`);
 
     }
 
-    async function createServiceMaintenanceList(): Promise< void > {
+    async function createServiceMaintenanceList(): Promise<void> {
 
         const {
             serviceDocumentReference,
@@ -162,45 +162,45 @@ export default function ServiceManagement(): JSX.Element {
             serviceMaintenanceDefaultDataMap,
             serviceMaintenanceDateKeyMap
         } = pageData;
-        if( !serviceDocumentReference ) return;
-        for( let serviceMaintenanceId in serviceMaintenanceDataMap ) {
+        if (!serviceDocumentReference) return;
+        for (let serviceMaintenanceId in serviceMaintenanceDataMap) {
 
-            const isNew: boolean = NumberUtils.isNumeric( serviceMaintenanceId );
-            if( !isNew ) continue;
-            const serviceMaintenanceData = serviceMaintenanceDataMap[ serviceMaintenanceId ];
+            const isNew: boolean = NumberUtils.isNumeric(serviceMaintenanceId);
+            if (!isNew) continue;
+            const serviceMaintenanceData = serviceMaintenanceDataMap[serviceMaintenanceId];
             serviceMaintenanceData.service = serviceDocumentReference;
             const
                 serviceMaintenanceDocumentReference =
-                    await ServiceMaintenanceUtils.createServiceMaintenance( serviceMaintenanceData )
+                    await ServiceMaintenanceUtils.createServiceMaintenance(serviceMaintenanceData)
                 ,
                 serviceMaintenanceIdNew: string = serviceMaintenanceDocumentReference.id,
-                dateKey: string = getDateKey( serviceMaintenanceData.date )
-            ;
-            delete serviceMaintenanceDataMap[ serviceMaintenanceId ];
-            serviceMaintenanceDataMap[ serviceMaintenanceIdNew ] = serviceMaintenanceData;
-            serviceMaintenanceDateKeyMap[ dateKey ] = serviceMaintenanceIdNew;
+                dateKey: string = getDateKey(serviceMaintenanceData.date)
+                ;
+            delete serviceMaintenanceDataMap[serviceMaintenanceId];
+            serviceMaintenanceDataMap[serviceMaintenanceIdNew] = serviceMaintenanceData;
+            serviceMaintenanceDateKeyMap[dateKey] = serviceMaintenanceIdNew;
 
         }
-        pageData.serviceMaintenanceDefaultDataMap = DataMapUtils.clone( serviceMaintenanceDataMap );
+        pageData.serviceMaintenanceDefaultDataMap = DataMapUtils.clone(serviceMaintenanceDataMap);
 
     }
 
-    async function deleteService(): Promise< void > {
+    async function deleteService(): Promise<void> {
 
-        if( !isEditMode || !documentId ) return;
+        if (!isEditMode || !documentId) return;
         const { serviceMaintenanceDataMap } = pageData;
-        for( let serviceMaintenanceId in serviceMaintenanceDataMap )
-            await deleteServiceMaintenance( serviceMaintenanceId );
+        for (let serviceMaintenanceId in serviceMaintenanceDataMap)
+            await deleteServiceMaintenance(serviceMaintenanceId);
         await updateServiceMaintenanceList();
-        await ServiceUtils.deleteService( documentId );
-        alert( `Deleted!` ); // note: remove later
-        window.open( `/management/services/menu`, `_self`);
+        await ServiceUtils.deleteService(documentId);
+        alert(`Deleted!`); // note: remove later
+        window.open(`/management/services/menu`, `_self`);
 
     }
 
     async function deleteServiceMaintenance(
         serviceMaintenanceId: documentId | number
-    ): Promise< void > {
+    ): Promise<void> {
 
         const
             {
@@ -211,21 +211,21 @@ export default function ServiceManagement(): JSX.Element {
             serviceMaintenanceData: ServiceMaintenanceData = serviceMaintenanceDataMap[
                 serviceMaintenanceId
             ],
-            dateKey: string = getDateKey( serviceMaintenanceData.date ),
-            isNewServiceMaintenance: boolean = NumberUtils.isNumeric( serviceMaintenanceId )
-        ;
-        if( isNewServiceMaintenance ) {
+            dateKey: string = getDateKey(serviceMaintenanceData.date),
+            isNewServiceMaintenance: boolean = NumberUtils.isNumeric(serviceMaintenanceId)
+            ;
+        if (isNewServiceMaintenance) {
 
-            delete serviceMaintenanceDataMap[ serviceMaintenanceId ];
-            delete serviceMaintenanceDateKeyMap[ dateKey ];
+            delete serviceMaintenanceDataMap[serviceMaintenanceId];
+            delete serviceMaintenanceDateKeyMap[dateKey];
 
         } else
-            serviceMaintenanceToDeleteMap[ serviceMaintenanceId ] = true;
+            serviceMaintenanceToDeleteMap[serviceMaintenanceId] = true;
         reloadPageData();
 
     }
 
-    async function deleteServiceMaintenanceListInToDeleteMap(): Promise< void > {
+    async function deleteServiceMaintenanceListInToDeleteMap(): Promise<void> {
 
         const {
             serviceMaintenanceDataMap,
@@ -233,22 +233,22 @@ export default function ServiceManagement(): JSX.Element {
             serviceMaintenanceDateKeyMap,
             serviceMaintenanceToDeleteMap
         } = pageData;
-        for( let serviceMaintenanceId in serviceMaintenanceToDeleteMap ) {
+        for (let serviceMaintenanceId in serviceMaintenanceToDeleteMap) {
 
-            const dateKey: string = getDateKey( serviceMaintenanceDataMap[ serviceMaintenanceId ].date );
-            await ServiceMaintenanceUtils.deleteServiceMaintenance( serviceMaintenanceId );
-            delete serviceMaintenanceDataMap[ serviceMaintenanceId ];
-            delete serviceMaintenanceDefaultDataMap[ serviceMaintenanceId ];
-            delete serviceMaintenanceDateKeyMap[ dateKey ];
-            delete serviceMaintenanceToDeleteMap[ serviceMaintenanceId ];
+            const dateKey: string = getDateKey(serviceMaintenanceDataMap[serviceMaintenanceId].date);
+            await ServiceMaintenanceUtils.deleteServiceMaintenance(serviceMaintenanceId);
+            delete serviceMaintenanceDataMap[serviceMaintenanceId];
+            delete serviceMaintenanceDefaultDataMap[serviceMaintenanceId];
+            delete serviceMaintenanceDateKeyMap[dateKey];
+            delete serviceMaintenanceToDeleteMap[serviceMaintenanceId];
 
         }
 
     }
 
-    function getDateKey( date: Date ): string {
+    function getDateKey(date: Date): string {
 
-        return DateUtils.toString( date, "yyyymmdd" );
+        return DateUtils.toString(date, "yyyymmdd");
 
     }
 
@@ -256,54 +256,54 @@ export default function ServiceManagement(): JSX.Element {
         serviceMaintenanceId: string | number, date: Date | null, old: Date | null
     ): void {
 
-        if( !date || !old ) return;
+        if (!date || !old) return;
         const
             { serviceMaintenanceDateKeyMap } = pageData,
-            dateKeyOld: string = getDateKey( old ),
-            dateKeyNew: string = getDateKey( date )
-        ;
-        delete serviceMaintenanceDateKeyMap[ dateKeyOld ];
-        serviceMaintenanceDateKeyMap[ dateKeyNew ] = serviceMaintenanceId;
+            dateKeyOld: string = getDateKey(old),
+            dateKeyNew: string = getDateKey(date)
+            ;
+        delete serviceMaintenanceDateKeyMap[dateKeyOld];
+        serviceMaintenanceDateKeyMap[dateKeyNew] = serviceMaintenanceId;
 
     }
 
-    async function loadPageData(): Promise< void > {
-    
-        if( !documentId ) return;
-        if( isEditMode ) await loadService();
+    async function loadPageData(): Promise<void> {
+
+        if (!documentId) return;
+        if (isEditMode) await loadService();
         pageData.loaded = true;
         reloadPageData();
 
     }
 
-    async function loadService(): Promise< void > {
+    async function loadService(): Promise<void> {
 
-        if( !documentId ) return;
+        if (!documentId) return;
         pageData.serviceDocumentReference = SpaRadiseFirestore.getDocumentReference(
             documentId, SpaRadiseEnv.SERVICE_COLLECTION
         );
-        pageData.serviceData = await ServiceUtils.getServiceData( documentId );
+        pageData.serviceData = await ServiceUtils.getServiceData(documentId);
         pageData.serviceName = pageData.serviceData.name;
         pageData.serviceDefaultData = { ...pageData.serviceData };
         await loadServiceMaintenanceList();
-        
+
 
     }
 
-    async function loadServiceMaintenanceList(): Promise< void > {
+    async function loadServiceMaintenanceList(): Promise<void> {
 
-        if( !documentId ) return;
+        if (!documentId) return;
         pageData.serviceMaintenanceDataMap =
-            await ServiceMaintenanceUtils.getServiceMaintenanceDataMapByService( documentId )
-        ;
+            await ServiceMaintenanceUtils.getServiceMaintenanceDataMapByService(documentId)
+            ;
         const { serviceMaintenanceDataMap, serviceMaintenanceDateKeyMap } = pageData;
-        pageData.serviceMaintenanceDefaultDataMap = DataMapUtils.clone( serviceMaintenanceDataMap );
-        for( let serviceMaintenanceId in serviceMaintenanceDataMap ) {
+        pageData.serviceMaintenanceDefaultDataMap = DataMapUtils.clone(serviceMaintenanceDataMap);
+        for (let serviceMaintenanceId in serviceMaintenanceDataMap) {
 
             const dateKey: string = getDateKey(
-                serviceMaintenanceDataMap[ serviceMaintenanceId ].date
+                serviceMaintenanceDataMap[serviceMaintenanceId].date
             );
-            serviceMaintenanceDateKeyMap[ dateKey ] = serviceMaintenanceId;
+            serviceMaintenanceDateKeyMap[dateKey] = serviceMaintenanceId;
 
         }
 
@@ -311,48 +311,48 @@ export default function ServiceManagement(): JSX.Element {
 
     function reloadPageData(): void {
 
-        setPageData( { ...pageData } );
+        setPageData({ ...pageData });
 
     }
 
-    async function restoreServiceMaintenance( serviceMaintenanceId: documentId ): Promise< void > {
+    async function restoreServiceMaintenance(serviceMaintenanceId: documentId): Promise<void> {
 
         const { serviceMaintenanceToDeleteMap } = pageData;
-        delete serviceMaintenanceToDeleteMap[ serviceMaintenanceId ];
+        delete serviceMaintenanceToDeleteMap[serviceMaintenanceId];
         reloadPageData();
 
     }
 
-    async function submit( event: FormEvent< HTMLFormElement > ): Promise< void > {
+    async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
 
         event.preventDefault();
-        if( isNewMode )
+        if (isNewMode)
             await createService();
         else
             await updateService();
 
     }
 
-    async function updateService(): Promise< void > {
+    async function updateService(): Promise<void> {
 
-        if( !isEditMode || !documentId ) return;
+        if (!isEditMode || !documentId) return;
         await checkFormValidity();
         const { serviceData, updateMap } = pageData;
-        if( documentId in updateMap ) {
-                
-            await ServiceUtils.updateService( documentId, serviceData );
+        if (documentId in updateMap) {
+
+            await ServiceUtils.updateService(documentId, serviceData);
             pageData.serviceDefaultData = { ...pageData.serviceData };
             pageData.serviceName = serviceData.name;
-        
+
         }
-        delete updateMap[ documentId ];
+        delete updateMap[documentId];
         await updateServiceMaintenanceList();
         reloadPageData();
-        alert( `Updated!` ); // note: remove later
+        alert(`Updated!`); // note: remove later
 
     }
 
-    async function updateServiceMaintenanceList(): Promise< void > {
+    async function updateServiceMaintenanceList(): Promise<void> {
 
         await deleteServiceMaintenanceListInToDeleteMap();
         await updateServiceMaintenanceListInUpdateMap();
@@ -360,181 +360,187 @@ export default function ServiceManagement(): JSX.Element {
 
     }
 
-    async function updateServiceMaintenanceListInUpdateMap(): Promise< void > {
+    async function updateServiceMaintenanceListInUpdateMap(): Promise<void> {
 
         const {
             serviceMaintenanceDataMap,
             serviceMaintenanceDefaultDataMap,
             updateMap
         } = pageData;
-        for( let serviceMaintenanceId in updateMap ) {
+        for (let serviceMaintenanceId in updateMap) {
 
             const isServiceMaintenanceId: boolean = serviceMaintenanceId in serviceMaintenanceDataMap;
-            if( !isServiceMaintenanceId ) continue;
-            const serviceMaintenanceData = serviceMaintenanceDataMap[ serviceMaintenanceId ];
+            if (!isServiceMaintenanceId) continue;
+            const serviceMaintenanceData = serviceMaintenanceDataMap[serviceMaintenanceId];
             await ServiceMaintenanceUtils.updateServiceMaintenance(
                 serviceMaintenanceId, serviceMaintenanceData
             );
-            delete updateMap[ serviceMaintenanceId ];
-            serviceMaintenanceDefaultDataMap[ serviceMaintenanceId ] = { ...serviceMaintenanceData };
+            delete updateMap[serviceMaintenanceId];
+            serviceMaintenanceDefaultDataMap[serviceMaintenanceId] = { ...serviceMaintenanceData };
 
         }
 
     }
 
-    async function validateServiceMaintenanceDate( date: Date | null ): Promise< boolean > {
+    async function validateServiceMaintenanceDate(date: Date | null): Promise<boolean> {
 
-        if( !date ) return false;
-        const dateKey: string = getDateKey( date );
-        if( !( dateKey in pageData.serviceMaintenanceDateKeyMap ) ) return true;
-        alert( "Date already chosen!" );
+        if (!date) return false;
+        const dateKey: string = getDateKey(date);
+        if (!(dateKey in pageData.serviceMaintenanceDateKeyMap)) return true;
+        alert("Date already chosen!");
         return false;
 
     }
 
-    useEffect( () => { loadPageData(); }, [] );
+    useEffect(() => { loadPageData(); }, []);
 
     return <>
 
-        <form onSubmit={ submit }>
-            <EmployeeSidebar/>
-            <div className="service-main-content">
-                <label htmlFor="service-main-content" className="service-management-location">Services & Packages - { pageData.serviceName }</label>
-                <div className="service-form-section">
-                    <div className="service-header">
-                        <a href="#" className="service-back-arrow" aria-label="Back">
-                            &#8592;
-                        </a>
-                        <h1>{ pageData.serviceName }</h1>
+        <form onSubmit={submit}>
+            <div className="servman-container">
+                <EmployeeSidebar />
+                <div className="service-main-content">
+                    <label htmlFor="service-main-content" className="service-management-location">Services & Packages - {pageData.serviceName}</label>
+                    <div className="service-form-section">
+                        <div className="service-header">
+                            <a href="#" className="service-back-arrow" aria-label="Back">
+                                <img src={BackButton} alt="Back" className="back-icon" />
+                            </a>
+                            <h1>{pageData.serviceName}</h1>
+                        </div>
+                        <div>
+                            <div className="service-form-row-group">
+                                <div className="service-form-row">
+                                    <label htmlFor="service-name">Name</label>
+                                    <FormTinyTextInput documentData={pageData.serviceData} documentDefaultData={pageData.serviceDefaultData} documentId={documentId} keyName="name" name="service-name" pageData={pageData} required={true} />
+                                </div>
+                            </div>
+
+                            <div className="service-form-row">
+                                <label htmlFor="service-description">Description</label>
+                                <FormTextArea documentData={pageData.serviceData} documentDefaultData={pageData.serviceDefaultData} documentId={documentId} keyName="description" name="service-description" pageData={pageData} required={true} />
+                            </div>
+
+                            <div className="service-form-row-group">
+                                <div className="service-form-row">
+                                    <label htmlFor="service-type">Service Type</label>
+                                    <FormSelect documentData={pageData.serviceData} documentDefaultData={pageData.serviceDefaultData} documentId={documentId} name="service-type" keyName="serviceType" optionList={SpaRadiseEnv.SERVICE_TYPE_LIST} pageData={pageData} required={true}>
+                                        <option value="" disabled>Select Service Type</option>
+                                        <option value="body">Body</option>
+                                        <option value="browsAndLashes">Brows and Lashes</option>
+                                        <option value="facial">Facial</option>
+                                        <option value="handsAndFeet">Hands and Feet</option>
+                                        <option value="health">Health</option>
+                                        <option value="wax">Wax</option>
+                                    </FormSelect>
+                                </div>
+                                <div className="service-form-row">
+                                    <label htmlFor="service-room-type">Room Type</label>
+                                    <FormSelect documentData={pageData.serviceData} documentDefaultData={pageData.serviceDefaultData} documentId={documentId} keyName="roomType" name="service-room-type" optionList={SpaRadiseEnv.ROOM_TYPE_LIST} pageData={pageData} required={true}>
+                                        <option value="" disabled>Select Service Type</option>
+                                        <option value="room">Room</option>
+                                        <option value="chair">Chair</option>
+                                    </FormSelect>
+                                </div>
+                            </div>
+
+                            <div className="service-form-row-group">
+                                <div className="service-form-row">
+                                    <label htmlFor="service-duration">Duration (minutes)</label>
+                                    <FormSelect documentData={pageData.serviceData} documentDefaultData={pageData.serviceDefaultData} documentId={documentId} keyName="durationMin" name="service-duration" optionList={ SpaRadiseEnv.SERVICE_DURATION_LIST } pageData={pageData} required={true}>
+                                        <option value="" disabled>Select duration</option>
+                                        <option value="30">30</option>
+                                        <option value="60">60</option>
+                                    </FormSelect>
+                                </div>
+                                <div className="service-form-row">
+                                    <label htmlFor="service-age-limit">Age Limit</label>
+                                    <FormNaturalNumberInput documentData={pageData.serviceData} documentDefaultData={pageData.serviceDefaultData} documentId={documentId} keyName="ageLimit" min={13} name="service-age-limit" pageData={pageData} required={true} />
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <div className="service-form-row-group">
-                            <div className="service-form-row">
-                                <label htmlFor="service-name">Name</label>
-                                <FormTinyTextInput documentData={ pageData.serviceData } documentDefaultData={ pageData.serviceDefaultData } documentId={ documentId } keyName="name" name="service-name" pageData={ pageData } required={ true }/>
-                            </div>
-                        </div>
+                    <div className="service-maintenance">
 
-                        <div className="service-form-row">
-                            <label htmlFor="service-description">Description</label>
-                            <FormTextArea documentData={ pageData.serviceData } documentDefaultData={ pageData.serviceDefaultData } documentId={ documentId } keyName="description" name="service-description" pageData={ pageData } required={ true }/>
-                        </div>
+                        <label htmlFor="service-maintenance" className="service-maintenance-label">Service Maintenance:</label>
 
-                        <div className="service-form-row-group">
-                            <div className="service-form-row">
-                                <label htmlFor="service-type">Service Type</label>
-                                <FormSelect documentData={ pageData.serviceData } documentDefaultData={ pageData.serviceDefaultData } documentId={ documentId } name="service-type" keyName="serviceType" optionList={ SpaRadiseEnv.SERVICE_TYPE_LIST } pageData={ pageData } required={ true }>
-                                    <option value="" disabled>Select Service Type</option>
-                                    <option value="body">Body</option>
-                                    <option value="browsAndLashes">Brows and Lashes</option>
-                                    <option value="facial">Facial</option>
-                                    <option value="handsAndFeet">Hands and Feet</option>
-                                    <option value="health">Health</option>
-                                    <option value="wax">Wax</option>
-                                </FormSelect>
-                            </div>
-                            <div className="service-form-row">
-                                <label htmlFor="service-room-type">Room Type</label>
-                                <FormSelect documentData={ pageData.serviceData } documentDefaultData={ pageData.serviceDefaultData } documentId={ documentId } keyName="roomType" name="service-room-type" optionList={ SpaRadiseEnv.ROOM_TYPE_LIST } pageData={ pageData } required={ true }>
-                                    <option value="" disabled>Select Service Type</option>
-                                    <option value="room">Room</option>
-                                    <option value="chair">Chair</option>
-                                </FormSelect>
-                            </div>
-                        </div>
+                        <button type="button" className="addServiceMaintenanceButton" onClick={addServiceMaintenance}>+ Add Maintenance</button>
+                        <table className="service-history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Price</th>
+                                    <th>Commission (%)</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {
+                                    Object.keys(pageData.serviceMaintenanceDateKeyMap).sort().map((keyDate, key) => {
 
-                        <div className="service-form-row-group">
-                            <div className="service-form-row">
-                                <label htmlFor="service-duration">Duration (minutes)</label>
-                                <FormNaturalNumberInput documentData={ pageData.serviceData } documentDefaultData={ pageData.serviceDefaultData } documentId={ documentId } keyName="durationMin" max={ 120 } min={ 30 } name="service-duration" pageData={ pageData } required={ true } step={ 30 }/>
-                            </div>
-                            <div className="service-form-row">
-                                <label htmlFor="service-age-limit">Age Limit</label>
-                                <FormNaturalNumberInput documentData={ pageData.serviceData } documentDefaultData={ pageData.serviceDefaultData } documentId={ documentId } keyName="ageLimit" min={ 13 } name="service-age-limit" pageData={ pageData } required={ true }/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className="service-maintenance">
+                                        const
+                                            {
+                                                serviceMaintenanceDataMap,
+                                                serviceMaintenanceDateKeyMap,
+                                                serviceMaintenanceDefaultDataMap,
+                                                serviceMaintenanceToDeleteMap
+                                            } = pageData,
+                                            documentId: string | number = serviceMaintenanceDateKeyMap[keyDate],
+                                            inputDocumentId: string | undefined = (!NumberUtils.isNumeric(documentId) ? documentId as string : undefined),
+                                            serviceMaintenanceData: ServiceMaintenanceData = serviceMaintenanceDataMap[documentId],
+                                            serviceMaintenanceDefaultData: ServiceMaintenanceData = serviceMaintenanceDefaultDataMap[documentId]
+                                            ;
+                                        if (serviceMaintenanceToDeleteMap[documentId]) return undefined;
+                                        return <tr key={key}>
+                                            <td>
+                                                <FormDateInput
+                                                    documentData={serviceMaintenanceData}
+                                                    documentDefaultData={serviceMaintenanceDefaultData}
+                                                    documentId={inputDocumentId} keyName="date"
+                                                    onChange={(date, _, old) => handleServiceMaintenanceDateChange(documentId, date, old)}
+                                                    pageData={pageData} required={true}
+                                                    validate={date => validateServiceMaintenanceDate(date)}
+                                                />
+                                            </td>
+                                            <td>
+                                                ₱<FormMoneyInput documentData={serviceMaintenanceData} documentDefaultData={serviceMaintenanceDefaultData} documentId={inputDocumentId} keyName="price" min={0.01} pageData={pageData} required={true} />
+                                            </td>
+                                            <td>
+                                                <FormPercentageInput documentData={serviceMaintenanceData} documentDefaultData={serviceMaintenanceDefaultData} documentId={inputDocumentId} keyName="commissionPercentage" min={0.01} pageData={pageData} required={true} />
+                                            </td>
+                                            <td>
+                                                <FormSelect documentData={serviceMaintenanceData} documentDefaultData={serviceMaintenanceDefaultData} documentId={inputDocumentId} keyName="status" optionList={SpaRadiseEnv.SERVICE_MAINTENANCE_STATUS_LIST} pageData={pageData} required={true}>
+                                                    <option value="" disabled>Select Service Type</option>
+                                                    <option value="active">Active</option>
+                                                    <option value="inactive">Inactive</option>
+                                                </FormSelect>
+                                            </td>
+                                            <td>
+                                                <button className="service-maintenance-delete-btn" type="button" onClick={() => deleteServiceMaintenance(documentId)}>Delete</button>
+                                            </td>
+                                        </tr>
+                                    })
+                                }
+                            </tbody>
+                        </table>
 
-                    <label htmlFor="service-maintenance" className="service-maintenance-label">Service Maintenance:</label>
-                    
-                    <button type="button" onClick={ addServiceMaintenance }>Add</button>
-                    <table className="service-history-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Price</th>
-                                <th>Commission (%)</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                        <div className="service-form-actions">
                             {
-                                Object.keys( pageData.serviceMaintenanceDateKeyMap ).sort().map( ( keyDate, key ) => {
-                                        
-                                    const
-                                        {
-                                            serviceMaintenanceDataMap,
-                                            serviceMaintenanceDateKeyMap,
-                                            serviceMaintenanceDefaultDataMap,
-                                            serviceMaintenanceToDeleteMap
-                                        } = pageData,
-                                        documentId: string | number = serviceMaintenanceDateKeyMap[ keyDate ],
-                                        inputDocumentId: string | undefined = ( !NumberUtils.isNumeric( documentId ) ? documentId as string : undefined ),
-                                        serviceMaintenanceData: ServiceMaintenanceData = serviceMaintenanceDataMap[ documentId ],
-                                        serviceMaintenanceDefaultData: ServiceMaintenanceData = serviceMaintenanceDefaultDataMap[ documentId ]
-                                    ;
-                                    if( serviceMaintenanceToDeleteMap[ documentId ] ) return undefined;
-                                    return <tr key={ key }>
-                                        <td>
-                                            <FormDateInput
-                                                documentData={ serviceMaintenanceData }
-                                                documentDefaultData={ serviceMaintenanceDefaultData }
-                                                documentId={ inputDocumentId } keyName="date"
-                                                onChange={ ( date, _, old ) => handleServiceMaintenanceDateChange( documentId, date, old ) }
-                                                pageData={ pageData } required={ true }
-                                                validate={ date => validateServiceMaintenanceDate( date ) }
-                                            />
-                                        </td>
-                                        <td>
-                                            ₱<FormMoneyInput documentData={ serviceMaintenanceData } documentDefaultData={ serviceMaintenanceDefaultData } documentId={ inputDocumentId } keyName="price" min={ 0.01 } pageData={ pageData } required={ true }/>
-                                        </td>
-                                        <td>
-                                            <FormPercentageInput documentData={ serviceMaintenanceData } documentDefaultData={ serviceMaintenanceDefaultData } documentId={ inputDocumentId } keyName="commissionPercentage" min={ 0.01 } pageData={ pageData } required={ true }/>
-                                        </td>
-                                        <td>
-                                            <FormSelect documentData={ serviceMaintenanceData } documentDefaultData={ serviceMaintenanceDefaultData } documentId={ inputDocumentId } keyName="status" optionList={ SpaRadiseEnv.SERVICE_MAINTENANCE_STATUS_LIST } pageData={ pageData } required={ true }>
-                                                <option value="" disabled>Select Service Type</option>
-                                                <option value="active">Active</option>
-                                                <option value="inactive">Inactive</option>
-                                            </FormSelect>
-                                        </td>
-                                        <td>
-                                            <button className="service-maintenance-delete-btn" type="button" onClick={ () => deleteServiceMaintenance( documentId ) }>Delete</button>
-                                        </td>
-                                    </tr>
-                                } )
+                                isEditMode ? <button className="service-delete-btn" type="button" onClick={deleteService}>Delete</button>
+                                    : undefined
                             }
-                        </tbody>
-                    </table>
-
-                    <div className="service-form-actions">
-                        {
-                            isEditMode ? <button className="service-delete-btn" type="button" onClick={ deleteService }>Delete</button>
-                            : undefined
-                        }
-                        <button className="service-cancel-btn" type="button" onClick={ cancelServiceForm }>Cancel</button>
-                        <button className="service-save-btn" type="submit">{ isNewMode ? "Create" : "Save Changes" }</button>
+                            <button className="service-cancel-btn" type="button" onClick={cancelServiceForm}>Cancel</button>
+                            <button className="service-save-btn" type="submit">{isNewMode ? "Create" : "Save Changes"}</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </form>
-        
+
         {
-            IS_DEV_MODE ? <button style={ { float: "right" } } type="button" onClick={ () => console.log( pageData ) }>Log page data</button>
-            : undefined
+            IS_DEV_MODE ? <button style={{ float: "right" }} type="button" onClick={() => console.log(pageData)}>Log page data</button>
+                : undefined
         }
     </>
 
