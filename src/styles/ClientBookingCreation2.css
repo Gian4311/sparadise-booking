@@ -402,6 +402,34 @@ body {
   font-size: 1.4rem;
 }
 
+.booking-summary-tables {
+  padding: 10px;
+  margin-top: 2%;
+  background-color: white;
+  width: 100%;
+  color: black;
+  font-size: 1.4rem;
+}
+
+.booking-summary-tables table {
+  width: 100%;
+  margin-bottom: 30px;
+  border-collapse: collapse;
+  border: none;
+}
+
+.booking-summary-tables th,
+.booking-summary-tables td {
+  border:none;
+  padding: 8px;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.booking-summary-tables th {
+  background-color: #f9f9f9;
+}
+
 .booking-summary-table td {
   font-size: 1rem;
 }
@@ -435,14 +463,43 @@ body {
   resize: none;
 }
 
-.package-name-summary{
+.package-name-summary {
   margin-bottom: 2%;
   font-weight: bold;
   font-size: 100%;
+  text-align: left;
 }
 
-.client-name-summary{
-  font-size: 100%;
-  align-items: center;
+.client-name-summary {
+  font-size: 1.2rem;
   font-weight: bold;
+  text-align: center;
+  background-color: #552B59;
+  padding: 10px;
+}
+
+.divider {
+  border: none;
+  border-top: 2px solid black;
+  margin: 2% 0;
+}
+
+.overall-total-table {
+  width: 100%;
+  font-size: 1.2rem;
+  border-top: 2px solid #000;
+  margin-right: 10%;
+}
+
+.overall-total-table td {
+  padding: 10px;
+  text-align: right;
+  font-weight: bold;
+  padding-right: 6.5%;
+}
+
+.client-total {
+  font-weight: bold;
+  background-color: white;
+  padding-top: 10%;
 }

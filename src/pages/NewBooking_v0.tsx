@@ -1003,7 +1003,7 @@ function Summary({ pageData, reloadPageData }: {
                     <BookingReceipt pageData={pageData} />
                 </section>
             </section>
-
+            <br></br>
             Voucher/s:
             <div>
 
