@@ -10,7 +10,7 @@ import {
 } from "../firebase/SpaRadiseTypes";
 import EmployeeUtils from "../firebase/EmployeeUtils";
 import JobUtils from "../firebase/JobUtils";
-import { Link } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import ObjectUtils from "../utils/ObjectUtils";
 import PersonUtils from "../utils/PersonUtils";
 import { SpaRadisePageData } from "../firebase/SpaRadiseTypes";
@@ -20,6 +20,8 @@ import "../styles/EmployeeServiceMenu.css";
 import "../styles/Sidebar.css";
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 import EmployeeSidebar from "../components/EmployeeSidebar";
+
+import LoadingWrapper from "../components/LoadingWrapper";
 
 type rowType = "employees";
 type showMode = "active" | "all" | "inactive" | "onLeave";
@@ -84,21 +86,23 @@ export default function EmployeeMenu(): JSX.Element {
 
     return <>
         <div>
-            <EmployeeSidebar/>      
-            <div className="service-menu-main-content">
-                <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">Employees
-                </label>
-                <div className="service-menu-form-section">
-                    <div className="service-stats">
-                        <div className="service-stat">{ObjectUtils.keyLength(rowTypeMap)}<br></br><span>Employees</span></div>
-                        <div className="service-stat">?<br></br><span>Active</span></div>
-                        <div className="service-stat">?<br></br><span>On-Leave</span></div>
-                        <div className="service-stat">?<br></br><span>Inactive</span></div>
-                    </div>
+            <LoadingWrapper> <div className="layout"><EmployeeSidebar /><div className="content"><Outlet />
+
+
+                <div className="service-menu-main-content">
+                    <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">Employees
+                    </label>
+                    <div className="service-menu-form-section">
+                        <div className="service-stats">
+                            <div className="service-stat">{ObjectUtils.keyLength(rowTypeMap)}<br></br><span>Employees</span></div>
+                            <div className="service-stat">?<br></br><span>Active</span></div>
+                            <div className="service-stat">?<br></br><span>On-Leave</span></div>
+                            <div className="service-stat">?<br></br><span>Inactive</span></div>
+                        </div>
 
 
 
-                    {/* <Link to="/management/employees/new">
+                        {/* <Link to="/management/employees/new">
             <h1>New</h1>
         </Link>
         {
@@ -112,56 +116,60 @@ export default function EmployeeMenu(): JSX.Element {
 
             }) : undefined
         } */}
-                    <div className="controls">
-                        <input placeholder="Search employees" className="search" value={search} onChange={event => handleChangeSearch(event)} />
-                        <button className="filter-btn" type="button" value={sortMode} onClick={toggleSortMode}>{
-                            (sortMode === "ascending") ? "A - Z" : "Z - A"
-                        }</button>
-                        <Link to="/management/employees/new"><button className="action-btn" type="button">+ Add new employee</button></Link>
-                    </div>
-                    <table className="services-table">
-                        <thead><tr>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Job</th>
-                            <th>Status</th>
-                            <th>Date Hired</th>
-                        </tr></thead>
-                        <tbody>{
-                            Object.keys(employeeDataMap).sort((documentId1, documentId2) => StringUtils.compare(
-                                PersonUtils.format(employeeDataMap[documentId1], "f mi l"),
-                                PersonUtils.format(employeeDataMap[documentId2], "f mi l"),
-                                (sortMode === "ascending")
-                            )).map((documentId, index) => {
+                        <div className="controls">
+                            <input placeholder="Search employees" className="search" value={search} onChange={event => handleChangeSearch(event)} />
+                            <button className="filter-btn" type="button" value={sortMode} onClick={toggleSortMode}>{
+                                (sortMode === "ascending") ? "A - Z" : "Z - A"
+                            }</button>
+                            <Link to="/management/employees/new"><button className="action-btn" type="button">+ Add new employee</button></Link>
+                        </div>
+                        <table className="services-table">
+                            <thead><tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Job</th>
+                                <th>Status</th>
+                                <th>Date Hired</th>
+                            </tr></thead>
+                            <tbody>{
+                                Object.keys(employeeDataMap).sort((documentId1, documentId2) => StringUtils.compare(
+                                    PersonUtils.format(employeeDataMap[documentId1], "f mi l"),
+                                    PersonUtils.format(employeeDataMap[documentId2], "f mi l"),
+                                    (sortMode === "ascending")
+                                )).map((documentId, index) => {
 
-                                const
-                                    count: string = (index + 1).toString(),
-                                    { hireDate, job: { id: jobId } } = employeeDataMap[documentId],
-                                    name: string = PersonUtils.format(employeeDataMap[documentId], "f mi l"),
-                                    { name: jobName } = jobDataMap[jobId],
-                                    hireDateText = DateUtils.toString(hireDate, "dd Mmmm yyyy"),
-                                    show: boolean = (
-                                        StringUtils.has(
-                                            `${count}\t${name}\t${jobName}\t${hireDateText}`
-                                            , search
+                                    const
+                                        count: string = (index + 1).toString(),
+                                        { hireDate, job: { id: jobId } } = employeeDataMap[documentId],
+                                        name: string = PersonUtils.format(employeeDataMap[documentId], "f mi l"),
+                                        { name: jobName } = jobDataMap[jobId],
+                                        hireDateText = DateUtils.toString(hireDate, "dd Mmmm yyyy"),
+                                        show: boolean = (
+                                            StringUtils.has(
+                                                `${count}\t${name}\t${jobName}\t${hireDateText}`
+                                                , search
+                                            )
                                         )
-                                    )
-                                    ;
-                                return show ? <tr key={documentId} onClick={() => navigate(`/management/employees/${documentId}`)}>
-                                    <td>{count}</td>
-                                    <td>{name}</td>
-                                    <td>{jobName}</td>
-                                    <td></td>
-                                    <td>{hireDateText}</td>
-                                </tr> : undefined;
+                                        ;
+                                    return show ? <tr key={documentId} onClick={() => navigate(`/management/employees/${documentId}`)}>
+                                        <td>{count}</td>
+                                        <td>{name}</td>
+                                        <td>{jobName}</td>
+                                        <td></td>
+                                        <td>{hireDateText}</td>
+                                    </tr> : undefined;
 
-                            })
-                        }</tbody>
-                    </table>
-                    <button type="button" onClick={() => console.log(pageData)}>Log page date</button>
+                                })
+                            }</tbody>
+                        </table>
+                        <button type="button" onClick={() => console.log(pageData)}>Log page date</button>
+                    </div>
                 </div>
             </div>
+            </div>
+            </LoadingWrapper>
         </div>
+
     </>;
 
 }

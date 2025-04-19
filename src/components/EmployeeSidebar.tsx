@@ -47,7 +47,7 @@ export default function EmployeeSidebar(): JSX.Element {
                     <NavLink 
                         to="/management/servicesAndPackages/menu" 
                         className={({ isActive }) =>
-                            window.location.pathname.startsWith("management/services") || (window.location.pathname.startsWith("management/packages"))  ? "active" : ""
+                            window.location.pathname.startsWith("/management/services") || (window.location.pathname.startsWith("/management/packages"))  ? "active" : ""
                         }      
                     >
                         Services & Packages

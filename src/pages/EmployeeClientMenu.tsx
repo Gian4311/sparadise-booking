@@ -1,6 +1,7 @@
 import React from 'react';
 import '../styles/EmployeeServiceMenu.css';
 import '../styles/Sidebar.css';
+import { NavLink } from 'react-router-dom';
 
 import SideBar from "../components/EmployeeSidebar";
 
@@ -27,7 +28,7 @@ const ServicePackageMenu: React.FC = () => {
               <option>A - Z</option>
               <option>Z - A</option>
             </select>
-            <button className="action-btn">+ Add new client</button>
+            <NavLink to="/management/clients"> <button className="action-btn">+ Add new client</button></NavLink>
           </div>
 
           <table className="services-table">
