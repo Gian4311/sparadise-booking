@@ -1,5 +1,6 @@
 import {
     addDoc,
+    and,
     CollectionReference,
     deleteDoc,
     DocumentData,
@@ -9,9 +10,11 @@ import {
     orderBy,
     QueryDocumentSnapshot,
     query,
+    where,
     updateDoc,
     WithFieldValue
 } from "firebase/firestore/lite";
+import DateUtils from "../utils/DateUtils";
 import {
     VoucherData,
     VoucherDataMap
@@ -135,6 +138,30 @@ export default class VoucherUtils {
             voucherQuery = query(
                 voucherCollection,
                 orderBy( "name" )
+            ),
+            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( voucherQuery ) ).docs,
+            voucherDataMap: VoucherDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            voucherDataMap[ snapshot.id ] = await VoucherUtils.getVoucherData( snapshot );
+        return voucherDataMap;
+
+    }
+
+    public static async getVoucherDataMapByDate( date: Date ): Promise< VoucherDataMap > {
+    
+        const
+            voucherCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
+                SpaRadiseEnv.VOUCHER_COLLECTION
+            ),
+            dateTimeStart: Date = DateUtils.toFloorByDay( date ),
+            dateTimeEnd: Date = DateUtils.toCeilByDay( date ),
+            voucherQuery = query(
+                voucherCollection,
+                and(
+                    where( "dateExpiry", ">", dateTimeStart ),
+                    where( "dateValid", "<", dateTimeEnd )
+                )
             ),
             snapshotList: QueryDocumentSnapshot[] = ( await getDocs( voucherQuery ) ).docs,
             voucherDataMap: VoucherDataMap = {}

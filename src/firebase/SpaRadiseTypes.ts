@@ -296,3 +296,17 @@ export interface VoucherServiceDataMap extends SpaRadiseDataMap< VoucherServiceD
     [ voucherServiceId: string | number ]: VoucherServiceData
 
 }
+
+export interface VoucherTransactionData extends SpaRadiseDocumentData {
+
+    voucher: DocumentReference,
+    booking: DocumentReference,
+    status: voucherStatus
+
+}
+
+export interface VoucherTransactionDataMap extends SpaRadiseDataMap< VoucherTransactionData > {
+
+    [ voucherTransactioneId: string | number ]: VoucherTransactionData
+
+}
