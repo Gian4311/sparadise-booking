@@ -120,3 +120,62 @@ h1 {
 .services-table tr:hover {
     background-color: #fff0f3;
 }
+
+.room-maintenance {
+    width: 90%;
+    background: #FDE9EE;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .room-maintenance h2 {
+    font-size: 2em;
+    color: black;
+    margin-bottom: 10px;
+  }
+  
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
+  thead {
+    background-color: #6B009E;
+    color: white;
+  }
+  
+  thead th {
+    padding: 15px;
+    text-align: center;
+  }
+  
+  th, td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  /* Button */
+  .edit-btn {
+    background-color: #6B009E;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 15px;
+    align-self: flex-end;
+    width: 10%;
+  }
+  
+  .edit-btn:hover {
+    background-color: #58007D;
+  }

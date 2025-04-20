@@ -8,7 +8,7 @@ const LoadingWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   useEffect(() => {
     setLoading(true);
-    const timeout = setTimeout(() => setLoading(false), 3000); // Show for 3s
+    const timeout = setTimeout(() => setLoading(false), 1000); // Show for 3s
     return () => clearTimeout(timeout);
   }, [location.pathname]); // triggers on every route change
 

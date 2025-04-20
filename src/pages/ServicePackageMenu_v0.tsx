@@ -20,6 +20,8 @@ import StringUtils from "../utils/StringUtils";
 import { useNavigate } from "react-router-dom";
 import EmployeeSidebar from "../components/EmployeeSidebar";
 
+import LoadingWrapper from "../components/LoadingWrapper";
+
 import "../styles/EmployeeServiceMenu.css";
 import "../styles/Sidebar.css";
 
@@ -51,10 +53,10 @@ export default function ServicePackageMenu(): JSX.Element {
         }),
         { maintenanceDataMap, packageDataMap, rowTypeMap, serviceDataMap } = pageData,
         [search, setSearch] = useState<string>(""),
-        [showMode, setShowMode] = useState<showMode>( "all" ),
+        [showMode, setShowMode] = useState<showMode>("all"),
         [sortMode, setSortMode] = useState<sortMode>("ascending"),
         navigate = useNavigate()
-    ;
+        ;
 
     function getDataMap(documentId: string): PackageDataMap | ServiceDataMap {
 
@@ -125,30 +127,31 @@ export default function ServicePackageMenu(): JSX.Element {
 
     return <>
         <div>
-        <EmployeeSidebar/>
+            <LoadingWrapper>
+                <EmployeeSidebar />
 
-            <div className="service-menu-main-content">
-                <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">Services & Packages
-                </label>
-                <div className="service-menu-form-section">
-                    <div className="service-stats">
-                        <div className="service-stat">{ObjectUtils.keyLength(rowTypeMap)}<br></br><span>Services & Packages</span></div>
+                <div className="service-menu-main-content">
+                    <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">Services & Packages
+                    </label>
+                    <div className="service-menu-form-section">
+                        <div className="service-stats">
+                            <div className="service-stat">{ObjectUtils.keyLength(rowTypeMap)}<br></br><span>Services & Packages</span></div>
 
-                        <div className="service-stat">{ObjectUtils.keyLength(serviceDataMap)}<br></br><span>Services</span></div>
+                            <div className="service-stat">{ObjectUtils.keyLength(serviceDataMap)}<br></br><span>Services</span></div>
 
-                        <div className="service-stat">{
-                            ObjectUtils.keyLength(ObjectUtils.filter(
-                                serviceDataMap, validateActiveServiceOrPackage
-                            ))
-                        }<br></br><span>Active Services</span></div>
+                            <div className="service-stat">{
+                                ObjectUtils.keyLength(ObjectUtils.filter(
+                                    serviceDataMap, validateActiveServiceOrPackage
+                                ))
+                            }<br></br><span>Active Services</span></div>
 
-                        <div className="service-stat"> {ObjectUtils.keyLength(packageDataMap)}<br></br><span>Packages</span></div>
+                            <div className="service-stat"> {ObjectUtils.keyLength(packageDataMap)}<br></br><span>Packages</span></div>
 
-                        <div className="service-stat"> {ObjectUtils.keyLength(ObjectUtils.filter(packageDataMap, validateActiveServiceOrPackage))}<br></br><span>Active Packages</span></div>
+                            <div className="service-stat"> {ObjectUtils.keyLength(ObjectUtils.filter(packageDataMap, validateActiveServiceOrPackage))}<br></br><span>Active Packages</span></div>
 
-                    </div>
+                        </div>
 
-                    <div className="controls">
+                        <div className="controls">
                             <input placeholder="Search services or packages" className="search" value={search} onChange={event => handleChangeSearch(event)} />
                             <button className="filter-btn" type="button" value={sortMode} onClick={toggleSortMode}>{
                                 (sortMode === "ascending") ? "A - Z" : "Z - A"
@@ -160,56 +163,57 @@ export default function ServicePackageMenu(): JSX.Element {
                             </select>
                             <Link to="/management/services/new"><button className="action-btn" type="button">+ Add new service</button></Link>
                             <Link to="/management/packages/new"><button className="action-btn" type="button">+ Add new package</button></Link>
-                    </div>
-                    <table className="services-table">
-                        <thead><tr>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Type</th>
-                            <th>Price</th>
-                            <th>Status</th>
-                            <th>Commission</th>
-                        </tr></thead>
-                        <tbody>{
-                            Object.keys(rowTypeMap).sort((documentId1, documentId2) => StringUtils.compare(
-                                getDataMap(documentId1)[documentId1].name,
-                                getDataMap(documentId2)[documentId2].name,
-                                (sortMode === "ascending")
-                            )
-                            ).map((documentId, index) => {
+                        </div>
+                        <table className="services-table">
+                            <thead><tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th>Commission</th>
+                            </tr></thead>
+                            <tbody>{
+                                Object.keys(rowTypeMap).sort((documentId1, documentId2) => StringUtils.compare(
+                                    getDataMap(documentId1)[documentId1].name,
+                                    getDataMap(documentId2)[documentId2].name,
+                                    (sortMode === "ascending")
+                                )
+                                ).map((documentId, index) => {
 
-                                const
-                                    rowType: rowType = rowTypeMap[documentId],
-                                    maintenanceData = maintenanceDataMap[documentId],
-                                    count: string = (index + 1).toString(),
-                                    { name } = getDataMap(documentId)[documentId],
-                                    rowTypeName = (rowType === "package") ? "Package" : "Service",
-                                    price = `₱${maintenanceData.price}`,
-                                    statusName = (maintenanceData.status === "active") ? "Active" : "Inactive",
-                                    commissionPercentage = (rowType === "service") ? `${maintenanceData.commissionPercentage as number}%` : `-`,
-                                    show: boolean = (
-                                        (showMode === "all" || showMode === rowType)
-                                        && StringUtils.has(
-                                            `${count}\t${name}\t${rowTypeName}\t${price}\t${statusName}\t${commissionPercentage}`
-                                            , search
+                                    const
+                                        rowType: rowType = rowTypeMap[documentId],
+                                        maintenanceData = maintenanceDataMap[documentId],
+                                        count: string = (index + 1).toString(),
+                                        { name } = getDataMap(documentId)[documentId],
+                                        rowTypeName = (rowType === "package") ? "Package" : "Service",
+                                        price = `₱${maintenanceData.price}`,
+                                        statusName = (maintenanceData.status === "active") ? "Active" : "Inactive",
+                                        commissionPercentage = (rowType === "service") ? `${maintenanceData.commissionPercentage as number}%` : `-`,
+                                        show: boolean = (
+                                            (showMode === "all" || showMode === rowType)
+                                            && StringUtils.has(
+                                                `${count}\t${name}\t${rowTypeName}\t${price}\t${statusName}\t${commissionPercentage}`
+                                                , search
+                                            )
                                         )
-                                    )
-                                    ;
-                                return show ? <tr key={documentId} onClick={ () => navigate( `/management/${ rowType }s/${ documentId }` ) }>
-                                    <td>{count}</td>
-                                    <td>{name}</td>
-                                    <td>{rowTypeName}</td>
-                                    <td>{price}</td>
-                                    <td>{statusName}</td>
-                                    <td>{commissionPercentage}</td>
-                                </tr> : undefined;
+                                        ;
+                                    return show ? <tr key={documentId} onClick={() => navigate(`/management/${rowType}s/${documentId}`)}>
+                                        <td>{count}</td>
+                                        <td>{name}</td>
+                                        <td>{rowTypeName}</td>
+                                        <td>{price}</td>
+                                        <td>{statusName}</td>
+                                        <td>{commissionPercentage}</td>
+                                    </tr> : undefined;
 
-                            })
-                        }</tbody>
-                    </table>
-                    <button type="button" onClick={() => console.log(pageData)}>Log Page Data</button>
+                                })
+                            }</tbody>
+                        </table>
+                        <button type="button" onClick={() => console.log(pageData)}>Log Page Data</button>
+                    </div>
                 </div>
-            </div>
+            </LoadingWrapper>
         </div>
     </>;
 
