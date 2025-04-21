@@ -20,7 +20,7 @@ import StringUtils from "../utils/StringUtils";
 import { useNavigate } from "react-router-dom";
 import EmployeeSidebar from "../components/EmployeeSidebar";
 
-import LoadingWrapper from "../components/LoadingWrapper";
+import LoadingScreen from "../components/LoadingScreen";
 
 import "../styles/EmployeeServiceMenu.css";
 import "../styles/Sidebar.css";
@@ -126,7 +126,7 @@ export default function ServicePackageMenu(): JSX.Element {
     useEffect(() => { loadPageData(); }, []);
 
     return <>
-        <LoadingWrapper loading={ !pageData.loaded }></LoadingWrapper>
+        <LoadingScreen loading={ !pageData.loaded }></LoadingScreen>
         <div>
             
                 <EmployeeSidebar />

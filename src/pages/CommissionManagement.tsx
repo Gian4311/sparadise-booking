@@ -2,12 +2,12 @@ import React from "react";
 import "../styles/CommisionPage1.css";
 import "../styles/Sidebar.css";
 
-import LoadingWrapper from "../components/LoadingWrapper";
+import LoadingScreen from "../components/LoadingScreen";
 import EmployeeSidebar from "../components/EmployeeSidebar";
 
 const CommissionDetailsPage: React.FC = () => {
     return <>
-        {/* <LoadingWrapper></LoadingWrapper> */}
+        {/* <LoadingScreen></LoadingScreen> */}
         <div>
         
 

@@ -21,7 +21,7 @@ import "../styles/Sidebar.css";
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 import EmployeeSidebar from "../components/EmployeeSidebar";
 
-import LoadingWrapper from "../components/LoadingWrapper";
+import LoadingScreen from "../components/LoadingScreen";
 
 type rowType = "employees";
 type showMode = "active" | "all" | "inactive" | "onLeave";
@@ -85,7 +85,7 @@ export default function EmployeeMenu(): JSX.Element {
     useEffect(() => { loadPageData(); }, []);
 
     return <>
-        <LoadingWrapper loading={ !pageData.loaded }></LoadingWrapper>
+        <LoadingScreen loading={ !pageData.loaded }></LoadingScreen>
         <div>
             <div className="layout"><EmployeeSidebar />
                 <div className="content">

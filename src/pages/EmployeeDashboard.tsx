@@ -8,8 +8,8 @@ import PersonUtils from "../utils/PersonUtils";
 import PackageUtils from "../firebase/PackageUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
 
-import LoadingWrapper
-    from "../components/LoadingWrapper";
+import LoadingScreen
+    from "../components/LoadingScreen";
 import { Link } from "react-router-dom";
 
 interface EmployeeDisplay {
@@ -48,7 +48,7 @@ const Dashboard: React.FC = () => {
     }, []);
 
     return <>
-        {/* <LoadingWrapper loading={ pageD}></LoadingWrapper> */}
+        {/* <LoadingScreen loading={ pageD}></LoadingScreen> */}
         <div>
             <div>
                 <Sidebar />

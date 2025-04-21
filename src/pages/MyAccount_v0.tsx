@@ -23,7 +23,7 @@ import {
     useNavigate,
     useParams
 } from "react-router-dom";
-import LoadingWrapper from "../components/LoadingWrapper";
+import LoadingScreen from "../components/LoadingScreen";
 import "../styles/ClientAccount.css";
 import NavBar from "../components/ClientNavBar";
 
@@ -133,7 +133,7 @@ export default function MyAccount(): JSX.Element {
     useEffect(() => { loadPageData(); }, []);
 
     return <>
-        <LoadingWrapper loading={ !pageData.loaded }></LoadingWrapper>
+        <LoadingScreen loading={ !pageData.loaded }></LoadingScreen>
         <NavBar />
         <form onSubmit={submit}>
             <main className="account-container">

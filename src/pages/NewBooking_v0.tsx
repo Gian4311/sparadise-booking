@@ -71,7 +71,7 @@ import SpaRadiseLogo from "../images/SpaRadise Logo.png"
 import "../styles/ClientBookingCreation2.css";
 import "../styles/ClientBookingCreation.css";
 import NavBar from "../components/ClientNavBar";
-import LoadingWrapper from "../components/LoadingWrapper";
+import LoadingScreen from "../components/LoadingScreen";
 import "../styles/NewBooking_v0.css"
 import DateRange from "../utils/DateRange";
 
@@ -498,7 +498,7 @@ function ChooseClients({ pageData, reloadPageData }: {
     }
 
     return <>
-        <LoadingWrapper loading={ !pageData.loaded }></LoadingWrapper>
+        <LoadingScreen loading={ !pageData.loaded }></LoadingScreen>
         <NavBar></NavBar>
         <main className="booking-container">
             <section className="booking-form">
@@ -712,7 +712,7 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
     }
 
     return <>
-        <LoadingWrapper loading={ !pageData.loaded }></LoadingWrapper>
+        <LoadingScreen loading={ !pageData.loaded }></LoadingScreen>
         <NavBar></NavBar>
         <main className="booking-container">
             <section className="form-section client-date-section">
@@ -883,7 +883,7 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
     }
 
     return <>
-        <LoadingWrapper loading={ !pageData.loaded }></LoadingWrapper>
+        <LoadingScreen loading={ !pageData.loaded }></LoadingScreen>
         <NavBar></NavBar>
         <main className="booking-container">
             <section className="form-section client-date-section">
@@ -986,7 +986,7 @@ function Summary({ pageData, reloadPageData }: {
     }
 
     return <>
-        <LoadingWrapper loading={ !pageData.loaded }></LoadingWrapper>
+        <LoadingScreen loading={ !pageData.loaded }></LoadingScreen>
         <NavBar></NavBar>
         <main className="booking-container">
             <section className="form-section booking-summary-section">

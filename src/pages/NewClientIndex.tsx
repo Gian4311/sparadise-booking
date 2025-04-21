@@ -5,7 +5,7 @@ import '../styles/ClientHomePage.css';
 import SparadiseLogo from "../images/SpaRadise Logo.png";
 import NotificationSymbol from "../images/Notification Symbol.png";
 import Background from "../images/indexbackground.jpg";
-import LoadingWrapper from '../components/LoadingWrapper';
+import LoadingScreen from '../components/LoadingScreen';
 
 import Massage from "../images/massage.jpg";
 import Facials from "../images/facial.jpeg";

@@ -2,13 +2,13 @@ import React from "react";
 import "../styles/EmployeeServiceMenu.css";
 import "../styles/Sidebar.css";
 
-import LoadingWrapper from "../components/LoadingWrapper";
+import LoadingScreen from "../components/LoadingScreen";
 
 import EmployeeSidebar from "../components/EmployeeSidebar";
 
 const RoomMaintenance: React.FC = () => {
     return <>
-        {/* <LoadingWrapper></LoadingWrapper> */}
+        {/* <LoadingScreen></LoadingScreen> */}
         <div>
             
                 <EmployeeSidebar></EmployeeSidebar>
