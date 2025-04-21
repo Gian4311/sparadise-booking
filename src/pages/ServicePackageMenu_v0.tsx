@@ -126,8 +126,9 @@ export default function ServicePackageMenu(): JSX.Element {
     useEffect(() => { loadPageData(); }, []);
 
     return <>
+        <LoadingWrapper loading={ !pageData.loaded }></LoadingWrapper>
         <div>
-            <LoadingWrapper>
+            
                 <EmployeeSidebar />
 
                 <div className="service-menu-main-content">
@@ -213,7 +214,6 @@ export default function ServicePackageMenu(): JSX.Element {
                         <button type="button" onClick={() => console.log(pageData)}>Log Page Data</button>
                     </div>
                 </div>
-            </LoadingWrapper>
         </div>
     </>;
 

@@ -7,9 +7,10 @@ import LoadingWrapper from "../components/LoadingWrapper";
 import EmployeeSidebar from "../components/EmployeeSidebar";
 
 const RoomMaintenance: React.FC = () => {
-    return (
+    return <>
+        {/* <LoadingWrapper></LoadingWrapper> */}
         <div>
-            <LoadingWrapper>
+            
                 <EmployeeSidebar></EmployeeSidebar>
 
                 <div className="service-menu-main-content">
@@ -45,9 +46,8 @@ const RoomMaintenance: React.FC = () => {
                         <button className="edit-btn">Edit</button>
                     </div>
                 </div>
-            </LoadingWrapper>
         </div>
-    );
+    </>;
 };
 
 export default RoomMaintenance;
