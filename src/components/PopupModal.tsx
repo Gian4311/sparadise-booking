@@ -39,7 +39,7 @@ export default function PopupModal( {
     }
 
     return <>
-        <div className={ `popup-modal-wrapper ` }>
+        <div className={ `popup-modal-wrapper` }>
             <div className={ `popup-modal` }>
                 { children }
                 <div className="actions">

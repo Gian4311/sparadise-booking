@@ -31,6 +31,8 @@ export default function NewBookingDateInput(
 
     async function handleChange( event: ChangeEvent< HTMLInputElement > ): Promise< void > {
 
+        pageData.loaded = false;
+        reloadPageData();
         const
             unparsedValueNew: string = event.target.value,
             parsedValue: main = await parseValue( unparsedValueNew ),
@@ -40,6 +42,7 @@ export default function NewBookingDateInput(
         setUnparsedValue( unparsedValueNew );
         pageData.date = parsedValue ?? ( null as unknown as Date );
         if( onChange ) await onChange( parsedValue, unparsedValueNew, old );
+        pageData.loaded = true;
         reloadPageData();
 
     }

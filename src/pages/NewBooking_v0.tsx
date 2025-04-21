@@ -198,7 +198,6 @@ export default function NewBooking(): JSX.Element {
 
     async function handleChangeDate(): Promise<void> {
 
-        if (!pageData.loaded) return;
         await loadMaintenanceData();
         const { date } = pageData;
         await loadEmployeeData();

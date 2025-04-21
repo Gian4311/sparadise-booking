@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import "../styles/loading.css";
 
-export default function LoadingWrapper( { loading }: { loading: boolean } ): JSX.Element {
+export default function LoadingScreen( { loading }: { loading: boolean } ): JSX.Element {
 
     if( !loading ) return <></>;
     return <>
