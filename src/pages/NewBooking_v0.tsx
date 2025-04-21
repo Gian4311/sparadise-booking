@@ -69,7 +69,7 @@ import SpaRadiseLogo from "../images/SpaRadise Logo.png"
 import "../styles/ClientBookingCreation2.css";
 import "../styles/ClientBookingCreation.css";
 import NavBar from "../components/ClientNavBar";
-
+import LoadingWrapper from "../components/LoadingWrapper";
 import "../styles/NewBooking_v0.css"
 import DateRange from "../utils/DateRange";
 
@@ -102,20 +102,24 @@ export interface NewBookingPageData extends SpaRadisePageData {
     packageDataMap: PackageDataMap,
     packageServiceDataMap: PackageServiceDataMap,
     packageServiceKeyMap: {
-        [ packageId: documentId ]: { [ serviceId: documentId ]: documentId }
+        [packageId: documentId]: { [serviceId: documentId]: documentId }
     },
     serviceDataMap: ServiceDataMap,
     serviceTransactionOfDayDataMap: ServiceTransactionDataMap,
     voucherDataMap: VoucherDataMap,
     voucherDataOfDayMap: VoucherDataMap,
+<<<<<<< HEAD
     voucherIndex: number,
     voucherIndexVoucherMap: { [ voucherIndex: number ]: documentId | null },
+=======
+    voucherIncludedMap: { [voucherId: documentId]: boolean },
+>>>>>>> 484b86a5dbddf8edecf530ad30ffc3166d868aa3
     voucherPackageKeyMap: {
-        [ voucherId: documentId ]: { [ packageId: documentId ]: documentId }
+        [voucherId: documentId]: { [packageId: documentId]: documentId }
     },
     voucherPackageMap: VoucherPackageDataMap,
     voucherServiceKeyMap: {
-        [ voucherId: documentId ]: { [ serviceId: documentId ]: documentId }
+        [voucherId: documentId]: { [serviceId: documentId]: documentId }
     },
     voucherServiceMap: VoucherServiceDataMap
 }
@@ -161,7 +165,7 @@ export default function NewBooking(): JSX.Element {
             voucherServiceKeyMap: {}
         }),
         accountId: string | undefined = useParams().accountId
-    ;
+        ;
 
     function addFormIndex(value: number = 1): void {
 
@@ -202,7 +206,7 @@ export default function NewBooking(): JSX.Element {
         await loadEmployeeData();
         pageData.serviceTransactionOfDayDataMap =
             await ServiceTransactionUtils.getServiceTransactionDataMapByDay(date)
-        ;
+            ;
         await loadVoucherDataOfDayData();
         await loadBookingCalendar();
 
@@ -220,7 +224,7 @@ export default function NewBooking(): JSX.Element {
                 employeeLeaveDataMap: employeeLeaveOfDayDataMap,
                 serviceTransactionDataMap
             }
-        ;
+            ;
         pageData.bookingCalendar = new BookingCalendar(bookingCalendarPageData);
 
     }
@@ -272,7 +276,7 @@ export default function NewBooking(): JSX.Element {
             ,
             serviceMaintenanceDataMap =
                 await ServiceMaintenanceUtils.getServiceMaintenanceDataMapByDate(date)
-        ;
+            ;
         pageData.maintenanceDataMap = { ...packageMaintenanceDataMap, ...serviceMaintenanceDataMap };
 
     }
@@ -305,69 +309,84 @@ export default function NewBooking(): JSX.Element {
 
             const {
                 package: { id: packageId }, service: { id: serviceId }
-            } = packageServiceDataMap[ packageServiceId ];
-            packageServiceKeyMap[ packageId ][ serviceId ] = packageServiceId;
+            } = packageServiceDataMap[packageServiceId];
+            packageServiceKeyMap[packageId][serviceId] = packageServiceId;
 
         }
 
     }
 
-    async function loadVoucherDataOfDayData(): Promise< void > {
+    async function loadVoucherDataOfDayData(): Promise<void> {
 
         pageData.voucherDataOfDayMap = {};
         const
+<<<<<<< HEAD
             { date, voucherDataMap, voucherDataOfDayMap } = pageData,
             dateTimeStart: Date = DateUtils.toFloorByDay( date ),
             dateTimeEnd: Date = DateUtils.toCeilByDay( date ),
             dateRange: DateRange = new DateRange( dateTimeStart, dateTimeEnd )
         ;
         for( let voucherId in voucherDataMap ) {
+=======
+            { date, voucherDataMap, voucherDataOfDayMap, voucherIncludedMap } = pageData,
+            dateTimeStart: Date = DateUtils.toFloorByDay(date),
+            dateTimeEnd: Date = DateUtils.toCeilByDay(date),
+            dateRange: DateRange = new DateRange(dateTimeStart, dateTimeEnd)
+            ;
+        for (let voucherId in voucherDataMap) {
+>>>>>>> 484b86a5dbddf8edecf530ad30ffc3166d868aa3
 
             const
-                voucherData = voucherDataMap[ voucherId ],
+                voucherData = voucherDataMap[voucherId],
                 { dateValid, dateExpiry } = voucherData,
-                dateRangeCompare: DateRange = new DateRange( dateValid, dateExpiry )
-            ;
-            if( dateRange.overlapsWith( dateRangeCompare ) )
-                voucherDataOfDayMap[ voucherId ] = voucherData;
+                dateRangeCompare: DateRange = new DateRange(dateValid, dateExpiry)
+                ;
+            if (dateRange.overlapsWith(dateRangeCompare))
+                voucherDataOfDayMap[voucherId] = voucherData;
 
         }
+<<<<<<< HEAD
+=======
+        for (let voucherId in voucherIncludedMap)
+            if (!(voucherId in voucherDataOfDayMap)) delete voucherIncludedMap[voucherId];
+
+>>>>>>> 484b86a5dbddf8edecf530ad30ffc3166d868aa3
     }
 
-    async function loadVoucherData(): Promise< void > {
+    async function loadVoucherData(): Promise<void> {
 
         const
             { voucherPackageKeyMap, voucherServiceKeyMap } = pageData,
             voucherDataMap = await VoucherUtils.getVoucherDataMapAll(),
             voucherPackageDataMap = await VoucherPackageUtils.getVoucherPackageDataMapAll(),
             voucherServiceDataMap = await VoucherServiceUtils.getVoucherServiceDataMapAll()
-        ;
+            ;
         pageData.voucherDataMap = voucherDataMap;
         pageData.voucherPackageMap = voucherPackageDataMap;
         pageData.voucherServiceMap = voucherServiceDataMap;
-        for( let voucherId in voucherDataMap ) {
+        for (let voucherId in voucherDataMap) {
 
-            voucherPackageKeyMap[ voucherId ] = {};
-            voucherServiceKeyMap[ voucherId ] = {};
+            voucherPackageKeyMap[voucherId] = {};
+            voucherServiceKeyMap[voucherId] = {};
 
         }
-        for( let voucherPackageId in voucherPackageDataMap ) {
+        for (let voucherPackageId in voucherPackageDataMap) {
 
             const {
                 voucher: { id: voucherId }, package: { id: packageId }
-            } = voucherPackageDataMap[ voucherPackageId ];
-            voucherPackageKeyMap[ voucherId ][ packageId ] = voucherPackageId;
+            } = voucherPackageDataMap[voucherPackageId];
+            voucherPackageKeyMap[voucherId][packageId] = voucherPackageId;
 
         }
-        for( let voucherServiceId in voucherServiceDataMap ) {
+        for (let voucherServiceId in voucherServiceDataMap) {
 
             const {
                 voucher: { id: voucherId }, service: { id: serviceId }
-            } = voucherServiceDataMap[ voucherServiceId ];
-            voucherServiceKeyMap[ voucherId ][ serviceId ] = voucherServiceId;
+            } = voucherServiceDataMap[voucherServiceId];
+            voucherServiceKeyMap[voucherId][serviceId] = voucherServiceId;
 
         }
-        
+
     }
 
     function reloadPageData(): void {
@@ -390,11 +409,11 @@ export default function NewBooking(): JSX.Element {
         <form onSubmit={submit}>
             {
                 (pageData.formIndex === 0) ? <ChooseClients pageData={pageData} reloadPageData={reloadPageData} />
-                : (pageData.formIndex === 1) ? <ChooseServices pageData={pageData} handleChangeDate={ handleChangeDate } reloadPageData={reloadPageData} />
-                : (pageData.formIndex === 2) ? <ChooseTimeSlots pageData={pageData} reloadPageData={reloadPageData} />
-                : (pageData.formIndex === 3) ? <Summary pageData={pageData} reloadPageData={reloadPageData} />
-                // other form indexes
-                : <button type="button" onClick={() => { pageData.formIndex--; reloadPageData(); }}>None, Go Back</button>
+                    : (pageData.formIndex === 1) ? <ChooseServices pageData={pageData} handleChangeDate={handleChangeDate} reloadPageData={reloadPageData} />
+                        : (pageData.formIndex === 2) ? <ChooseTimeSlots pageData={pageData} reloadPageData={reloadPageData} />
+                            : (pageData.formIndex === 3) ? <Summary pageData={pageData} reloadPageData={reloadPageData} />
+                                // other form indexes
+                                : <button type="button" onClick={() => { pageData.formIndex--; reloadPageData(); }}>None, Go Back</button>
             }
 
             <button type="button" onClick={() => console.log(pageData)}>Log page data</button>
@@ -413,7 +432,7 @@ function ChooseClients({ pageData, reloadPageData }: {
         { clientDataMap, clientInfoMap } = pageData,
         clientLength: number = ObjectUtils.keyLength(clientDataMap),
         navigate = useNavigate()
-    ;
+        ;
 
     async function addClient(): Promise<void> {
 
@@ -492,16 +511,18 @@ function ChooseClients({ pageData, reloadPageData }: {
 
     async function previousPage(): Promise<void> {
 
-        navigate( "/" );
+        navigate("/");
 
     }
 
     return <>
-        <NavBar></NavBar>
-        <main className="booking-container">
-            <section className="booking-form">
-                <h1 className="booking-title">Who are the Clients?</h1>
+        <LoadingWrapper>
+            <NavBar></NavBar>
+            <main className="booking-container">
+                <section className="booking-form">
+                    <h1 className="booking-title">Who are the Clients?</h1>
 
+<<<<<<< HEAD
                 {
                     Object.keys(clientDataMap).sort().map( clientIndex => {
                         const clientData: ClientData = clientDataMap[clientIndex];
@@ -524,27 +545,51 @@ function ChooseClients({ pageData, reloadPageData }: {
                         );
                     })
                 }
+=======
+                    {
+                        Object.keys(clientDataMap).sort().map(clientIndex => {
+                            const clientData: ClientData = clientDataMap[clientIndex];
+                            return (
+                                <div className="client-row" key={clientIndex}>
+                                    <div className="client-input">
+                                        <label className="form-row-label" >Name</label>
+                                        <FormTinyTextInput documentData={clientData} keyName="name" pageData={pageData} required={true} />
+                                    </div>
+                                    <div className="client-input">
+                                        <label className="form-row-label" >Birth Date</label>
+                                        <FormDateInput documentData={clientData} keyName="birthDate" pageData={pageData} required={true} />
+                                    </div>
+                                    {
+                                        (clientLength > 1) ?
+                                            <button className="client-booking-delete-btn" type="button" onClick={() => deleteClient(+clientIndex)}>Delete</button>
+                                            : <></>
+                                    }
+                                </div>
+                            );
+                        })
+                    }
+>>>>>>> 484b86a5dbddf8edecf530ad30ffc3166d868aa3
 
 
-                <button className="add-client-btn" type="button" onClick={addClient}>Add Another Client +</button>
+                    <button className="add-client-btn" type="button" onClick={addClient}>Add Another Client +</button>
 
-                <div className="action-buttons">
-                    <button className="back-btn" type="button" onClick={previousPage}>Back</button>
-                    <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (1/4)</button>
-                </div>
+                    <div className="action-buttons">
+                        <button className="back-btn" type="button" onClick={previousPage}>Back</button>
+                        <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (1/4)</button>
+                    </div>
 
 
 
-            </section>
-        </main>
-
+                </section>
+            </main>
+        </LoadingWrapper>
     </>;
 
 }
 
 function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
     pageData: NewBookingPageData,
-    handleChangeDate: () => Promise< void >,
+    handleChangeDate: () => Promise<void>,
     reloadPageData: () => void
 }): JSX.Element {
 
@@ -561,19 +606,19 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
 
     async function addPackage(packageId: documentId): Promise<void> {
 
-        if( isConflictingPackage( packageId ) ) return;
-        for( let serviceId in packageServiceKeyMap[ packageId ] )
-            await addServiceTransaction( serviceId, packageId );
-        packageIncludedMap[ packageId ] = true;
+        if (isConflictingPackage(packageId)) return;
+        for (let serviceId in packageServiceKeyMap[packageId])
+            await addServiceTransaction(serviceId, packageId);
+        packageIncludedMap[packageId] = true;
         reloadPageData();
 
     }
 
     async function addServiceTransaction(
         serviceId: documentId, packageId?: documentId
-    ): Promise< void > {
-        
-        if( pageData.maintenanceDataMap[ serviceId ].status === "inactive" ) return;
+    ): Promise<void> {
+
+        if (pageData.maintenanceDataMap[serviceId].status === "inactive") return;
         const
             { serviceTransactionIndex } = clientInfoMap[clientIndexActive],
             serviceTransactionId: string = getServiceTransactionId(
@@ -640,9 +685,9 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
 
     async function deletePackage(packageId: documentId): Promise<void> {
 
-        for( let serviceId in packageServiceKeyMap[ packageId ] )
-            await deleteServiceTransaction( serviceId );
-        delete packageIncludedMap[ packageId ];
+        for (let serviceId in packageServiceKeyMap[packageId])
+            await deleteServiceTransaction(serviceId);
+        delete packageIncludedMap[packageId];
         reloadPageData();
 
     }
@@ -672,8 +717,8 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
 
     function isConflictingPackage(packageId: documentId): boolean {
 
-        for( let serviceId in packageServiceKeyMap[ packageId ] )
-            if( isConflictingService( serviceId ) ) return true;
+        for (let serviceId in packageServiceKeyMap[packageId])
+            if (isConflictingService(serviceId)) return true;
         return false;
 
     }
@@ -718,118 +763,120 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
     }
 
     return <>
-        <NavBar></NavBar>
-        <main className="booking-container">
-            <section className="form-section client-date-section">
-                <div className="date-input">
-                    <label className="input-label">Choose date</label>
-                    <NewBookingDateInput pageData={pageData} onChange={handleChangeDate} reloadPageData={reloadPageData}/>
-                </div>
-            </section>
-            <div className="client-input">
-                <label className="client-selection">Select Client:</label>
-                <div className="clickable-bars" id="client-selection">
-                    {
-                        Object.keys(clientDataMap).sort().map(clientIndex =>
-                            <div
-                                key={clientIndex}
-                                className={`client-item ${(+clientIndex === clientIndexActive) ? 'active' : ''}`}
-                                data-client={`client${clientIndex}`}
-                                onClick={() => handleChangeClientActive(+clientIndex)}
-                            >
-                                {clientDataMap[+clientIndex].name}
-                            </div>
-                        )
-                    }
-                </div>
-            </div>
-
-            <section className="form-section package-section">
-                <div className="section-label">Select Packages:</div>
-                <button className="toggle-button" type="button" onClick={togglePackages}>Packages</button>
-                <div className={showPackages ? "package-scroll-container" : "hidden"}>
-                    {Object.keys(packageDataMap).map(packageId => {
-                        const { price, status } = maintenanceDataMap[packageId];
-                        if (status === "inactive") return undefined;
-
-                        const { name, description } = packageDataMap[packageId];
-                        const serviceKeyMap = packageServiceKeyMap[packageId];
-                        const serviceKeyList = Object.keys(serviceKeyMap)
-                            .filter(serviceId => maintenanceDataMap[serviceId].status === "active" )
-                        ;
-
-                        if (serviceKeyList.length <= 1) return undefined;
-
-                        return (
-                            <div className="package-scroll-item" key={packageId}>
-                                <div className="package-price">₱{price}</div>
-                                <div className="package-name">{name}</div>
-                                <div className="package-services">
-                                    {serviceKeyList.sort((serviceId1, serviceId2) =>
-                                        StringUtils.compare(serviceDataMap[serviceId1].name, serviceDataMap[serviceId2].name)
-                                    ).map(serviceId => {
-                                        const { name } = serviceDataMap[serviceId];
-                                        return (
-                                            <div className={isConflictingService(serviceId) ? "included" : ""} key={serviceId}>
-                                                {name} </div>
-                                        );
-                                    })}
+        <LoadingWrapper>
+            <NavBar></NavBar>
+            <main className="booking-container">
+                <section className="form-section client-date-section">
+                    <div className="date-input">
+                        <label className="input-label">Choose date</label>
+                        <NewBookingDateInput pageData={pageData} onChange={handleChangeDate} reloadPageData={reloadPageData} />
+                    </div>
+                </section>
+                <div className="client-input">
+                    <label className="client-selection">Select Client:</label>
+                    <div className="clickable-bars" id="client-selection">
+                        {
+                            Object.keys(clientDataMap).sort().map(clientIndex =>
+                                <div
+                                    key={clientIndex}
+                                    className={`client-item ${(+clientIndex === clientIndexActive) ? 'active' : ''}`}
+                                    data-client={`client${clientIndex}`}
+                                    onClick={() => handleChangeClientActive(+clientIndex)}
+                                >
+                                    {clientDataMap[+clientIndex].name}
                                 </div>
-                                <div className="package-description">{description}</div>
-                                {
-                                    (packageId in packageIncludedMap) ? (
-                                        <button className="remove-btn" type="button" onClick={() => deletePackage(packageId)}>Remove</button>
-                                    ) : isConflictingPackage(packageId) ? (
-                                        <button className="conf-btn" type="button">In Conflict</button>
-                                    ) : (
-                                        <button className="add-btn" type="button" onClick={() => addPackage(packageId)}>Add</button>
-                                    )
-                                }
-                            </div>
-                        );
-                    })}
+                            )
+                        }
+                    </div>
                 </div>
-            </section>
+
+                <section className="form-section package-section">
+                    <div className="section-label">Select Packages:</div>
+                    <button className="toggle-button" type="button" onClick={togglePackages}>Packages</button>
+                    <div className={showPackages ? "package-scroll-container" : "hidden"}>
+                        {Object.keys(packageDataMap).map(packageId => {
+                            const { price, status } = maintenanceDataMap[packageId];
+                            if (status === "inactive") return undefined;
+
+                            const { name, description } = packageDataMap[packageId];
+                            const serviceKeyMap = packageServiceKeyMap[packageId];
+                            const serviceKeyList = Object.keys(serviceKeyMap)
+                                .filter(serviceId => maintenanceDataMap[serviceId].status === "active")
+                                ;
+
+                            if (serviceKeyList.length <= 1) return undefined;
+
+                            return (
+                                <div className="package-scroll-item" key={packageId}>
+                                    <div className="package-price">₱{price}</div>
+                                    <div className="package-name">{name}</div>
+                                    <div className="package-services">
+                                        {serviceKeyList.sort((serviceId1, serviceId2) =>
+                                            StringUtils.compare(serviceDataMap[serviceId1].name, serviceDataMap[serviceId2].name)
+                                        ).map(serviceId => {
+                                            const { name } = serviceDataMap[serviceId];
+                                            return (
+                                                <div className={isConflictingService(serviceId) ? "included" : ""} key={serviceId}>
+                                                    {name} </div>
+                                            );
+                                        })}
+                                    </div>
+                                    <div className="package-description">{description}</div>
+                                    {
+                                        (packageId in packageIncludedMap) ? (
+                                            <button className="remove-btn" type="button" onClick={() => deletePackage(packageId)}>Remove</button>
+                                        ) : isConflictingPackage(packageId) ? (
+                                            <button className="conf-btn" type="button">In Conflict</button>
+                                        ) : (
+                                            <button className="add-btn" type="button" onClick={() => addPackage(packageId)}>Add</button>
+                                        )
+                                    }
+                                </div>
+                            );
+                        })}
+                    </div>
+                </section>
 
 
-            <section className="form-section service-section">
-                <div className="section-label">Select Services:</div>
-                <button type="button" className="toggle-button" onClick={toggleServices}>Services</button>
-                <div className={showServices ? "service-scroll-container" : "hidden"}>
-                    {Object.keys(serviceDataMap).map(serviceId => {
-                        const { name, description } = serviceDataMap[serviceId];
-                        const { price, status } = maintenanceDataMap[serviceId];
-                        if (status === "inactive") return undefined;
+                <section className="form-section service-section">
+                    <div className="section-label">Select Services:</div>
+                    <button type="button" className="toggle-button" onClick={toggleServices}>Services</button>
+                    <div className={showServices ? "service-scroll-container" : "hidden"}>
+                        {Object.keys(serviceDataMap).map(serviceId => {
+                            const { name, description } = serviceDataMap[serviceId];
+                            const { price, status } = maintenanceDataMap[serviceId];
+                            if (status === "inactive") return undefined;
 
-                        return (
-                            <div className="service-scroll-item" key={serviceId}>
-                                <div className="service-price">₱{price}</div>
-                                <div className="service-name">{name}</div>
-                                <div className="service-description">{description}</div>
-                                {
-                                    (serviceId in singleServiceIncludedMap) ? (
-                                        <button className="remove-btn" type="button" onClick={() => deleteSingleService(serviceId)}>Remove</button>
-                                    ) : isConflictingService(serviceId) ? (
-                                        <button className="conf-btn" type="button">In Conflict</button>
-                                    ) : (
-                                        <button className="add-btn" type="button" onClick={() => addSingleService(serviceId)}>Add</button>
-                                    )
-                                }
-                            </div>
-                        );
-                    })}
-                </div>
-            </section>
+                            return (
+                                <div className="service-scroll-item" key={serviceId}>
+                                    <div className="service-price">₱{price}</div>
+                                    <div className="service-name">{name}</div>
+                                    <div className="service-description">{description}</div>
+                                    {
+                                        (serviceId in singleServiceIncludedMap) ? (
+                                            <button className="remove-btn" type="button" onClick={() => deleteSingleService(serviceId)}>Remove</button>
+                                        ) : isConflictingService(serviceId) ? (
+                                            <button className="conf-btn" type="button">In Conflict</button>
+                                        ) : (
+                                            <button className="add-btn" type="button" onClick={() => addSingleService(serviceId)}>Add</button>
+                                        )
+                                    }
+                                </div>
+                            );
+                        })}
+                    </div>
+                </section>
 
-            <section className="form-section notes-section">
-                <label htmlFor="notes" className="input-label">Notes:</label>
-                <FormTextArea documentData={clientDataMap[clientIndexActive]} keyName="notes" pageData={pageData} required={true} />
-            </section>
-            <section className="action-buttons">
-                <button className="back-btn" type="button" onClick={previousPage}>Back</button>
-                <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (2/4)</button>
-            </section>
-        </main >
+                <section className="form-section notes-section">
+                    <label htmlFor="notes" className="input-label">Notes:</label>
+                    <FormTextArea documentData={clientDataMap[clientIndexActive]} keyName="notes" pageData={pageData} required={true} />
+                </section>
+                <section className="action-buttons">
+                    <button className="back-btn" type="button" onClick={previousPage}>Back</button>
+                    <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (2/4)</button>
+                </section>
+            </main >
+        </LoadingWrapper>
     </>;
 
 }
@@ -888,74 +935,76 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
     }
 
     return <>
-        <NavBar></NavBar>
-        <main className="booking-container">
-            <section className="form-section client-date-section">
-                <div className="time-slot-date">{DateUtils.toString(date, "Mmmm dd, yyyy")}</div>
-            </section>
-            <div className="client-input">
-                <label htmlFor="client-selection" className="input-label">Select Client:</label>
-                <div id="client-selection" className="clickable-bars">
-                    {Object.keys(clientDataMap).sort().map(clientIndex => (
-                        <div
-                            key={clientIndex}
-                            className={`client-item ${+clientIndex === clientIndexActive ? "active" : ""}`}
-                            data-client={`client${clientIndex}`}
-                            onClick={() => handleChangeClientActive(+clientIndex)}
-                        >
-                            {clientDataMap[clientIndex].name}
-                        </div>
-                    ))}
+        <LoadingWrapper>
+            <NavBar></NavBar>
+            <main className="booking-container">
+                <section className="form-section client-date-section">
+                    <div className="time-slot-date">{DateUtils.toString(date, "Mmmm dd, yyyy")}</div>
+                </section>
+                <div className="client-input">
+                    <label htmlFor="client-selection" className="input-label">Select Client:</label>
+                    <div id="client-selection" className="clickable-bars">
+                        {Object.keys(clientDataMap).sort().map(clientIndex => (
+                            <div
+                                key={clientIndex}
+                                className={`client-item ${+clientIndex === clientIndexActive ? "active" : ""}`}
+                                data-client={`client${clientIndex}`}
+                                onClick={() => handleChangeClientActive(+clientIndex)}
+                            >
+                                {clientDataMap[clientIndex].name}
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            </div>
 
-            <p className="time-slot-note">
-                *NOTE: Services marked<Bullet color="#ffc100" size="12px" style={{ margin: "0 5px" }} />
-                can be done together with<Bullet color="#6699ff" size="12px" style={{ margin: "0 5px" }} />
-                or<Bullet color="#3bba23" size="12px" style={{ margin: "0 5px" }} />.
-            </p>
-            <table className="time-slot-table">
-                <thead><tr>
-                    <td></td>
-                    <td>Service</td>
-                    <td>Time Slot</td>
-                    <td>Duration</td>
-                </tr></thead>
-                <tbody>{
-                    Object.keys(pageData.clientInfoMap[clientIndexActive].serviceTransactionDataMap).map(serviceTransactionId => {
+                <p className="time-slot-note">
+                    *NOTE: Services marked<Bullet color="#ffc100" size="12px" style={{ margin: "0 5px" }} />
+                    can be done together with<Bullet color="#6699ff" size="12px" style={{ margin: "0 5px" }} />
+                    or<Bullet color="#3bba23" size="12px" style={{ margin: "0 5px" }} />.
+                </p>
+                <table className="time-slot-table">
+                    <thead><tr>
+                        <td></td>
+                        <td>Service</td>
+                        <td>Time Slot</td>
+                        <td>Duration</td>
+                    </tr></thead>
+                    <tbody>{
+                        Object.keys(pageData.clientInfoMap[clientIndexActive].serviceTransactionDataMap).map(serviceTransactionId => {
 
-                        const
-                            serviceTransactionData = pageData
-                                .clientInfoMap[clientIndexActive]
-                                .serviceTransactionDataMap[serviceTransactionId]
-                            ,
-                            { service: { id: serviceId } } = serviceTransactionData,
-                            { name, serviceType, durationMin } = pageData.serviceDataMap[serviceId]
-                            ;
-                        return <tr key={serviceTransactionId}>
-                            <td>{
-                                (serviceType === "handsAndFeet") ? <Bullet color="#ffc100" size="12px" style={{ margin: "0 5px" }} />
-                                    : (serviceType === "browsAndLashes") ? <Bullet color="#6699ff" size="12px" style={{ margin: "0 5px" }} />
-                                        : (serviceType === "facial") ? <Bullet color="#3bba23" size="12px" style={{ margin: "0 5px" }} />
-                                            : <Bullet color="#cd8385" size="12px" style={{ margin: "0 5px" }} />
-                            }</td>
-                            <td>{name}</td>
-                            <td>
-                                <ServiceTransactionTimeSlot clientId={clientIndexActive.toString()} documentData={serviceTransactionData} duration={durationMin} keyNameFrom="bookingDateTimeStart" keyNameTo="bookingDateTimeEnd" pageData={pageData} serviceTransactionId={serviceTransactionId} reloadPageData={reloadPageData}>
-                                    <option value="" disabled>Select time slot</option>
-                                </ServiceTransactionTimeSlot>
-                            </td>
-                            <td>{durationMin}</td>
-                        </tr>;
+                            const
+                                serviceTransactionData = pageData
+                                    .clientInfoMap[clientIndexActive]
+                                    .serviceTransactionDataMap[serviceTransactionId]
+                                ,
+                                { service: { id: serviceId } } = serviceTransactionData,
+                                { name, serviceType, durationMin } = pageData.serviceDataMap[serviceId]
+                                ;
+                            return <tr key={serviceTransactionId}>
+                                <td>{
+                                    (serviceType === "handsAndFeet") ? <Bullet color="#ffc100" size="12px" style={{ margin: "0 5px" }} />
+                                        : (serviceType === "browsAndLashes") ? <Bullet color="#6699ff" size="12px" style={{ margin: "0 5px" }} />
+                                            : (serviceType === "facial") ? <Bullet color="#3bba23" size="12px" style={{ margin: "0 5px" }} />
+                                                : <Bullet color="#cd8385" size="12px" style={{ margin: "0 5px" }} />
+                                }</td>
+                                <td>{name}</td>
+                                <td>
+                                    <ServiceTransactionTimeSlot clientId={clientIndexActive.toString()} documentData={serviceTransactionData} duration={durationMin} keyNameFrom="bookingDateTimeStart" keyNameTo="bookingDateTimeEnd" pageData={pageData} serviceTransactionId={serviceTransactionId} reloadPageData={reloadPageData}>
+                                        <option value="" disabled>Select time slot</option>
+                                    </ServiceTransactionTimeSlot>
+                                </td>
+                                <td>{durationMin}</td>
+                            </tr>;
 
-                    })
-                }</tbody>
-            </table>
-            <section className="action-buttons">
-                <button className="back-btn" type="button" onClick={previousPage}>Back</button>
-                <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (3/4)</button>
-            </section>
-        </main>
+                        })
+                    }</tbody>
+                </table>
+                <section className="action-buttons">
+                    <button className="back-btn" type="button" onClick={previousPage}>Back</button>
+                    <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (3/4)</button>
+                </section>
+            </main>
+        </LoadingWrapper>
     </>;
 
 }
@@ -993,26 +1042,31 @@ function Summary({ pageData, reloadPageData }: {
     }
 
     return <>
-        <NavBar></NavBar>
-        <main className="booking-container">
-            <section className="form-section client-date-section">
-                <div className="time-slot-date">{DateUtils.toString(date, "Mmmm dd, yyyy")}</div>
-            </section>
-            <h2 className="summary-label">Booking Summary</h2>
-            <section className="form-section booking-summary-section">
-                {/* <Receipt pageData={pageData} reloadPageData={reloadPageData} /> */}
-                <BookingReceipt pageData={ pageData }/>
-            </section>
+        <LoadingWrapper>
+            <NavBar></NavBar>
 
-            Voucher/s:
-            <div>
+            <main className="booking-container">
+                <section className="form-section booking-summary-section">
+                    <section className="form-section client-date-section">
+                        <div className="time-slot-date">{DateUtils.toString(date, "Mmmm dd, yyyy")}</div>
+                    </section>
+                    <h2 className="summary-label">Booking Summary</h2>
+                    <section className="form-section booking-summary-section">
+                        {/* <Receipt pageData={pageData} reloadPageData={reloadPageData} /> */}
+                        <BookingReceipt pageData={pageData} />
+                    </section>
+                </section>
+                <br></br>
+                Voucher/s:
+                <div>
 
-            </div>
-            <section className="action-buttons">
-                <button className="back-btn" type="button" onClick={previousPage}>Back</button>
-                <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (4/4)</button>
-            </section>
-        </main>
+                </div>
+                <section className="action-buttons">
+                    <button className="back-btn" type="button" onClick={previousPage}>Back</button>
+                    <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (4/4)</button>
+                </section>
+            </main>
+        </LoadingWrapper>
     </>;
 
 }
@@ -1069,7 +1123,7 @@ function Receipt({ pageData, reloadPageData }: {
                                         serviceId => {
                                             const { name: serviceName } = serviceDataMap[serviceId];
                                             const serviceTransactionId = serviceIncludedMap[serviceId];
-                                            if( !serviceTransactionId ) return undefined;
+                                            if (!serviceTransactionId) return undefined;
                                             const {
                                                 bookingDateTimeStart,
                                                 bookingDateTimeEnd,

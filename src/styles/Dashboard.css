@@ -1,117 +1,129 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  .dashboard-container {
-    display: flex;
-    margin-left: 18%;
-  }
-  
-  .dashboard-main-content {
-    width: 90%;
-    padding: 20px;
-  }
-  
-  .dashboard-title {
-    margin-bottom: 20px;
-  }
-  
-  .dashboard-top-section {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 20px;
-  }
-  
-  .dashboard-schedule-box {
-    background-color: #FDE9EE;
-    border-radius: 25px;
-    padding: 20px;
-    flex: 1;
-  }
-  
-  .dashboard-schedule-header {
-    background-color: #6B009E;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-weight: bold;
-    font-size: 20px;
-    margin-bottom: 15px;
-  }
-  
-  .dashboard-appointment-details {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    background-color: #FDE9EE;
-    padding: 10px;
-    border-radius: 15px;
-    text-align: center;
-  }
-  
-  .appointment-label {
-    font-weight: bold;
-    color: #6B009E;
-  }
-  
-  .dashboard-stats-panel {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    text-align: center;
-    gap: 20px;
-  }
-  
-  .stat-number {
-    font-size: 200%;
-  }
-  .dashboard-stat-box {
-    background-color: #FDE9EE;
-    padding: 15px;
-    border-radius: 15px;
-    font-weight: bold;
-  }
-  
-  .stat-label {
-    display: block;
-    font-size: 100%;
-    font-weight: normal;
-    margin-top: 5px;
-  }
-  
-  .dashboard-grid-section {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-  }
-  
-  .dashboard-card {
-    background-color: #FDE9EE;
-    padding: 15px;
-    border-radius: 20px;
-  }
-  
-  .dashboard-card-header {
-    display: flex;
-    justify-content: space-between;
-    background-color: #6B009E;
-    color: white;
-    border-radius: 12px;
-    padding: 8px 15px;
-    margin-bottom: 10px;
-    font-weight: bold;
-  }
-  
-  .dashboard-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 100%;
-  }
-  
-  .dashboard-table th, .dashboard-table td {
-    padding: 8px;
-    text-align: left;
-  }
-  
+.dashboard-container {
+  display: flex;
+  margin-left: 18%;
+}
+
+.dashboard-main-content {
+  width: 90%;
+  padding: 20px;
+}
+
+.dashboard-title {
+  margin-bottom: 20px;
+}
+
+.dashboard-top-section {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.dashboard-schedule-box {
+  background-color: #FDE9EE;
+  border-radius: 25px;
+  padding: 20px;
+  flex: 1;
+}
+
+.dashboard-schedule-header {
+  background-color: #6B009E;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+.dashboard-appointment-details {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  background-color: #FDE9EE;
+  padding: 10px;
+  border-radius: 15px;
+  text-align: center;
+}
+
+.appointment-label {
+  font-weight: bold;
+  color: #6B009E;
+}
+
+.dashboard-stats-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+  gap: 20px;
+}
+
+.stat-number {
+  font-size: 200%;
+}
+
+.dashboard-stat-box {
+  background-color: #FDE9EE;
+  padding: 15px;
+  border-radius: 15px;
+  font-weight: bold;
+}
+
+.stat-label {
+  display: block;
+  font-size: 100%;
+  font-weight: normal;
+  margin-top: 5px;
+}
+
+.dashboard-grid-section {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  text-decoration: none;
+}
+
+.dashboard-card {
+  background-color: #FDE9EE;
+  padding: 15px;
+  border-radius: 20px;
+  text-decoration: none;
+}
+
+.dashboard-card-header {
+  display: flex;
+  justify-content: space-between;
+  background-color: #6B009E;
+  color: white;
+  border-radius: 12px;
+  padding: 8px 15px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.dashboard-card-header:visited {
+  text-decoration: none;
+}
+
+.card-title, .card-title:visited{
+  text-decoration: none;
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 100%;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  padding: 8px;
+  text-align: left;
+}

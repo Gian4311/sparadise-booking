@@ -6,53 +6,11 @@
     font-family: 'sparadiseMainFont', sans-serif;
 }
 
-/* Sidebar */
-.sidebar {
-    width: 270px;
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100vh;
-    background-color: #5B1B66; /* Dark purple */
-    color: white;
-    padding: 20px;
-    overflow-y: auto;
-}
-
-.sidebar-logo img {
-    display: block;
-    width: 100%;
-    margin-bottom: 20px;
-}
-
-.sidebar-menu {
-    list-style-type: none;
-    padding: 0;
-}
-
-.sidebar-menu li {
-    margin-bottom: 15px;
-}
-
-.sidebar-menu a {
-    text-decoration: none;
-    color: white;
-    font-size: 1rem;
-    display: block;
-    padding: 10px;
-    border-radius: 5px;
-}
-
-.sidebar-menu a.active,
-.sidebar-menu a:hover {
-    background-color: #7A1C86;
-}
-
 /* Container */
-.container {
-    margin-left: 270px; /* Space for sidebar */
+.commission-menu-container {
+    margin-left: 17.5%; /* Space for sidebar */
     padding: 20px;
-    min-height: 100vh;
+    width: 80%;
     background-color: #FDF9FE;
 }
 
