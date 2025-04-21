@@ -39,6 +39,7 @@ import {
 } from "react";
 import FormTextArea from "../components/FormTextArea";
 import FormTinyTextInput from "../components/FormTinyTextInput";
+import FormVoucherInput from "../components/FormVoucherInput";
 import JobServiceUtils from "../firebase/JobServiceUtils";
 import JobUtils from "../firebase/JobUtils";
 import NewBookingDateInput from "../components/NewBookingDateInput";
@@ -107,7 +108,8 @@ export interface NewBookingPageData extends SpaRadisePageData {
     serviceTransactionOfDayDataMap: ServiceTransactionDataMap,
     voucherDataMap: VoucherDataMap,
     voucherDataOfDayMap: VoucherDataMap,
-    voucherIncludedMap: { [ voucherId: documentId ]: boolean },
+    voucherIndex: number,
+    voucherIndexVoucherMap: { [ voucherIndex: number ]: documentId | null },
     voucherPackageKeyMap: {
         [ voucherId: documentId ]: { [ packageId: documentId ]: documentId }
     },
@@ -151,7 +153,8 @@ export default function NewBooking(): JSX.Element {
             updateMap: {},
             voucherDataMap: {},
             voucherDataOfDayMap: {},
-            voucherIncludedMap: {},
+            voucherIndex: 0,
+            voucherIndexVoucherMap: {},
             voucherPackageKeyMap: {},
             voucherPackageMap: {},
             voucherServiceMap: {},
@@ -313,7 +316,7 @@ export default function NewBooking(): JSX.Element {
 
         pageData.voucherDataOfDayMap = {};
         const
-            { date, voucherDataMap, voucherDataOfDayMap, voucherIncludedMap } = pageData,
+            { date, voucherDataMap, voucherDataOfDayMap } = pageData,
             dateTimeStart: Date = DateUtils.toFloorByDay( date ),
             dateTimeEnd: Date = DateUtils.toCeilByDay( date ),
             dateRange: DateRange = new DateRange( dateTimeStart, dateTimeEnd )
@@ -329,9 +332,6 @@ export default function NewBooking(): JSX.Element {
                 voucherDataOfDayMap[ voucherId ] = voucherData;
 
         }
-        for( let voucherId in voucherIncludedMap )
-            if( !( voucherId in voucherDataOfDayMap ) ) delete voucherIncludedMap[ voucherId ]; 
-
     }
 
     async function loadVoucherData(): Promise< void > {
@@ -508,11 +508,11 @@ function ChooseClients({ pageData, reloadPageData }: {
                         return (
                             <div className="client-row" key={ clientIndex }>
                                 <div className="client-input">
-                                    <label className="form-row-label" >Name</label>
+                                    <label>Name</label>
                                     <FormTinyTextInput documentData={clientData} keyName="name" pageData={pageData} required={true} />
                                 </div>
                                 <div className="client-input">
-                                    <label className="form-row-label" >Birth Date</label>
+                                    <label>Birth Date</label>
                                     <FormDateInput documentData={clientData} keyName="birthDate" pageData={pageData} required={true} />
                                 </div>
                                 {
@@ -966,8 +966,11 @@ function Summary({ pageData, reloadPageData }: {
 }): JSX.Element {
 
     const
-        { date, clientDataMap, clientInfoMap, maintenanceDataMap } = pageData
-        ;
+        {
+            date, clientDataMap, clientInfoMap,
+            maintenanceDataMap, voucherIndex, voucherIndexVoucherMap
+        } = pageData
+    ;
 
     async function checkFormValidity(): Promise<boolean> {
 

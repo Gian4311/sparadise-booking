@@ -7,19 +7,14 @@ import { SpaRadisePageData } from "../firebase/SpaRadiseTypes";
 
 type main = string;
 
-interface VoucherIndexVoucherMap{
-    
-    [ voucherIndex: number ]: documentId | null
-
-}
-
 export default function FormVoucherInput(
     {
-        className, keyName, maxLength, name = keyName.toString(),
-        pageData, pattern, placeholder, readOnly, required, voucherIndex, voucherIndexVoucherMap,
+        className, defaultValue, keyName, maxLength, name = keyName.toString(),
+        pageData, pattern, placeholder, readOnly, required,
         onChange, validate
     }: {
         className?: string,
+        defaultValue?: string,
         keyName: string,
         maxLength?: number,
         name?: string,
@@ -28,8 +23,6 @@ export default function FormVoucherInput(
         placeholder?: string,
         readOnly?: boolean,
         required?: boolean,
-        voucherIndex: number,
-        voucherIndexVoucherMap: VoucherIndexVoucherMap,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
         validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >
     }
@@ -68,7 +61,7 @@ export default function FormVoucherInput(
 
     useEffect( () => { ( async() => {
 
-        const parsedValue: main | null = voucherIndexVoucherMap[ voucherIndex ];
+        const parsedValue: main | null = await parseValue( defaultValue ? defaultValue : "" );
         setUnparsedValue( await unparseValue( parsedValue ) );
 
     } )() }, [ pageData ] );
