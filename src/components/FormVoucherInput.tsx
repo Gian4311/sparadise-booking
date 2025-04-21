@@ -1,6 +1,7 @@
 import {
     ChangeEvent,
     useEffect,
+    useRef,
     useState
 } from "react";
 import { SpaRadisePageData } from "../firebase/SpaRadiseTypes";
@@ -9,13 +10,12 @@ type main = string;
 
 export default function FormVoucherInput(
     {
-        className, defaultValue, keyName, maxLength, name = keyName.toString(),
+        className, defaultValue, maxLength, name,
         pageData, pattern, placeholder, readOnly, required,
-        onChange, validate
+        onChange, preprocess, validate
     }: {
         className?: string,
         defaultValue?: string,
-        keyName: string,
         maxLength?: number,
         name?: string,
         pageData: SpaRadisePageData,
@@ -23,6 +23,7 @@ export default function FormVoucherInput(
         placeholder?: string,
         readOnly?: boolean,
         required?: boolean,
+        preprocess?( unparsedValue: string ): Promise< string > | string,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
         validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >
     }
@@ -30,13 +31,15 @@ export default function FormVoucherInput(
 
     const
         [ parsedValue, setParsedValue ] = useState< main | null >( null ),
-        [ unparsedValue, setUnparsedValue ] = useState< string >( "" )
+        [ unparsedValue, setUnparsedValue ] = useState< string >( "" ),
+        ref = useRef< HTMLInputElement >( null )
     ;
 
     async function handleChange( event: ChangeEvent< HTMLInputElement > ): Promise< void > {
 
+        let { selectionStart, value: unparsedValue } = event.target;
+        if( preprocess ) unparsedValue = await preprocess( unparsedValue );
         const
-            unparsedValue: string = event.target.value,
             parsedValueNew: main | null = await parseValue( unparsedValue ),
             old = parsedValue
         ;
@@ -44,6 +47,12 @@ export default function FormVoucherInput(
         setUnparsedValue( unparsedValue );
         setParsedValue( parsedValueNew );
         if( onChange ) await onChange( parsedValueNew, unparsedValue, old );
+        if( ref.current ) {
+
+            ref.current.selectionStart = selectionStart;
+            ref.current.selectionEnd = selectionStart;
+
+        }
 
     }
 
@@ -74,6 +83,7 @@ export default function FormVoucherInput(
         pattern={ pattern }
         placeholder={ placeholder }
         readOnly={ readOnly }
+        ref={ ref }
         required={ required }
         type="text"
         value={ unparsedValue }

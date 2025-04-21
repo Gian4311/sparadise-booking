@@ -1,6 +1,7 @@
 import {
     ChangeEvent,
     useEffect,
+    useRef,
     useState
 } from "react";
 import ObjectUtils from "../utils/ObjectUtils";
@@ -34,12 +35,15 @@ export default function FormTextArea(
     }
 ): JSX.Element {
 
-    const [ unparsedValue, setUnparsedValue ] = useState< string >( "" );
+    const
+        [ unparsedValue, setUnparsedValue ] = useState< string >( "" ),
+        ref = useRef< HTMLTextAreaElement >( null )
+    ;
 
     async function handleChange( event: ChangeEvent< HTMLTextAreaElement > ): Promise< void > {
 
         const
-            unparsedValue: string = event.target.value,
+            { selectionStart, value: unparsedValue } = event.target,
             parsedValue: main | null = await parseValue( unparsedValue ),
             old = documentData[ keyName ] as main | null
         ;
@@ -48,6 +52,12 @@ export default function FormTextArea(
         documentData[ keyName ] = parsedValue;
         await handleDefault( parsedValue );
         if( onChange ) await onChange( parsedValue, unparsedValue, old );
+        if( ref.current ) {
+
+            ref.current.selectionStart = selectionStart;
+            ref.current.selectionEnd = selectionStart;
+
+        }
 
     }
 
@@ -102,6 +112,7 @@ export default function FormTextArea(
         name={ name }
         placeholder={ placeholder }
         readOnly={ readOnly }
+        ref={ ref }
         required={ required }
         value={ unparsedValue }
         onChange={ event => handleChange( event ) }

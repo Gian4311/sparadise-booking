@@ -1,6 +1,7 @@
 import {
     ChangeEvent,
     useEffect,
+    useRef,
     useState
 } from "react";
 import ObjectUtils from "../utils/ObjectUtils";
@@ -35,12 +36,15 @@ export default function FormStringInput(
     }
 ): JSX.Element {
 
-    const [ unparsedValue, setUnparsedValue ] = useState< string >( "" );
+    const
+        [ unparsedValue, setUnparsedValue ] = useState< string >( "" ),
+        ref = useRef< HTMLInputElement >( null )
+    ;
 
     async function handleChange( event: ChangeEvent< HTMLInputElement > ): Promise< void > {
 
         const
-            unparsedValue: string = event.target.value,
+            { selectionStart, value: unparsedValue } = event.target,
             parsedValue: main | null = await parseValue( unparsedValue ),
             old = documentData[ keyName ] as main | null
         ;
@@ -49,6 +53,12 @@ export default function FormStringInput(
         documentData[ keyName ] = parsedValue;
         await handleDefault( parsedValue );
         if( onChange ) await onChange( parsedValue, unparsedValue, old );
+        if( ref.current ) {
+
+            ref.current.selectionStart = selectionStart;
+            ref.current.selectionEnd = selectionStart;
+
+        }
 
     }
 
@@ -104,6 +114,7 @@ export default function FormStringInput(
         pattern={ pattern }
         placeholder={ placeholder }
         readOnly={ readOnly }
+        ref={ ref }
         required={ required }
         type="text"
         value={ unparsedValue }

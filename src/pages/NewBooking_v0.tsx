@@ -15,6 +15,7 @@ import {
     ServiceTransactionData,
     ServiceTransactionDataMap,
     SpaRadisePageData,
+    VoucherData,
     VoucherDataMap,
     VoucherPackageDataMap,
     VoucherServiceDataMap,
@@ -961,8 +962,21 @@ function Summary({ pageData, reloadPageData }: {
 }): JSX.Element {
 
     const
-        { date, clientDataMap, clientInfoMap, maintenanceDataMap } = pageData
+        { date, voucherDataOfDayMap, voucherTransactionDataMap } = pageData
     ;
+
+    async function addVoucher(): Promise< void > {
+
+        const { voucherIndex } = pageData;
+        voucherTransactionDataMap[ voucherIndex ] = {
+            voucher: null as unknown as DocumentReference,
+            booking: null as unknown as DocumentReference,
+            status: "pending"
+        };
+        pageData.voucherIndex++;
+        reloadPageData();
+
+    }
 
     async function checkFormValidity(): Promise<boolean> {
 
@@ -970,10 +984,41 @@ function Summary({ pageData, reloadPageData }: {
 
     }
 
+    function handleChangeVoucherCode( voucherTransactionIndex: number, code: string | null ): void {
+
+        const voucherData: VoucherData | null = getVoucherDataByCode( code );
+        if( voucherData ) {
+
+
+
+        }
+
+    }
+
+    function getVoucherDataByCode( code: string | null ): VoucherData | null {
+
+        if( !code ) return null;
+        for( let voucherId in voucherDataOfDayMap ) {
+
+            const voucherData = voucherDataOfDayMap[ voucherId ];
+            if( code === voucherData.code ) return voucherData;
+
+        }
+        return null; 
+
+    }
+
     async function nextPage(): Promise<void> {
 
         pageData.formIndex++;
         reloadPageData();
+
+    }
+
+    async function preprocessVoucherInput( code: string ): Promise< string > {
+
+        code = code.trim();
+        return code;
 
     }
 
@@ -1001,7 +1046,17 @@ function Summary({ pageData, reloadPageData }: {
             <br></br>
             Voucher/s:
             <div>
+                {
+                    Object.keys( voucherTransactionDataMap ).map( voucherTransactionIndex => {
 
+                        return <Fragment key={ voucherTransactionIndex }>
+                            <FormVoucherInput pageData={ pageData } preprocess={ preprocessVoucherInput } onChange={ code => handleChangeVoucherCode( +voucherTransactionIndex, code ) }/>
+                            <br/>
+                        </Fragment>;
+
+                    } )
+                }
+                <button type="button" onClick={ addVoucher }>+ Add Voucher</button>
             </div>
             <section className="action-buttons">
                 <button className="back-btn" type="button" onClick={previousPage}>Back</button>
