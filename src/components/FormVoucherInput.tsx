@@ -10,12 +10,13 @@ type main = string;
 
 export default function FormVoucherInput(
     {
-        className, defaultValue, maxLength, name,
+        className, defaultValue, error, maxLength, name,
         pageData, pattern, placeholder, readOnly, required,
         onChange, preprocess, validate
     }: {
         className?: string,
         defaultValue?: string,
+        error?: string,
         maxLength?: number,
         name?: string,
         pageData: SpaRadisePageData,
@@ -70,24 +71,33 @@ export default function FormVoucherInput(
 
     useEffect( () => { ( async() => {
 
-        const parsedValue: main | null = await parseValue( defaultValue ? defaultValue : "" );
-        setUnparsedValue( await unparseValue( parsedValue ) );
+        if( defaultValue ) {
+
+            const parsedValue: main | null = await parseValue( defaultValue ? defaultValue : "" );
+            setUnparsedValue( await unparseValue( parsedValue ) );
+
+        }
 
     } )() }, [ pageData ] );
 
-    return <input
-        className={ className }
-        id={ name }
-        maxLength={ maxLength }
-        name={ name }
-        pattern={ pattern }
-        placeholder={ placeholder }
-        readOnly={ readOnly }
-        ref={ ref }
-        required={ required }
-        type="text"
-        value={ unparsedValue }
-        onChange={ event => handleChange( event ) }
-    />;
+    return <div>
+        <input
+            className={ className }
+            id={ name }
+            maxLength={ maxLength }
+            name={ name }
+            pattern={ pattern }
+            placeholder={ placeholder }
+            readOnly={ readOnly }
+            ref={ ref }
+            required={ required }
+            type="text"
+            value={ unparsedValue }
+            onChange={ event => handleChange( event ) }
+        />
+        {
+            error ? <p>{ error }</p> : <></>
+        }
+    </div>;
 
 }

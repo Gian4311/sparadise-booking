@@ -101,8 +101,12 @@ export default function FormEmailInput(
         if( !documentData ) return;
         if( documentData[ keyName ] === undefined )
             throw new Error( `Key name "${ keyName }" does not exist.` );
-        const parsedValue: main = documentData[ keyName ] as main;
-        setUnparsedValue( await unparseValue( parsedValue ) );
+        if( documentData[ keyName ] ) {
+
+            const parsedValue: main = documentData[ keyName ] as main;
+            setUnparsedValue( await unparseValue( parsedValue ) );
+
+        }
 
     } )() }, [ pageData ] );
 

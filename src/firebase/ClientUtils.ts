@@ -10,7 +10,8 @@ import {
     QueryDocumentSnapshot,
     query,
     updateDoc,
-    WithFieldValue
+    WithFieldValue,
+    where
 } from "firebase/firestore/lite";
 import {
     ClientData,
@@ -21,12 +22,12 @@ import SpaRadiseFirestore from "./SpaRadiseFirestore";
 
 export default class ClientUtils {
 
-    public static async checkClientData( accountData: ClientData ): Promise< boolean > {
+    public static async checkClientData( clientData: ClientData ): Promise< boolean > {
     
         const
             {
                 name, description, packageType, roomType, ageLimit, durationMin
-            } = accountData
+            } = clientData
         ;
 
         try {
@@ -36,15 +37,15 @@ export default class ClientUtils {
             // if( !StringUtils.isTinyText( name ) ) throw new Error( "Name must be tinytext." );
             // if( description === null ) throw new Error( "Description is empty." );
             // if( !StringUtils.isTinyText( description ) ) throw new Error( "Description must be text" );
-            // if( !SpaRadiseEnv.isClientType( accountData.packageType ) ) throw new Error( "Invalid package type." );
-            // if( !SpaRadiseEnv.isRoomType( accountData.roomType ) ) throw new Error( "Invalid room type." );
-            // if( !NumberUtils.isNaturalNumber( accountData.ageLimit ) ) throw new Error( "Age limit must be a natural number." );
-            // if( accountData.ageLimit < MIN_AGE_LIMIT ) throw new Error( `Age limit must be ${ MIN_AGE_LIMIT }+` );
-            // if( !NumberUtils.isNaturalNumber( accountData.durationMin ) ) throw "Duration (min) must be a natural number.";
+            // if( !SpaRadiseEnv.isClientType( clientData.packageType ) ) throw new Error( "Invalid package type." );
+            // if( !SpaRadiseEnv.isRoomType( clientData.roomType ) ) throw new Error( "Invalid room type." );
+            // if( !NumberUtils.isNaturalNumber( clientData.ageLimit ) ) throw new Error( "Age limit must be a natural number." );
+            // if( clientData.ageLimit < MIN_AGE_LIMIT ) throw new Error( `Age limit must be ${ MIN_AGE_LIMIT }+` );
+            // if( !NumberUtils.isNaturalNumber( clientData.durationMin ) ) throw "Duration (min) must be a natural number.";
 
-            // if( !NumberUtils.isDivisible( accountData.durationMin, MIN_DENOMINATION ) ) throw "Duration (min) must be in increments of 30."
+            // if( !NumberUtils.isDivisible( clientData.durationMin, MIN_DENOMINATION ) ) throw "Duration (min) must be in increments of 30."
             // PACKAGE_DURATION_MIN_RANGE.checkInRange( durationMin, "Duration (min)" )
-            // if( accountData.durationMin === 0 ) 
+            // if( clientData.durationMin === 0 ) 
             // note: check if in range
 
         } catch( error ) {
@@ -54,27 +55,27 @@ export default class ClientUtils {
         }
         return true;
         // return (
-        //     StringUtils.isTinyText( accountData.name )
-        //     && StringUtils.isText( accountData.description )
-        //     && SpaRadiseFirestore.PACKAGE_TYPE_LIST.includes( accountData.packageType )
-        //     && SpaRadiseFirestore.ROOM_TYPE_LIST.includes( accountData.roomType )
-        //     && NumberUtils.isNaturalNumber( accountData.ageLimit )
-        //     && accountData.ageLimit >= SpaRadiseEnv.MINIMUM_AGE_LIMIT
-        //     && NumberUtils.isNaturalNumber( accountData.durationMin )
-        //     && accountData.durationMin % SpaRadiseEnv.MIN_DENOMINATION == 0
+        //     StringUtils.isTinyText( clientData.name )
+        //     && StringUtils.isText( clientData.description )
+        //     && SpaRadiseFirestore.PACKAGE_TYPE_LIST.includes( clientData.packageType )
+        //     && SpaRadiseFirestore.ROOM_TYPE_LIST.includes( clientData.roomType )
+        //     && NumberUtils.isNaturalNumber( clientData.ageLimit )
+        //     && clientData.ageLimit >= SpaRadiseEnv.MINIMUM_AGE_LIMIT
+        //     && NumberUtils.isNaturalNumber( clientData.durationMin )
+        //     && clientData.durationMin % SpaRadiseEnv.MIN_DENOMINATION == 0
 
         // );
 
     }
 
-    public static async createClient( accountData: ClientData ): Promise< DocumentReference > {
+    public static async createClient( clientData: ClientData ): Promise< DocumentReference > {
     
-        await ClientUtils.checkClientData( accountData );
+        await ClientUtils.checkClientData( clientData );
         const
-            accountCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
-                SpaRadiseEnv.ACCOUNT_COLLECTION
+            clientCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
+                SpaRadiseEnv.CLIENT_COLLECTION
             ),
-            documentReference = await addDoc( accountCollection, accountData )
+            documentReference = await addDoc( clientCollection, clientData )
         ;
         return documentReference;
 
@@ -86,7 +87,7 @@ export default class ClientUtils {
 
         // note: check for dependent entities
         const documentReference: DocumentReference = SpaRadiseFirestore.getDocumentReference(
-            by, SpaRadiseEnv.ACCOUNT_COLLECTION
+            by, SpaRadiseEnv.CLIENT_COLLECTION
         );
         try {
 
@@ -107,7 +108,7 @@ export default class ClientUtils {
     ): Promise< ClientData > {
 
         const snapshot: DocumentSnapshot = await SpaRadiseFirestore.getDocumentSnapshot(
-            by, SpaRadiseEnv.ACCOUNT_COLLECTION
+            by, SpaRadiseEnv.CLIENT_COLLECTION
         );
         if( !snapshot.exists() ) throw new Error( "Error in getting snapshot!" );
         const data = snapshot.data();
@@ -123,34 +124,60 @@ export default class ClientUtils {
     public static async getClientDataMapAll(): Promise< ClientDataMap > {
     
         const
-            accountCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
-                SpaRadiseEnv.ACCOUNT_COLLECTION
+            clientCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
+                SpaRadiseEnv.CLIENT_COLLECTION
             ),
-            accountQuery = query(
-                accountCollection,
+            clientQuery = query(
+                clientCollection,
                 orderBy( "name" )
             ),
-            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( accountQuery ) ).docs,
-            accountDataMap: ClientDataMap = {}
+            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( clientQuery ) ).docs,
+            clientDataMap: ClientDataMap = {}
         ;
         for( let snapshot of snapshotList )
-            accountDataMap[ snapshot.id ] = await ClientUtils.getClientData( snapshot );
-        return accountDataMap;
+            clientDataMap[ snapshot.id ] = await ClientUtils.getClientData( snapshot );
+        return clientDataMap;
+
+    }
+
+    public static async getClientDataMapByBooking(
+        by: documentId | DocumentReference | DocumentSnapshot
+    ): Promise< ClientDataMap > {
+    
+        const
+            clientCollection: CollectionReference =
+                SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.CLIENT_COLLECTION )
+            ,
+            bookingReference: DocumentReference = SpaRadiseFirestore.getDocumentReference(
+                by, SpaRadiseEnv.BOOKING_COLLECTION
+            ),
+            clientQuery = query(
+                clientCollection,
+                where( "booking", "==", bookingReference )
+            ),
+            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( clientQuery ) ).docs,
+            clientDataMap: ClientDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            clientDataMap[ snapshot.id ] =
+                await ClientUtils.getClientData( snapshot )
+            ;
+        return clientDataMap;
 
     }
 
     public static async updateClient(
         by: documentId | DocumentReference | DocumentSnapshot,
-        accountData: ClientData
+        clientData: ClientData
     ): Promise< boolean > {
 
-        await ClientUtils.checkClientData( accountData );
+        await ClientUtils.checkClientData( clientData );
         const documentReference: DocumentReference = SpaRadiseFirestore.getDocumentReference(
-            by, SpaRadiseEnv.ACCOUNT_COLLECTION
+            by, SpaRadiseEnv.CLIENT_COLLECTION
         );
         try {
 
-            await updateDoc( documentReference, accountData as WithFieldValue< DocumentData > );
+            await updateDoc( documentReference, clientData as WithFieldValue< DocumentData > );
             return true;
 
         } catch( error ) {

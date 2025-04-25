@@ -62,7 +62,7 @@ function App() {
                 <Route path="notifications" element={ <Notifications/> }/>
                 <Route path="bookingList" element={ <ClientBookingList/> }/>
                 <Route path="clients/:accountId/account" element={ <MyAccount/> }/>
-                <Route path="clients/:accountId/bookings/new" element={ <NewBooking/> }/>
+                <Route path="clients/:accountId/bookings/:bookingId" element={ <NewBooking/> }/>
             </Routes>
         </BrowserRouter>
     </>;

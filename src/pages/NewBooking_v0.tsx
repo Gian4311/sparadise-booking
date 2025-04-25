@@ -29,6 +29,7 @@ import BookingCalendar from "../utils/BookingCalendar";
 import BookingReceipt from "../components/BookingReceipt";
 import BookingUtils from "../firebase/BookingUtils";
 import Bullet from "../components/Bullet";
+import ClientUtils from "../firebase/ClientUtils";
 import DateUtils from "../utils/DateUtils";
 import { DocumentReference } from "firebase/firestore/lite";
 import EmployeeLeaveUtils from "../firebase/EmployeeLeaveUtils";
@@ -56,6 +57,7 @@ import ServiceMaintenanceUtils from "../firebase/ServiceMaintenanceUtils";
 import ServiceTransactionTimeSlot from "../components/ServiceTransactionTimeSlot";
 import ServiceTransactionUtils from "../firebase/ServiceTransactionUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
+import SpaRadiseDataMapUtils from "../firebase/SpaRadiseDataMapUtils";
 import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import StringUtils from "../utils/StringUtils";
@@ -65,6 +67,7 @@ import {
 } from "react-router-dom";
 import VoucherPackageUtils from "../firebase/VoucherPackageUtils";
 import VoucherServiceUtils from "../firebase/VoucherServiceUtils";
+import VoucherTransactionUtils from "../firebase/VoucherTransactionUtils";
 import VoucherUtils from "../firebase/VoucherUtils";
 
 import NotificationSymbol from "../images/Notification Symbol.png";
@@ -76,19 +79,27 @@ import LoadingScreen from "../components/LoadingScreen";
 import "../styles/NewBooking_v0.css"
 import DateRange from "../utils/DateRange";
 
+// booking
+// client
+// serviceTransaction
+// voucherTransaction
+
 export interface NewBookingPageData extends SpaRadisePageData {
 
     accountData: AccountData,
     bookingCalendar: BookingCalendar,
     bookingData: BookingData,
+    bookingDefaultData: BookingData,
+    bookingDocumentReference?: DocumentReference,
     clientDataMap: ClientDataMap,
+    clientDefaultDataMap: ClientDataMap,
     clientIndex: number,
-    clientIndexActive: number,
+    clientIdActive: string,
     clientInfoMap: {
-        [clientIndex: number]: {
+        [clientId: string]: {
             packageIncludedMap: { [packageId: documentId]: boolean },
             serviceIncludedMap: { [serviceId: documentId]: documentId },
-            serviceTransactionDataMap: { [serviceTransactionId: string]: ServiceTransactionData },
+            serviceTransactionDataMap: ServiceTransactionDataMap,
             serviceTransactionIndex: number,
             showPackages: boolean,
             showServices: boolean,
@@ -108,10 +119,10 @@ export interface NewBookingPageData extends SpaRadisePageData {
         [ packageId: documentId ]: { [ serviceId: documentId ]: documentId }
     },
     serviceDataMap: ServiceDataMap,
+    serviceTransactionDefaultDataMap: ServiceTransactionDataMap,
     serviceTransactionOfDayDataMap: ServiceTransactionDataMap,
     voucherDataMap: VoucherDataMap,
     voucherDataOfDayMap: VoucherDataMap,
-    voucherIndex: number,
     voucherPackageKeyMap: {
         [ voucherId: documentId ]: { [ packageId: documentId ]: documentId }
     },
@@ -120,7 +131,9 @@ export interface NewBookingPageData extends SpaRadisePageData {
         [ voucherId: documentId ]: { [ serviceId: documentId ]: documentId }
     },
     voucherServiceMap: VoucherServiceDataMap,
-    voucherTransactionDataMap: VoucherTransactionDataMap
+    voucherTransactionDataMap: VoucherTransactionDataMap,
+    voucherTransactionDefaultDataMap: VoucherTransactionDataMap,
+    voucherTransactionIndex: number
 }
 
 export default function NewBooking(): JSX.Element {
@@ -128,6 +141,7 @@ export default function NewBooking(): JSX.Element {
     const
         [pageData, setPageData] = useState<NewBookingPageData>({
             accountData: {} as AccountData,
+            bookingDefaultData: {} as BookingData,
             bookingCalendar: null as unknown as BookingCalendar,
             bookingData: {
                 account: null as unknown as DocumentReference,
@@ -136,9 +150,10 @@ export default function NewBooking(): JSX.Element {
                 finishedDateTime: null,
                 canceledDateTime: null
             },
-            clientDataMap: {} as ClientDataMap,
+            clientDataMap: {},
+            clientDefaultDataMap: {},
             clientIndex: 0,
-            clientIndexActive: 0,
+            clientIdActive: null as unknown as string,
             clientInfoMap: {},
             date: DateUtils.toFloorByDay(DateUtils.addTime(new Date(), { day: 14 })),
             employeeDataMap: {},
@@ -148,34 +163,34 @@ export default function NewBooking(): JSX.Element {
             jobServiceDataMap: {},
             loaded: false,
             maintenanceDataMap: {},
-            packageDataMap: {} as PackageDataMap,
-            packageServiceDataMap: {} as PackageServiceDataMap,
+            packageDataMap: {},
+            packageServiceDataMap: {},
             packageServiceKeyMap: {},
-            serviceDataMap: {} as ServiceDataMap,
+            serviceDataMap: {},
+            serviceTransactionDefaultDataMap: {},
             serviceTransactionOfDayDataMap: {},
             updateMap: {},
             voucherDataMap: {},
             voucherDataOfDayMap: {},
-            voucherIndex: 0,
             voucherPackageKeyMap: {},
             voucherPackageMap: {},
             voucherServiceMap: {},
             voucherServiceKeyMap: {},
-            voucherTransactionDataMap: {}
+            voucherTransactionDataMap: {},
+            voucherTransactionDefaultDataMap: {},
+            voucherTransactionIndex: 0
         }),
-        accountId: string | undefined = useParams().accountId
+        accountId: string | undefined = useParams().accountId,
+        bookingId: string | undefined = useParams().bookingId,
+        isNewMode: boolean = ( bookingId === "new" ),
+        isEditMode: boolean = ( bookingId !== undefined && !isNewMode ),
+        navigate = useNavigate()
     ;
 
     function addFormIndex(value: number = 1): void {
 
         pageData.formIndex += value;
         reloadPageData();
-
-    }
-
-    async function createBooking(): Promise<void> {
-
-
 
     }
 
@@ -197,16 +212,150 @@ export default function NewBooking(): JSX.Element {
 
     }
 
+    async function createBooking(): Promise<void> {
+
+        if ( !isNewMode || !bookingId ) return;
+        await checkFormValidity();
+        const documentReference: DocumentReference = await BookingUtils.createBooking(
+            pageData.bookingData
+        );
+        pageData.bookingDocumentReference = documentReference;
+        await updateClientList();
+        await updateServiceTransactionList();
+        await updateVoucherTransactionList();
+        delete pageData.updateMap[ "new" ];
+        alert( `Created!` ); // note: remove later
+        navigate( `/` );
+
+    }
+
+    async function createClientList(): Promise< void > {
+
+        const
+            { bookingDocumentReference, clientDataMap, clientInfoMap, clientDefaultDataMap } = pageData
+        ;
+        if( !bookingDocumentReference ) return;
+        for( let clientId in clientDataMap ) {
+
+            const isNew: boolean = !( clientId in clientDefaultDataMap );
+            if( !isNew ) continue;
+            const clientData = clientDataMap[ clientId ];
+            clientData.booking = bookingDocumentReference;
+            const
+                clientDocumentReference =
+                    await ClientUtils.createClient( clientData )
+                ,
+                clientIdNew: string = clientDocumentReference.id,
+                clientInfo = clientInfoMap[ clientId ]
+            ;
+            delete clientDataMap[ clientId ];
+            delete clientInfoMap[ clientId ];
+            clientDataMap[ clientIdNew ] = clientData;
+            clientInfoMap[ clientIdNew ] = clientInfo;
+
+        }
+        pageData.clientDefaultDataMap = SpaRadiseDataMapUtils.clone( clientDataMap );
+
+    }
+
+    async function createServiceTransactionList(): Promise< void > {
+
+        const
+            { bookingDocumentReference, clientInfoMap, serviceTransactionDefaultDataMap } = pageData
+        ;
+        if( !bookingDocumentReference ) return;
+        for( let clientId in clientInfoMap ) {
+
+            const { serviceTransactionDataMap } = clientInfoMap[ clientId ];
+            for( let serviceTransactionId in serviceTransactionDataMap ) {
+
+                const isNew: boolean = !( serviceTransactionId in serviceTransactionDefaultDataMap );
+                if( !isNew ) continue;
+                const serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ];
+                serviceTransactionData.client = SpaRadiseFirestore.getDocumentReference(
+                    clientId, SpaRadiseEnv.CLIENT_COLLECTION
+                );
+                const
+                    serviceTransactionDocumentReference =
+                        await ServiceTransactionUtils.createServiceTransaction(
+                            serviceTransactionData
+                        )
+                    ,
+                    serviceTransactionIdNew: string = serviceTransactionDocumentReference.id
+                ;
+                delete serviceTransactionDataMap[ serviceTransactionId ];
+                serviceTransactionDataMap[ serviceTransactionIdNew ] = serviceTransactionData;
+                serviceTransactionDefaultDataMap[ serviceTransactionIdNew ] =
+                    serviceTransactionData
+                ;
+
+            }
+
+        }
+
+    }
+
+    async function createVoucherTransactionList(): Promise< void > {
+
+        const {
+            bookingDocumentReference, voucherTransactionDataMap,
+            voucherTransactionDefaultDataMap
+        } = pageData;
+        if( !bookingDocumentReference ) return;
+        for( let voucherTransactionId in voucherTransactionDefaultDataMap ) {
+
+            const isNew: boolean = !( voucherTransactionId in voucherTransactionDefaultDataMap );
+            if( !isNew ) continue;
+            const voucherTransactionData = voucherTransactionDataMap[ voucherTransactionId ];
+            if( !voucherTransactionData.voucher ) {
+
+                delete voucherTransactionDataMap[ voucherTransactionId ];
+                continue;
+
+            };
+            voucherTransactionData.booking = bookingDocumentReference;
+            const
+            voucherTransactionDocumentReference =
+                    await VoucherTransactionUtils.createVoucherTransaction( voucherTransactionData )
+                ,
+                voucherTransactionIdNew: string = voucherTransactionDocumentReference.id
+            ;
+            delete voucherTransactionDataMap[ voucherTransactionId ];
+            voucherTransactionDataMap[ voucherTransactionIdNew ] = voucherTransactionData;
+
+        }
+        pageData.voucherTransactionDefaultDataMap = SpaRadiseDataMapUtils.clone(
+            voucherTransactionDataMap
+        );
+
+    }
+
     async function handleChangeDate(): Promise<void> {
 
         await loadMaintenanceData();
-        const { date } = pageData;
+        const { clientDefaultDataMap, date } = pageData;
         await loadEmployeeData();
         pageData.serviceTransactionOfDayDataMap =
-            await ServiceTransactionUtils.getServiceTransactionDataMapByDay(date)
+            await ServiceTransactionUtils.getServiceTransactionDataMapByDay(
+                date, clientDefaultDataMap
+            )
         ;
         await loadVoucherDataOfDayData();
         await loadBookingCalendar();
+
+    }
+
+    async function loadBooking(): Promise< void > {
+
+        if( !bookingId ) return;
+        pageData.bookingDocumentReference = SpaRadiseFirestore.getDocumentReference(
+            bookingId, SpaRadiseEnv.BOOKING_COLLECTION
+        );
+        pageData.bookingData = await BookingUtils.getBookingData( bookingId );
+        pageData.bookingDefaultData = { ...pageData.bookingData };
+        await loadClientList();
+        await loadServiceTransactionList();
+        await loadVoucherTransactionList();
 
     }
 
@@ -227,6 +376,16 @@ export default function NewBooking(): JSX.Element {
 
     }
 
+    async function loadClientList(): Promise< void > {
+
+        if( !bookingId ) return;
+        pageData.clientDataMap = await ClientUtils.getClientDataMapByBooking( bookingId );
+        pageData.clientDefaultDataMap = SpaRadiseDataMapUtils.clone(
+            pageData.clientDataMap
+        );
+
+    }
+
     async function loadEmployeeData(): Promise<void> {
 
         const { date } = pageData;
@@ -239,14 +398,17 @@ export default function NewBooking(): JSX.Element {
 
     async function loadFirstClient(): Promise<void> {
 
-        const { accountData, accountData: { birthDate } } = pageData;
-        pageData.clientDataMap[-1] = {
+        const
+            { accountData, accountData: { birthDate } } = pageData,
+            clientId: string = getClientId( -1 )
+        ;
+        pageData.clientDataMap[ clientId ] = {
             booking: null as unknown as DocumentReference,
             name: PersonUtils.format(accountData, "f mi l"),
             birthDate,
             notes: null
         };
-        pageData.clientInfoMap[-1] = {
+        pageData.clientInfoMap[ clientId ] = {
             packageIncludedMap: {},
             serviceIncludedMap: {},
             serviceTransactionDataMap: {},
@@ -286,7 +448,10 @@ export default function NewBooking(): JSX.Element {
         pageData.bookingData.account = SpaRadiseFirestore.getDocumentReference(
             accountId, SpaRadiseEnv.ACCOUNT_COLLECTION
         );
-        await loadFirstClient();
+        if( isNewMode )
+            await loadFirstClient();
+        else if( isEditMode )
+            await loadBooking();
         await loadServiceData();
         await loadJobData();
         await loadVoucherData();
@@ -311,6 +476,19 @@ export default function NewBooking(): JSX.Element {
             packageServiceKeyMap[ packageId ][ serviceId ] = packageServiceId;
 
         }
+
+    }
+
+    async function loadServiceTransactionList(): Promise< void > {
+
+        pageData.serviceTransactionDefaultDataMap =
+            await ServiceTransactionUtils.getServiceTransactionDataMapByClientDataMap(
+                pageData.clientDataMap
+            )
+        ;
+        pageData.serviceTransactionDefaultDataMap = SpaRadiseDataMapUtils.clone(
+            pageData.serviceTransactionDefaultDataMap
+        );
 
     }
 
@@ -372,6 +550,18 @@ export default function NewBooking(): JSX.Element {
         
     }
 
+    async function loadVoucherTransactionList(): Promise< void > {
+
+        if( !bookingId ) return;
+        pageData.voucherTransactionDataMap =
+            await VoucherTransactionUtils.getVoucherTransactionDataMapByBooking( bookingId )
+        ;
+        pageData.voucherTransactionDefaultDataMap =
+            SpaRadiseDataMapUtils.clone( pageData.voucherTransactionDataMap )
+        ;
+
+    }
+
     function reloadPageData(): void {
 
         setPageData({ ...pageData });
@@ -385,6 +575,30 @@ export default function NewBooking(): JSX.Element {
 
     }
 
+    async function updateClientList(): Promise< void > {
+
+        // delete
+        // update
+        await createClientList();
+
+    }
+
+    async function updateServiceTransactionList(): Promise< void > {
+
+        // delete
+        // update
+        await createServiceTransactionList();
+
+    }
+
+    async function updateVoucherTransactionList(): Promise< void > {
+
+        // delete
+        // update
+        await createVoucherTransactionList();
+
+    }
+
     useEffect(() => { loadPageData(); }, []);
 
     return <>
@@ -395,6 +609,7 @@ export default function NewBooking(): JSX.Element {
                 : (pageData.formIndex === 1) ? <ChooseServices pageData={pageData} handleChangeDate={ handleChangeDate } reloadPageData={reloadPageData} />
                 : (pageData.formIndex === 2) ? <ChooseTimeSlots pageData={pageData} reloadPageData={reloadPageData} />
                 : (pageData.formIndex === 3) ? <Summary pageData={pageData} reloadPageData={reloadPageData} />
+                : (pageData.formIndex === 4) ? <Finished pageData={pageData} reloadPageData={reloadPageData}/>
                 // other form indexes
                 : <button type="button" onClick={() => { pageData.formIndex--; reloadPageData(); }}>None, Go Back</button>
             }
@@ -418,14 +633,17 @@ function ChooseClients({ pageData, reloadPageData }: {
 
     async function addClient(): Promise<void> {
 
-        const { clientDataMap, clientIndex } = pageData;
-        clientDataMap[clientIndex] = {
+        const
+            { clientDataMap, clientIndex } = pageData,
+            clientId: string = getClientId( clientIndex )
+        ;
+        clientDataMap[ clientId ] = {
             booking: null as unknown as DocumentReference,
             name: null as unknown as string,
             birthDate: null as unknown as Date,
             notes: null
         };
-        clientInfoMap[clientIndex] = {
+        clientInfoMap[ clientId ] = {
             packageIncludedMap: {},
             serviceIncludedMap: {},
             serviceTransactionDataMap: {},
@@ -461,24 +679,24 @@ function ChooseClients({ pageData, reloadPageData }: {
 
     }
 
-    async function deleteClient(clientIndex: number): Promise<void> {
+    async function deleteClient( clientId: string ): Promise<void> {
 
-        delete clientDataMap[clientIndex];
-        delete clientInfoMap[clientIndex];
+        delete clientDataMap[ clientId ];
+        delete clientInfoMap[ clientId ];
         reloadPageData();
 
     }
 
-    function loadClientIndexActive(): void {
+    function loadClientIdActive(): void {
 
         let minimum: number = Infinity;
-        for (let keyName in clientDataMap) {
+        for (let clientId in clientDataMap) {
 
-            const index = +keyName;
+            const index = +( clientId.substring( 1 ) );
             if (index < minimum) minimum = index;
 
         }
-        pageData.clientIndexActive = minimum;
+        pageData.clientIdActive = getClientId( minimum );
 
     }
 
@@ -486,7 +704,7 @@ function ChooseClients({ pageData, reloadPageData }: {
 
         await checkFormValidity();
         pageData.formIndex++;
-        loadClientIndexActive();
+        loadClientIdActive();
         reloadPageData();
 
     }
@@ -504,21 +722,21 @@ function ChooseClients({ pageData, reloadPageData }: {
             <section className="booking-form">
                 <h1 className="booking-title">Who are the Clients?</h1>
                 {
-                    Object.keys(clientDataMap).sort().map(clientIndex => {
-                        const clientData: ClientData = clientDataMap[clientIndex];
+                    Object.keys(clientDataMap).sort().map( clientId => {
+                        const clientData: ClientData = clientDataMap[clientId];
                         return (
-                            <div className="client-row" key={clientIndex}>
+                            <div className="client-row" key={clientId}>
                                 <div className="client-input">
                                     <label className="form-row-label" >Name</label>
-                                    <FormTinyTextInput documentData={clientData} keyName="name" pageData={pageData} required={true} />
+                                    <FormTinyTextInput documentData={clientData} documentId={ clientId } keyName="name" pageData={pageData} required={true} />
                                 </div>
                                 <div className="client-input">
                                     <label className="form-row-label" >Birth Date</label>
-                                    <FormDateInput documentData={clientData} keyName="birthDate" pageData={pageData} required={true} />
+                                    <FormDateInput documentData={clientData} documentId={ clientId } keyName="birthDate" pageData={pageData} required={true} />
                                 </div>
                                 {
                                     (clientLength > 1) ?
-                                        <button className="client-booking-delete-btn" type="button" onClick={() => deleteClient(+clientIndex)}>Delete</button>
+                                        <button className="client-booking-delete-btn" type="button" onClick={() => deleteClient(clientId)}>Delete</button>
                                         : <></>
                                 }
                             </div>
@@ -544,14 +762,14 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
 
     const
         {
-            clientDataMap, clientIndexActive, clientInfoMap, maintenanceDataMap, packageDataMap,
+            clientDataMap, clientIdActive, clientInfoMap, maintenanceDataMap, packageDataMap,
             packageServiceKeyMap, serviceDataMap
         } = pageData,
         {
             packageIncludedMap, serviceIncludedMap, serviceTransactionDataMap, singleServiceIncludedMap,
             showPackages, showServices
-        } = clientInfoMap[clientIndexActive]
-        ;
+        } = clientInfoMap[clientIdActive]
+    ;
 
     async function addPackage(packageId: documentId): Promise<void> {
 
@@ -569,11 +787,11 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
         
         if( pageData.maintenanceDataMap[ serviceId ].status === "inactive" ) return;
         const
-            { serviceTransactionIndex } = clientInfoMap[clientIndexActive],
+            { serviceTransactionIndex } = clientInfoMap[clientIdActive],
             serviceTransactionId: string = getServiceTransactionId(
-                clientIndexActive, serviceTransactionIndex
+                clientIdActive, serviceTransactionIndex
             )
-            ;
+        ;
         serviceTransactionDataMap[serviceTransactionId] = {
             client: null as unknown as DocumentReference,
             service: SpaRadiseFirestore.getDocumentReference(
@@ -592,9 +810,9 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
             notes: null
         };
         serviceIncludedMap[serviceId] = getServiceTransactionId(
-            clientIndexActive, serviceTransactionIndex
+            clientIdActive, serviceTransactionIndex
         );
-        clientInfoMap[clientIndexActive].serviceTransactionIndex++;
+        clientInfoMap[clientIdActive].serviceTransactionIndex++;
 
     }
 
@@ -643,8 +861,8 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
 
     async function deleteServiceTransaction(serviceId: documentId): Promise<void> {
 
-        const serviceTransactionIndex = serviceIncludedMap[serviceId];
-        delete serviceTransactionDataMap[serviceTransactionIndex];
+        const serviceTransactionId = serviceIncludedMap[serviceId];
+        delete serviceTransactionDataMap[serviceTransactionId];
         delete serviceIncludedMap[serviceId];
 
     }
@@ -657,9 +875,9 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
 
     }
 
-    async function handleChangeClientActive(clientIndex: number): Promise<void> {
+    async function handleChangeClientActive(clientId: string): Promise<void> {
 
-        pageData.clientIndexActive = clientIndex;
+        pageData.clientIdActive = clientId;
         reloadPageData();
 
     }
@@ -695,8 +913,8 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
 
     function togglePackages(): void {
 
-        clientInfoMap[clientIndexActive].showPackages =
-            !clientInfoMap[clientIndexActive].showPackages
+        clientInfoMap[clientIdActive].showPackages =
+            !clientInfoMap[clientIdActive].showPackages
             ;
         reloadPageData();
 
@@ -704,8 +922,8 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
 
     function toggleServices(): void {
 
-        clientInfoMap[clientIndexActive].showServices =
-            !clientInfoMap[clientIndexActive].showServices
+        clientInfoMap[clientIdActive].showServices =
+            !clientInfoMap[clientIdActive].showServices
             ;
         reloadPageData();
 
@@ -725,14 +943,14 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
                 <label className="client-selection">Select Client:</label>
                 <div className="clickable-bars" id="client-selection">
                     {
-                        Object.keys(clientDataMap).sort().map(clientIndex =>
+                        Object.keys(clientDataMap).sort().map(clientId =>
                             <div
-                                key={clientIndex}
-                                className={`client-item ${(+clientIndex === clientIndexActive) ? 'active' : ''}`}
-                                data-client={`client${clientIndex}`}
-                                onClick={() => handleChangeClientActive(+clientIndex)}
+                                key={clientId}
+                                className={`client-item ${(clientId === clientIdActive) ? 'active' : ''}`}
+                                data-client={`client${clientId}`}
+                                onClick={() => handleChangeClientActive(clientId)}
                             >
-                                {clientDataMap[+clientIndex].name}
+                                {clientDataMap[clientId].name}
                             </div>
                         )
                     }
@@ -818,7 +1036,7 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
 
             <section className="form-section notes-section">
                 <label htmlFor="notes" className="input-label">Notes:</label>
-                <FormTextArea documentData={clientDataMap[clientIndexActive]} keyName="notes" pageData={pageData} required={true} />
+                <FormTextArea documentData={clientDataMap[clientIdActive]} documentId={ clientIdActive } keyName="notes" pageData={pageData} required={true} />
             </section>
             <section className="action-buttons">
                 <button className="back-btn" type="button" onClick={previousPage}>Back</button>
@@ -834,13 +1052,13 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
     reloadPageData: () => void
 }): JSX.Element {
 
-    const { clientDataMap, clientInfoMap, clientIndexActive, date } = pageData;
+    const { clientDataMap, clientInfoMap, clientIdActive, date } = pageData;
 
     async function checkFormValidity(): Promise<boolean> {
 
-        for (let clientIndex in clientDataMap) {
+        for (let clientId in clientDataMap) {
 
-            const { serviceTransactionDataMap } = clientInfoMap[+clientIndex];
+            const { serviceTransactionDataMap } = clientInfoMap[clientId];
             for (let serviceTransactionId in serviceTransactionDataMap) {
 
                 const
@@ -860,9 +1078,9 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
 
     }
 
-    async function handleChangeClientActive(clientIndex: number): Promise<void> {
+    async function handleChangeClientActive(clientId: string): Promise<void> {
 
-        pageData.clientIndexActive = clientIndex;
+        pageData.clientIdActive = clientId;
         reloadPageData();
 
     }
@@ -892,14 +1110,14 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
             <div className="client-input">
                 <label htmlFor="client-selection" className="input-label">Select Client:</label>
                 <div id="client-selection" className="clickable-bars">
-                    {Object.keys(clientDataMap).sort().map(clientIndex => (
+                    {Object.keys(clientDataMap).sort().map(clientId => (
                         <div
-                            key={clientIndex}
-                            className={`client-item ${+clientIndex === clientIndexActive ? "active" : ""}`}
-                            data-client={`client${clientIndex}`}
-                            onClick={() => handleChangeClientActive(+clientIndex)}
+                            key={clientId}
+                            className={`client-item ${clientId === clientIdActive ? "active" : ""}`}
+                            data-client={`client${clientId}`}
+                            onClick={() => handleChangeClientActive(clientId)}
                         >
-                            {clientDataMap[clientIndex].name}
+                            {clientDataMap[clientId].name}
                         </div>
                     ))}
                 </div>
@@ -918,11 +1136,11 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
                     <td>Duration</td>
                 </tr></thead>
                 <tbody>{
-                    Object.keys(pageData.clientInfoMap[clientIndexActive].serviceTransactionDataMap).map(serviceTransactionId => {
+                    Object.keys(pageData.clientInfoMap[clientIdActive].serviceTransactionDataMap).map(serviceTransactionId => {
 
                         const
                             serviceTransactionData = pageData
-                                .clientInfoMap[clientIndexActive]
+                                .clientInfoMap[clientIdActive]
                                 .serviceTransactionDataMap[serviceTransactionId]
                             ,
                             { service: { id: serviceId } } = serviceTransactionData,
@@ -937,7 +1155,7 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
                             }</td>
                             <td>{name}</td>
                             <td>
-                                <ServiceTransactionTimeSlot clientId={clientIndexActive.toString()} documentData={serviceTransactionData} duration={durationMin} keyNameFrom="bookingDateTimeStart" keyNameTo="bookingDateTimeEnd" pageData={pageData} serviceTransactionId={serviceTransactionId} reloadPageData={reloadPageData}>
+                                <ServiceTransactionTimeSlot clientId={clientIdActive.toString()} documentData={serviceTransactionData} duration={durationMin} keyNameFrom="bookingDateTimeStart" keyNameTo="bookingDateTimeEnd" pageData={pageData} serviceTransactionId={serviceTransactionId} reloadPageData={reloadPageData}>
                                     <option value="" disabled>Select time slot</option>
                                 </ServiceTransactionTimeSlot>
                             </td>
@@ -965,15 +1183,18 @@ function Summary({ pageData, reloadPageData }: {
         { date, voucherDataOfDayMap, voucherTransactionDataMap } = pageData
     ;
 
-    async function addVoucher(): Promise< void > {
+    async function addVoucherTransaction(): Promise< void > {
 
-        const { voucherIndex } = pageData;
-        voucherTransactionDataMap[ voucherIndex ] = {
+        const
+            { voucherTransactionIndex } = pageData,
+            voucherTransactionId: string = getVoucherTransactionId( voucherTransactionIndex )
+        ;
+        voucherTransactionDataMap[ voucherTransactionId ] = {
             voucher: null as unknown as DocumentReference,
             booking: null as unknown as DocumentReference,
             status: "pending"
         };
-        pageData.voucherIndex++;
+        pageData.voucherTransactionIndex++;
         reloadPageData();
 
     }
@@ -984,24 +1205,31 @@ function Summary({ pageData, reloadPageData }: {
 
     }
 
-    function handleChangeVoucherCode( voucherTransactionIndex: number, code: string | null ): void {
+    function deleteVoucher( voucherTransactionId: string ): void {
 
-        const voucherData: VoucherData | null = getVoucherDataByCode( code );
-        if( voucherData ) {
-
-
-
-        }
+        delete pageData.voucherTransactionDataMap[ voucherTransactionId ];
+        reloadPageData();
 
     }
 
-    function getVoucherDataByCode( code: string | null ): VoucherData | null {
+    function handleChangeVoucherCode( voucherTransactionId: string, code: string | null ): void {
+
+        const voucherId: documentId | null = getVoucherIdByCode( code );
+        voucherTransactionDataMap[ voucherTransactionId ].voucher =
+            voucherId ? SpaRadiseFirestore.getDocumentReference(
+                voucherId, SpaRadiseEnv.VOUCHER_COLLECTION
+            ) : ( null as unknown as DocumentReference )
+        ;
+
+    }
+
+    function getVoucherIdByCode( code: string | null ): documentId | null {
 
         if( !code ) return null;
         for( let voucherId in voucherDataOfDayMap ) {
 
             const voucherData = voucherDataOfDayMap[ voucherId ];
-            if( code === voucherData.code ) return voucherData;
+            if( code === voucherData.code ) return voucherId;
 
         }
         return null; 
@@ -1047,21 +1275,94 @@ function Summary({ pageData, reloadPageData }: {
             Voucher/s:
             <div>
                 {
-                    Object.keys( voucherTransactionDataMap ).map( voucherTransactionIndex => {
+                    Object.keys( voucherTransactionDataMap ).map( voucherTransactionId => {
 
-                        return <Fragment key={ voucherTransactionIndex }>
-                            <FormVoucherInput pageData={ pageData } preprocess={ preprocessVoucherInput } onChange={ code => handleChangeVoucherCode( +voucherTransactionIndex, code ) }/>
+                        return <Fragment key={ voucherTransactionId }>
+                            <FormVoucherInput pageData={ pageData } preprocess={ preprocessVoucherInput } onChange={ code => handleChangeVoucherCode( voucherTransactionId, code ) }/>
+                            <button type="button" onClick={ () => deleteVoucher( voucherTransactionId ) }>Delete</button>
                             <br/>
                         </Fragment>;
 
                     } )
                 }
-                <button type="button" onClick={ addVoucher }>+ Add Voucher</button>
+                <button type="button" onClick={ addVoucherTransaction }>+ Add Voucher</button>
             </div>
             <section className="action-buttons">
                 <button className="back-btn" type="button" onClick={previousPage}>Back</button>
                 <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (4/4)</button>
             </section>
+        </main>
+    </>;
+
+}
+
+function Finished({ pageData, reloadPageData }: {
+    pageData: NewBookingPageData,
+    reloadPageData: () => void
+}): JSX.Element {
+
+    const
+        bookingId: string | undefined = useParams().bookingId,
+        isNewMode: boolean = ( bookingId === "new" ),
+        isEditMode: boolean = ( bookingId !== undefined && !isNewMode ),
+        navigate = useNavigate()
+    ;
+
+    async function checkFormValidity(): Promise<boolean> {
+
+        const
+            { MIN_AGE_LIMIT } = SpaRadiseEnv,
+            { clientDataMap } = pageData
+            ;
+        if (!ObjectUtils.hasKeys(clientDataMap))
+            throw new Error(`There must be at least 1 client!`);
+        for (let clientId in clientDataMap) {
+
+            const { name, birthDate } = clientDataMap[clientId];
+            if (!name) throw new Error(`Client names cannot be empty!`);
+            // check for duplicate names
+            if (!birthDate) throw new Error(`Birth dates cannot be empty!`);
+            if (DateUtils.getYearAge(birthDate) < MIN_AGE_LIMIT)
+                throw new Error(`The age limit is ${MIN_AGE_LIMIT} years old!`);
+
+        }
+        return true;
+
+    }
+
+    async function nextPage(): Promise<void> {
+
+        await checkFormValidity();
+        pageData.formIndex++;
+        reloadPageData();
+
+    }
+
+    async function previousPage(): Promise<void> {
+
+        pageData.formIndex--;
+        reloadPageData();
+
+    }
+
+    async function updateClientList(): Promise< void > {
+
+
+
+    }
+
+    async function updateVoucherTransactionList(): Promise< void > {
+
+
+
+    }
+
+    return <>
+        <LoadingScreen loading={ !pageData.loaded }></LoadingScreen>
+        <NavBar></NavBar>
+        <main className="booking-container">
+            <button type="button" onClick={ previousPage }>Previous</button>
+            <button type="submit">Finish</button>
         </main>
     </>;
 
@@ -1145,14 +1446,24 @@ function Receipt({ pageData, reloadPageData }: {
         </table>
     );
 
+}
 
+export function getClientId( clientIndex: number ): string {
+
+    return `c${ clientIndex }`;
 
 }
 
 export function getServiceTransactionId(
-    clientIndex: number, serviceTransactionIndex: number
+    clientId: string, serviceTransactionIndex: number
 ): string {
 
-    return `${clientIndex}_${serviceTransactionIndex}`;
+    return `${ clientId }st${ serviceTransactionIndex }`;
+
+}
+
+export function getVoucherTransactionId( voucherIndex: number ): string {
+
+    return `vt${ voucherIndex }`;
 
 }

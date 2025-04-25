@@ -215,7 +215,7 @@ export interface ServiceTransactionData extends SpaRadiseDocumentData {
 
 export interface ServiceTransactionDataMap extends SpaRadiseDataMap< ServiceTransactionData > {
 
-    [ serviceTransactionId: string | number ]: ServiceTransactionData
+    [ serviceTransactionId: string ]: ServiceTransactionData
 
 }
 
@@ -307,6 +307,6 @@ export interface VoucherTransactionData extends SpaRadiseDocumentData {
 
 export interface VoucherTransactionDataMap extends SpaRadiseDataMap< VoucherTransactionData > {
 
-    [ voucherTransactioneId: string | number ]: VoucherTransactionData
+    [ voucherTransactioneId: string ]: VoucherTransactionData
 
 }

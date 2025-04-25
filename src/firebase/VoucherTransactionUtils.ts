@@ -121,6 +121,32 @@ export default class VoucherTransactionUtils {
 
     }
 
+    public static async getVoucherTransactionDataMapByBooking(
+        by: documentId | DocumentReference | DocumentSnapshot
+    ): Promise< VoucherTransactionDataMap > {
+    
+        const
+            voucherTransactionCollection: CollectionReference =
+                SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.VOUCHER_TRANSACTION_COLLECTION )
+            ,
+            bookingReference: DocumentReference = SpaRadiseFirestore.getDocumentReference(
+                by, SpaRadiseEnv.BOOKING_COLLECTION
+            ),
+            voucherTransactionQuery = query(
+                voucherTransactionCollection,
+                where( "booking", "==", bookingReference )
+            ),
+            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( voucherTransactionQuery ) ).docs,
+            voucherTransactionDataMap: VoucherTransactionDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            voucherTransactionDataMap[ snapshot.id ] =
+                await VoucherTransactionUtils.getVoucherTransactionData( snapshot )
+            ;
+        return voucherTransactionDataMap;
+
+    }
+
     public static async getVoucherTransactionDataMapByVoucher(
         by: documentId | DocumentReference | DocumentSnapshot
     ): Promise< VoucherTransactionDataMap > {

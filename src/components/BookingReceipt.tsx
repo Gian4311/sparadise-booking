@@ -140,7 +140,7 @@ export default function BookingReceipt(
                         packageMap,
                         singleServiceMap
                     } = componentData.clientInfoMap[clientId];
-                    const { name } = clientDataMap[+clientId];
+                    const { name } = clientDataMap[clientId];
 
                     let clientTotal = 0;
                     let rowCount = 1;
