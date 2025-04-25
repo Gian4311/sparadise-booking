@@ -87,7 +87,8 @@ export default function EmployeeMenu(): JSX.Element {
     return <>
         <LoadingScreen loading={ !pageData.loaded }></LoadingScreen>
         <div>
-            <div className="layout"><EmployeeSidebar />
+            <div className="layout">
+                <EmployeeSidebar />
                 <div className="content">
                     <Outlet />
                     <div className="service-menu-main-content">
