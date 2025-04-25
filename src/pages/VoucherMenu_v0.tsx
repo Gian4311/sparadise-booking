@@ -13,7 +13,6 @@ import ServiceUtils from "../firebase/ServiceUtils";
 import "../styles/EmployeeServiceManagement.css";
 import "../styles/Sidebar.css";
 import EmployeeSidebar from "../components/EmployeeSidebar";
-
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 
 type rowType = "package" | "service";
@@ -106,22 +105,6 @@ export default function VoucherMenu(): JSX.Element {
     return <>
         <div>
             <EmployeeSidebar />
-            <div className="sidebar">
-                <div className="sidebar-logo">
-                    <img src={SpaRadiseLogo} alt="SpaRadise Logo" />
-                </div>
-                <ul className="sidebar-menu">
-                    <li><Link to="../management/dashboard" >Dashboard</Link></li>
-                    <li><Link to="../management/bookings/menu" >Bookings</Link></li>
-                    <li><Link to="../management/clients/menu" >Clients</Link></li>
-                    <li><Link to="/management/employees/menu" >Employees</Link></li>
-                    <li><Link to="../management/servicesAndPackages/menu">Services & Packages</Link></li>
-                    <li><Link to="../management/vouchers/menu" className="active"  >Vouchers</Link></li>
-                    <li><Link to="../management/roomsAndChairs/menu" >Rooms & Chairs</Link></li>
-                    <li><Link to="../management/commissions/menu" >Commissions</Link></li>
-                    <li><a href="#">Log Out</a></li>
-                </ul>
-            </div>
 
             <div className="service-menu-main-content">
                 <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">Vouchers

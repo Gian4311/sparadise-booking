@@ -25,8 +25,7 @@ import Notifications from "./pages/Notification";
 import Dashboard from "./pages/EmployeeDashboard";
 import RoomMaintenance from "./pages/RoomMaintenance";
 import NewHomepage from "./pages/NewClientIndex";
-import CommissionMenu from "./pages/Commission";
-import CommissionManagement from "./pages/CommissionManagement";
+import RoomMaintenanceManagement from "./pages/RoomManagement";
 function App() {
 
     return <>
@@ -54,15 +53,14 @@ function App() {
                 <Route path="management/clients" element={ <ClientManagement/> }/>
                 <Route path="management/clients/menu" element={<ClientMenu/>}/>
                 <Route path="management/roomsAndChairs" element={ <RoomMaintenance/> }/>
+                <Route path="management/roomsAndChairsManage" element={ <RoomMaintenanceManagement/> }/>
                 <Route path="management/dashboard" element={ <Dashboard/> }/>
-                <Route path="management/commissions/menu" element={ <CommissionMenu/> }/>
-                <Route path="management/commissions" element={ <CommissionManagement/> }/>
-
                 <Route path="newindex" element={ <NewHomepage/> }/>
                 <Route path="notifications" element={ <Notifications/> }/>
                 <Route path="bookingList" element={ <ClientBookingList/> }/>
                 <Route path="clients/:accountId/account" element={ <MyAccount/> }/>
                 <Route path="clients/:accountId/bookings/:bookingId" element={ <NewBooking/> }/>
+
             </Routes>
         </BrowserRouter>
     </>;
