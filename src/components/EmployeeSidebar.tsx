@@ -47,7 +47,7 @@ export default function EmployeeSidebar(): JSX.Element {
                     <NavLink 
                         to="/management/servicesAndPackages/menu" 
                         className={({ isActive }) =>
-                            window.location.pathname.startsWith("management/services") || (window.location.pathname.startsWith("management/packages"))  ? "active" : ""
+                            window.location.pathname.startsWith("/management/services") || (window.location.pathname.startsWith("/management/packages"))  ? "active" : ""
                         }      
                     >
                         Services & Packages
@@ -65,22 +65,12 @@ export default function EmployeeSidebar(): JSX.Element {
                 </li>
                 <li>
                     <NavLink 
-                        to="/management/roomsAndChairs/menu" 
+                        to="/management/roomsAndChairs" 
                         className={({ isActive }) =>
                             window.location.pathname.startsWith("/management/roomsAndChairs") ? "active" : ""
                         }
                     >
                         Rooms & Chairs
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink 
-                        to="/management/commissions/menu" 
-                        className={({ isActive }) =>
-                            window.location.pathname.startsWith("/management/commissions") ? "active" : ""
-                        }
-                    >
-                        Commissions
                     </NavLink>
                 </li>
                 <li><a href="#">Log Out</a></li>

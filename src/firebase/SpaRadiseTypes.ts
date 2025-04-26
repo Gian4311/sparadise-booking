@@ -215,7 +215,7 @@ export interface ServiceTransactionData extends SpaRadiseDocumentData {
 
 export interface ServiceTransactionDataMap extends SpaRadiseDataMap< ServiceTransactionData > {
 
-    [ serviceTransactionId: string | number ]: ServiceTransactionData
+    [ serviceTransactionId: string ]: ServiceTransactionData
 
 }
 
@@ -294,5 +294,19 @@ export interface VoucherServiceData extends SpaRadiseDocumentData {
 export interface VoucherServiceDataMap extends SpaRadiseDataMap< VoucherServiceData > {
 
     [ voucherServiceId: string | number ]: VoucherServiceData
+
+}
+
+export interface VoucherTransactionData extends SpaRadiseDocumentData {
+
+    voucher: DocumentReference,
+    booking: DocumentReference,
+    status: voucherStatus
+
+}
+
+export interface VoucherTransactionDataMap extends SpaRadiseDataMap< VoucherTransactionData > {
+
+    [ voucherTransactioneId: string ]: VoucherTransactionData
 
 }

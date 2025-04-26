@@ -21,10 +21,11 @@ import Booking1 from "./pages/Booking1";
 import ClientManagement from "./pages/EmployeeClientManagement";
 import ClientMenu from "./pages/EmployeeClientMenu";
 import ClientBookingList from "./pages/ClientBookingList";
-
+import Notifications from "./pages/Notification";
 import Dashboard from "./pages/EmployeeDashboard";
-
+import RoomMaintenance from "./pages/RoomMaintenance";
 import NewHomepage from "./pages/NewClientIndex";
+import RoomMaintenanceManagement from "./pages/RoomManagement";
 function App() {
 
     return <>
@@ -33,8 +34,7 @@ function App() {
                 <Route index element={ <Homepage/> }/>
                 <Route path="/devMenu" element={ <DevMenu/> }/>
                 <Route path="dayPlanner" element={ <DayPlannner/> }/>
-                <Route path="clients/:accountId/account" element={ <MyAccount/> }/>
-                <Route path="clients/:accountId/bookings/new" element={ <NewBooking/> }/>
+
                 <Route path="management/employees/menu" element={ <EmployeeMenu/> }/>
                 <Route path="management/employees/:id" element={ <EmployeeManagement/> }/>
                 <Route path="management/employeeLeaves/menu" element={ <EmployeeLeaves/> }/>
@@ -52,10 +52,15 @@ function App() {
                 <Route path="management/employees/menu" element={ <EmployeeMenu/> }/>
                 <Route path="management/clients" element={ <ClientManagement/> }/>
                 <Route path="management/clients/menu" element={<ClientMenu/>}/>
-                <Route path="newindex" element={ <NewHomepage/> }/>
+                <Route path="management/roomsAndChairs" element={ <RoomMaintenance/> }/>
+                <Route path="management/roomsAndChairsManage" element={ <RoomMaintenanceManagement/> }/>
                 <Route path="management/dashboard" element={ <Dashboard/> }/>
-
+                <Route path="newindex" element={ <NewHomepage/> }/>
+                <Route path="notifications" element={ <Notifications/> }/>
                 <Route path="bookingList" element={ <ClientBookingList/> }/>
+                <Route path="clients/:accountId/account" element={ <MyAccount/> }/>
+                <Route path="clients/:accountId/bookings/:bookingId" element={ <NewBooking/> }/>
+
             </Routes>
         </BrowserRouter>
     </>;

@@ -1,6 +1,7 @@
 import {
     ChangeEvent,
     useEffect,
+    useRef,
     useState
 } from "react";
 import ObjectUtils from "../utils/ObjectUtils";
@@ -36,12 +37,15 @@ export default function FormNumberInput(
     }
 ): JSX.Element {
 
-    const [ unparsedValue, setUnparsedValue ] = useState< string >( "" );
+    const
+        [ unparsedValue, setUnparsedValue ] = useState< string >( "" ),
+        ref = useRef< HTMLInputElement >( null )
+    ;
 
     async function handleChange( event: ChangeEvent< HTMLInputElement > ): Promise< void > {
 
         const
-            unparsedValue: string = event.target.value,
+            { selectionStart, value: unparsedValue } = event.target,
             parsedValue: main | null = await parseValue( unparsedValue ),
             old = documentData[ keyName ] as main | null
         ;
@@ -50,6 +54,12 @@ export default function FormNumberInput(
         documentData[ keyName ] = parsedValue;
         await handleDefault( parsedValue );
         if( onChange ) await onChange( parsedValue, unparsedValue, old );
+        if( ref.current ) {
+
+            ref.current.selectionStart = selectionStart;
+            ref.current.selectionEnd = selectionStart;
+
+        }
 
     }
 
@@ -92,8 +102,12 @@ export default function FormNumberInput(
         if( !documentData ) return;
         if( documentData[ keyName ] === undefined )
             throw new Error( `Key name "${ keyName }" does not exist.` );
-        const parsedValue: main = documentData[ keyName ] as main;
-        setUnparsedValue( await unparseValue( parsedValue ) );
+        if( documentData[ keyName ] ) {
+
+            const parsedValue: main = documentData[ keyName ] as main;
+            setUnparsedValue( await unparseValue( parsedValue ) );
+
+        }
 
     } )() }, [ pageData ] );
 
@@ -105,6 +119,7 @@ export default function FormNumberInput(
         name={ name }
         placeholder={ placeholder }
         readOnly={ readOnly }
+        ref={ ref }
         required={ required }
         type="number"
         step={ step }

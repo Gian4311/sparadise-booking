@@ -12,25 +12,28 @@ import { Fragment } from "react/jsx-runtime";
 import ObjectUtils from "../utils/ObjectUtils";
 import StringUtils from "../utils/StringUtils";
 
+import "../styles/ClientBookingCreation2.css";
 import "../styles/BookingReceipt.scss";
 
 interface BookingReceiptPageData {
-    
+
     clientDataMap: ClientDataMap,
-    clientInfoMap: { [ clientIndex: number ]: {
-        packageIncludedMap: { [ packageId: documentId ]: boolean },
-        serviceIncludedMap: { [ serviceId: documentId ]: string },
-        serviceTransactionDataMap: { [ serviceTransactionId: string ]: ServiceTransactionData },
-        serviceTransactionIndex: number,
-        showPackages: boolean,
-        showServices: boolean,
-        singleServiceIncludedMap: { [ serviceId: documentId ]: boolean }
-    } },
+    clientInfoMap: {
+        [clientIndex: number]: {
+            packageIncludedMap: { [packageId: documentId]: boolean },
+            serviceIncludedMap: { [serviceId: documentId]: string },
+            serviceTransactionDataMap: { [serviceTransactionId: string]: ServiceTransactionData },
+            serviceTransactionIndex: number,
+            showPackages: boolean,
+            showServices: boolean,
+            singleServiceIncludedMap: { [serviceId: documentId]: boolean }
+        }
+    },
     date: Date,
     maintenanceDataMap: { [documentId: documentId]: PackageMaintenanceData | ServiceMaintenanceData },
     packageDataMap: PackageDataMap,
     packageServiceKeyMap: {
-        [ packageId: documentId ]: { [ serviceId: documentId ]: documentId }
+        [packageId: documentId]: { [serviceId: documentId]: documentId }
     },
     serviceDataMap: ServiceDataMap
 }
@@ -38,17 +41,17 @@ interface BookingReceiptPageData {
 interface BookingReceiptComponentData {
 
     clientInfoMap: {
-        [ clientId: documentId ]: {
+        [clientId: documentId]: {
 
             packageMap: {
-                [ packageId: documentId ]: {
-                    [ serviceTransactionId: documentId ]: ServiceTransactionPriceData
+                [packageId: documentId]: {
+                    [serviceTransactionId: documentId]: ServiceTransactionPriceData
                 }
             },
             singleServiceMap: {
-                [ serviceTransactionId: documentId ]: ServiceTransactionPriceData
+                [serviceTransactionId: documentId]: ServiceTransactionPriceData
             }
-    
+
         }
     },
     totalPrice: number
@@ -57,7 +60,7 @@ interface BookingReceiptComponentData {
 
 interface PackageServiceTransactionListKeyMap {
 
-    [ packageId: documentId ]: documentId[]
+    [packageId: documentId]: documentId[]
 
 }
 
@@ -81,39 +84,39 @@ export default function BookingReceipt(
             clientInfoMap: {},
             totalPrice: 0
         }
-    ;
+        ;
     let rowCount = 0;
 
     function loadComponentData(): void {
 
         const { clientInfoMap } = componentData;
         let totalPrice = 0;
-        for( let clientId in pageData.clientInfoMap ) {
+        for (let clientId in pageData.clientInfoMap) {
 
-            const { serviceTransactionDataMap } = pageData.clientInfoMap[ clientId ];
-            clientInfoMap[ clientId ] = {
+            const { serviceTransactionDataMap } = pageData.clientInfoMap[clientId];
+            clientInfoMap[clientId] = {
                 packageMap: {},
                 singleServiceMap: {}
             };
-            const { packageMap, singleServiceMap } = clientInfoMap[ clientId ];
-            for( let serviceTransactionId in serviceTransactionDataMap ) {
+            const { packageMap, singleServiceMap } = clientInfoMap[clientId];
+            for (let serviceTransactionId in serviceTransactionDataMap) {
 
                 const
-                    serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ],
+                    serviceTransactionData = serviceTransactionDataMap[serviceTransactionId],
                     { canceled, free, service: { id: serviceId } } = serviceTransactionData,
                     packageId = serviceTransactionData.package?.id,
-                    included: boolean = ( !canceled || !free ),
-                    price: number = free ? 0 : maintenanceDataMap[ serviceId ].price,
+                    included: boolean = (!canceled || !free),
+                    price: number = free ? 0 : maintenanceDataMap[serviceId].price,
                     serviceTransactionPriceData: ServiceTransactionPriceData = {
                         serviceTransactionData, included, price
                     }
-                ;
-                if( packageId ) {
+                    ;
+                if (packageId) {
 
-                    if( !( packageId in packageMap ) ) packageMap[ packageId ] = {};
-                    packageMap[ packageId ][ serviceTransactionId ] = serviceTransactionPriceData;
+                    if (!(packageId in packageMap)) packageMap[packageId] = {};
+                    packageMap[packageId][serviceTransactionId] = serviceTransactionPriceData;
 
-                } else singleServiceMap[ serviceTransactionId ] = serviceTransactionPriceData;
+                } else singleServiceMap[serviceTransactionId] = serviceTransactionPriceData;
                 totalPrice += price;
 
             }
@@ -126,152 +129,143 @@ export default function BookingReceipt(
     loadComponentData();
 
     return <>
-        <section className="bookingReceipt">
-            <table>
-                <thead><tr>
-                    <td>#</td>
-                    <td>Name</td>
-                    <td>Time</td>
-                    <td>Price</td>
-                </tr></thead>
+        <section className="booking-summary-tables">
+            {
+                Object.keys(componentData.clientInfoMap)
+                    .sort((clientId1, clientId2) => StringUtils.compare(
+                        clientDataMap[clientId1].name,
+                        clientDataMap[clientId2].name
+                    ))
+                    .map(clientId => {
+
+                        const {
+                            packageMap,
+                            singleServiceMap
+                        } = componentData.clientInfoMap[clientId];
+                        const { name } = clientDataMap[clientId];
+
+                        let clientTotal = 0;
+                        let rowCount = 1;
+
+                        return (
+                            <table key={clientId}>
+                                <thead>
+                                    <tr className="client-name-summary"><th colSpan={4} >{name}</th></tr>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Services</th>
+                                        <th>Time</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        [...Object.keys(packageMap), ...Object.keys(singleServiceMap)]
+                                            .sort((docId1, docId2) => {
+                                                const name1 = docId1 in packageMap
+                                                    ? packageDataMap[docId1].name
+                                                    : serviceDataMap[singleServiceMap[docId1].serviceTransactionData.service.id].name;
+                                                const name2 = docId2 in packageMap
+                                                    ? packageDataMap[docId2].name
+                                                    : serviceDataMap[singleServiceMap[docId2].serviceTransactionData.service.id].name;
+                                                return StringUtils.compare(name1, name2);
+                                            })
+                                            .map(docId => {
+                                                if (docId in singleServiceMap) {
+                                                    const {
+                                                        serviceTransactionData: {
+                                                            bookingDateTimeStart,
+                                                            bookingDateTimeEnd,
+                                                            service: { id: serviceId }
+                                                        },
+                                                        included,
+                                                        price
+                                                    } = singleServiceMap[docId];
+                                                    if (!included) return null;
+                                                    clientTotal += price;
+                                                    return (
+                                                        <tr key={docId}>
+                                                            <td>{rowCount++}</td>
+                                                            <td>{serviceDataMap[serviceId].name}</td>
+                                                            <td>{new DateRange(bookingDateTimeStart, bookingDateTimeEnd).toString(DATE_TIME_FORMAT)}</td>
+                                                            <td>₱{price}</td>
+                                                        </tr>
+                                                    );
+                                                }
+
+                                                const packagePrice = maintenanceDataMap[docId]?.price ?? 0;
+                                                clientTotal += packagePrice;
+
+                                                return (
+                                                    <Fragment key={docId}>
+                                                        <tr className="summary-divider-row">
+                                                            <td colSpan={4}></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>-</td>
+                                                            <td className="package-name-summary" colSpan={2}>
+                                                                {packageDataMap[docId].name}
+                                                            </td>
+                                                            <td>₱{packagePrice}</td>
+                                                        </tr>
+                                                        {
+                                                            Object.keys(packageMap[docId])
+                                                                .sort((s1, s2) => {
+                                                                    const name1 = serviceDataMap[packageMap[docId][s1].serviceTransactionData.service.id].name;
+                                                                    const name2 = serviceDataMap[packageMap[docId][s2].serviceTransactionData.service.id].name;
+                                                                    return StringUtils.compare(name1, name2);
+                                                                })
+                                                                .map(serviceTransactionId => {
+                                                                    const {
+                                                                        serviceTransactionData: {
+                                                                            bookingDateTimeStart,
+                                                                            bookingDateTimeEnd,
+                                                                            service: { id: serviceId }
+                                                                        },
+                                                                        included
+                                                                    } = packageMap[docId][serviceTransactionId];
+                                                                    if (!included) return null;
+                                                                    return (
+                                                                        <tr key={serviceTransactionId} className="package-service-row">
+                                                                            <td>{rowCount++}</td>
+                                                                            <td>{serviceDataMap[serviceId].name}</td>
+                                                                            <td>{new DateRange(bookingDateTimeStart, bookingDateTimeEnd).toString(DATE_TIME_FORMAT)}</td>
+                                                                            <td></td>
+                                                                        </tr>
+                                                                    );
+                                                                })
+                                                        }
+                                                    </Fragment>
+                                                );
+                                            })
+
+                                    }
+                                    <br></br>
+                                    <tr className="voucher-discount">
+                                        <td colSpan={3}>Voucher Discount</td>
+                                        <td>₱{/* Replace with actual discount value here */}0</td>
+                                    </tr>
+                                    <tr className="client-total">
+                                        <td colSpan={3}>Total After Discount</td>
+                                        <td>₱{clientTotal /* replace with discounted total if applicable */}</td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        );
+                    })
+            }
+
+            <table className="overall-total-table">
                 <tbody>
-                {
-                    Object.keys( componentData.clientInfoMap )
-                        .sort( ( clientId1, clientId2 ) => StringUtils.compare(
-                            clientDataMap[ clientId1 ].name,
-                            clientDataMap[ clientId2 ].name
-                        ) )
-                        .map( clientId => {
-
-                            const
-                                {
-                                    packageMap, singleServiceMap
-                                } = componentData.clientInfoMap[ clientId ],
-                                { name } = clientDataMap[ +clientId ]
-                            ;
-                            return <Fragment key={ clientId }>
-                                <tr><td colSpan={ 4 }>{ name }</td></tr>
-                                {
-                                    [
-                                        ...Object.keys( packageMap ),
-                                        ...Object.keys( singleServiceMap )
-                                    ].sort( ( documentId1, documentId2 ) => {
-
-                                        const
-                                            { name: name1 } = (
-                                                ( documentId1 in packageMap ) ?
-                                                    packageDataMap[ documentId1 ]
-                                                :
-                                                    serviceDataMap[
-                                                        singleServiceMap[ documentId1 ]
-                                                        .serviceTransactionData.service.id
-                                                ]
-                                            ),
-                                            { name: name2 } = (
-                                                ( documentId2 in packageMap ) ?
-                                                    packageDataMap[ documentId2 ]
-                                                :
-                                                    serviceDataMap[
-                                                        singleServiceMap[ documentId2 ]
-                                                        .serviceTransactionData.service.id
-                                                    ]
-                                            )
-                                        ;
-                                        return StringUtils.compare( name1, name2 ); 
-
-                                    } ).map( documentId => {
-
-                                        if( documentId in singleServiceMap ) {
-
-                                            const {
-                                                serviceTransactionData: {
-                                                    bookingDateTimeStart, bookingDateTimeEnd,
-                                                    service: { id: serviceId }
-                                                },
-                                                included, price
-                                            } = singleServiceMap[ documentId ];
-                                            if( !included ) return undefined;
-                                            rowCount++;
-                                            return <tr key={ documentId }>
-                                                <td>{ rowCount }</td>
-                                                <td>{ serviceDataMap[ serviceId ].name }</td>
-                                                <td>{
-                                                    new DateRange( bookingDateTimeStart, bookingDateTimeEnd ).toString( DATE_TIME_FORMAT )
-                                                }</td>
-                                                <td>P{ price }</td>
-                                            </tr>;
-
-                                        }
-                                        return <Fragment key={ documentId }>
-                                            <tr>
-                                                <td>-</td>
-                                                <td colSpan={ 3 }>{
-                                                    packageDataMap[ documentId ].name
-                                                }</td>
-                                            </tr>
-                                            {
-                                                Object.keys( packageMap[ documentId ] )
-                                                    .sort( (
-                                                        serviceTransactionId1, serviceTransactionId2
-                                                    ) => {
-
-                                                        const
-                                                            { name: name1 } = serviceDataMap[
-                                                                packageMap[ documentId ]
-                                                                [ serviceTransactionId1 ]
-                                                                .serviceTransactionData.service.id
-                                                            ],
-                                                            { name: name2 } = serviceDataMap[
-                                                                packageMap[ documentId ]
-                                                                [ serviceTransactionId2 ]
-                                                                .serviceTransactionData.service.id
-                                                            ]
-                                                        ;
-                                                        return StringUtils.compare(
-                                                            name1, name2
-                                                        ); 
-                
-                                                    } )
-                                                    .map( serviceTransactionId => {
-
-                                                        const {
-                                                            serviceTransactionData: {
-                                                                bookingDateTimeStart, bookingDateTimeEnd,
-                                                                service: { id: serviceId }
-                                                            },
-                                                            included, price
-                                                        } = packageMap[ documentId ][ serviceTransactionId ];
-                                                        if( !included ) return undefined;
-                                                        rowCount++;
-                                                        return <tr key={ serviceTransactionId }>
-                                                            <td>{ rowCount }</td>
-                                                            <td>{
-                                                                serviceDataMap[ serviceId ].name
-                                                            }</td>
-                                                            <td>{
-                                                                new DateRange( bookingDateTimeStart, bookingDateTimeEnd ).toString( DATE_TIME_FORMAT )
-                                                            }</td>
-                                                            <td>P{ price }</td>
-                                                        </tr>;
-
-                                                    } )
-                                            }
-                                        </Fragment>;
-
-                                    } )
-                                }
-                            </Fragment>;
-
-                        } )
-                }
-                <tr>
-                    <td colSpan={ 3 }>Total</td>
-                    <td>P{ componentData.totalPrice }</td>
-                </tr>
+                    <tr>
+                        <td colSpan={1}>Total</td>
+                        <td colSpan={2} className="total-price" >₱{componentData.totalPrice}</td>
+                    </tr>
                 </tbody>
             </table>
-
         </section>
     </>;
+
 
 }

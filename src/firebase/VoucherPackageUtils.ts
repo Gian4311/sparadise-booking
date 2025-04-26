@@ -105,6 +105,21 @@ export default class VoucherPackageUtils {
 
     }
 
+    public static async getVoucherPackageDataMapAll(): Promise< VoucherPackageDataMap > {
+            
+        const
+            voucherPackageCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
+                SpaRadiseEnv.VOUCHER_PACKAGE_COLLECTION
+            ),
+            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( voucherPackageCollection ) ).docs,
+            voucherPackageDataMap: VoucherPackageDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            voucherPackageDataMap[ snapshot.id ] = await VoucherPackageUtils.getVoucherPackageData( snapshot );
+        return voucherPackageDataMap;
+
+    }
+
     public static async getVoucherPackageDataMapByVoucher(
         by: documentId | DocumentReference | DocumentSnapshot
     ): Promise< VoucherPackageDataMap > {

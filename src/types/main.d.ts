@@ -21,3 +21,4 @@ type region =
     "NCR" | "I" | "II" | "III" | "IV-A" | "IV-B" | "V" | "VI" | "VII" | "VIII" | "IX" | "X" | "XI"
     | "XII" | "XIII" | "CAR" | "BARMM"
 ;
+type voucherStatus = "availed" | "canceled" | "pending";

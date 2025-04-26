@@ -13,16 +13,16 @@ import {
     where
 } from "firebase/firestore/lite";
 import {
-    VoucherServiceData,
-    VoucherServiceDataMap
+    VoucherTransactionData,
+    VoucherTransactionDataMap
 } from "./SpaRadiseTypes";
 import SpaRadiseFirestore from "./SpaRadiseFirestore";
 import SpaRadiseEnv from "./SpaRadiseEnv";
 
-export default class VoucherServiceUtils {
+export default class VoucherTransactionUtils {
 
-    public static async checkVoucherServiceData(
-        voucherServiceData: VoucherServiceData
+    public static async checkVoucherTransactionData(
+        voucherServiceData: VoucherTransactionData
     ): Promise< boolean > {
     
         const
@@ -50,14 +50,14 @@ export default class VoucherServiceUtils {
 
     }
 
-    public static async createVoucherService(
-        voucherServiceData: VoucherServiceData
+    public static async createVoucherTransaction(
+        voucherServiceData: VoucherTransactionData
     ): Promise< DocumentReference > {
     
-        await VoucherServiceUtils.checkVoucherServiceData( voucherServiceData );
+        await VoucherTransactionUtils.checkVoucherTransactionData( voucherServiceData );
         const
             voucherServiceCollection: CollectionReference =
-                SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.VOUCHER_SERVICE_COLLECTION )
+                SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.VOUCHER_TRANSACTION_COLLECTION )
             ,
             documentReference = await addDoc(
                 voucherServiceCollection, voucherServiceData
@@ -67,13 +67,13 @@ export default class VoucherServiceUtils {
 
     }
 
-    public static async deleteVoucherService(
+    public static async deleteVoucherTransaction(
         by: documentId | DocumentReference | DocumentSnapshot
     ): Promise< boolean > {
 
         // note: check for dependent entities
         const documentReference: DocumentReference = SpaRadiseFirestore.getDocumentReference(
-            by, SpaRadiseEnv.VOUCHER_SERVICE_COLLECTION
+            by, SpaRadiseEnv.VOUCHER_TRANSACTION_COLLECTION
         );
         try {
 
@@ -89,44 +89,71 @@ export default class VoucherServiceUtils {
 
     }
 
-    public static async getVoucherServiceData(
+    public static async getVoucherTransactionData(
         by: documentId | DocumentReference | DocumentSnapshot
-    ): Promise< VoucherServiceData > {
+    ): Promise< VoucherTransactionData > {
 
         const snapshot: DocumentSnapshot = await SpaRadiseFirestore.getDocumentSnapshot(
-            by, SpaRadiseEnv.VOUCHER_SERVICE_COLLECTION
+            by, SpaRadiseEnv.VOUCHER_TRANSACTION_COLLECTION
         );
         if( !snapshot.exists() ) throw new Error( "Error in getting snapshot!" );
         const data = snapshot.data();
         return {
             voucher: data.voucher,
-            service: data.service
+            booking: data.booking,
+            status: data.status
         };
 
     }
 
-    public static async getVoucherServiceDataMapAll(): Promise< VoucherServiceDataMap > {
+    public static async getVoucherTransactionDataMapAll(): Promise< VoucherTransactionDataMap > {
         
         const
             voucherServiceCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
-                SpaRadiseEnv.VOUCHER_SERVICE_COLLECTION
+                SpaRadiseEnv.VOUCHER_TRANSACTION_COLLECTION
             ),
             snapshotList: QueryDocumentSnapshot[] = ( await getDocs( voucherServiceCollection ) ).docs,
-            voucherServiceDataMap: VoucherServiceDataMap = {}
+            voucherTransactionDataMap: VoucherTransactionDataMap = {}
         ;
         for( let snapshot of snapshotList )
-            voucherServiceDataMap[ snapshot.id ] = await VoucherServiceUtils.getVoucherServiceData( snapshot );
-        return voucherServiceDataMap;
+            voucherTransactionDataMap[ snapshot.id ] = await VoucherTransactionUtils.getVoucherTransactionData( snapshot );
+        return voucherTransactionDataMap;
 
     }
 
-    public static async getVoucherServiceDataMapByVoucher(
+    public static async getVoucherTransactionDataMapByBooking(
         by: documentId | DocumentReference | DocumentSnapshot
-    ): Promise< VoucherServiceDataMap > {
+    ): Promise< VoucherTransactionDataMap > {
+    
+        const
+            voucherTransactionCollection: CollectionReference =
+                SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.VOUCHER_TRANSACTION_COLLECTION )
+            ,
+            bookingReference: DocumentReference = SpaRadiseFirestore.getDocumentReference(
+                by, SpaRadiseEnv.BOOKING_COLLECTION
+            ),
+            voucherTransactionQuery = query(
+                voucherTransactionCollection,
+                where( "booking", "==", bookingReference )
+            ),
+            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( voucherTransactionQuery ) ).docs,
+            voucherTransactionDataMap: VoucherTransactionDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            voucherTransactionDataMap[ snapshot.id ] =
+                await VoucherTransactionUtils.getVoucherTransactionData( snapshot )
+            ;
+        return voucherTransactionDataMap;
+
+    }
+
+    public static async getVoucherTransactionDataMapByVoucher(
+        by: documentId | DocumentReference | DocumentSnapshot
+    ): Promise< VoucherTransactionDataMap > {
     
         const
             voucherServiceCollection: CollectionReference =
-                SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.VOUCHER_SERVICE_COLLECTION )
+                SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.VOUCHER_TRANSACTION_COLLECTION )
             ,
             voucherReference: DocumentReference = SpaRadiseFirestore.getDocumentReference(
                 by, SpaRadiseEnv.VOUCHER_COLLECTION
@@ -138,24 +165,24 @@ export default class VoucherServiceUtils {
             snapshotList: QueryDocumentSnapshot[] =
                 ( await getDocs( voucherServiceQuery ) ).docs
             ,
-            voucherServiceDataMap: VoucherServiceDataMap = {}
+            voucherServiceDataMap: VoucherTransactionDataMap = {}
         ;
         for( let snapshot of snapshotList )
             voucherServiceDataMap[ snapshot.id ] =
-                await VoucherServiceUtils.getVoucherServiceData( snapshot )
+                await VoucherTransactionUtils.getVoucherTransactionData( snapshot )
             ;
         return voucherServiceDataMap;
 
     }
 
-    public static async updateVoucherService(
+    public static async updateVoucherTransaction(
         by: documentId | DocumentReference | DocumentSnapshot,
-        voucherServiceData: VoucherServiceData
+        voucherServiceData: VoucherTransactionData
     ): Promise< boolean > {
 
-        await VoucherServiceUtils.checkVoucherServiceData( voucherServiceData );
+        await VoucherTransactionUtils.checkVoucherTransactionData( voucherServiceData );
         const documentReference: DocumentReference = SpaRadiseFirestore.getDocumentReference(
-            by, SpaRadiseEnv.VOUCHER_SERVICE_COLLECTION
+            by, SpaRadiseEnv.VOUCHER_TRANSACTION_COLLECTION
         );
         try {
 

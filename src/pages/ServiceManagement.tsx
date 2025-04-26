@@ -287,7 +287,6 @@ export default function ServiceManagement(): JSX.Element {
         pageData.serviceDefaultData = { ...pageData.serviceData };
         await loadServiceMaintenanceList();
 
-
     }
 
     async function loadServiceMaintenanceList(): Promise<void> {
@@ -395,10 +394,9 @@ export default function ServiceManagement(): JSX.Element {
     useEffect(() => { loadPageData(); }, []);
 
     return <>
-
+        <EmployeeSidebar />
         <form onSubmit={submit}>
             <div className="servman-container">
-                <EmployeeSidebar />
                 <div className="service-main-content">
                     <label htmlFor="service-main-content" className="service-management-location">Services & Packages - {pageData.serviceName}</label>
                     <div className="service-form-section">
@@ -532,16 +530,16 @@ export default function ServiceManagement(): JSX.Element {
                             }
                             <button className="service-cancel-btn" type="button" onClick={cancelServiceForm}>Cancel</button>
                             <button className="service-save-btn" type="submit">{isNewMode ? "Create" : "Save Changes"}</button>
+                            {
+                                IS_DEV_MODE ? <button style={{}} type="button" onClick={() => console.log(pageData)}>Log page data</button>
+                                    : undefined
+                            }
                         </div>
                     </div>
                 </div>
             </div>
+            
         </form>
-
-        {
-            IS_DEV_MODE ? <button style={{ float: "right" }} type="button" onClick={() => console.log(pageData)}>Log page data</button>
-                : undefined
-        }
     </>
 
 }
