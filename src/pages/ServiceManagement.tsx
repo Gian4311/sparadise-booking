@@ -32,6 +32,7 @@ import "../styles/Sidebar.css";
 import EmployeeSidebar from "../components/EmployeeSidebar";
 import BackButton from "../images/back button.png";
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
+import QuickPopup from "../components/quickPopupMessage";
 
 interface ServiceManagementPageData extends SpaRadisePageData {
 
@@ -60,7 +61,7 @@ export default function ServiceManagement(): JSX.Element {
                 serviceType: null as unknown as serviceType,
                 roomType: null as unknown as roomType,
                 ageLimit: null as unknown as number,
-                durationMin: null as unknown as ( 30 | 60 )
+                durationMin: null as unknown as (30 | 60)
             },
             serviceDefaultData: {} as ServiceData,
             serviceMaintenanceDataMap: {},
@@ -75,6 +76,9 @@ export default function ServiceManagement(): JSX.Element {
         isNewMode: boolean = (documentId === "new"),
         isEditMode: boolean = (documentId !== undefined && !isNewMode)
         ;
+
+        
+    const [quickPopupMessage, setQuickPopupMessage] = useState("");
 
     async function addServiceMaintenance(): Promise<void> {
 
@@ -115,7 +119,7 @@ export default function ServiceManagement(): JSX.Element {
 
     async function cancelServiceForm(): Promise<void> {
 
-        window.open(`/management/services/menu`, `_self`);
+        window.open(`/management/servicesAndPackages/menu`, `_self`);
 
     }
 
@@ -140,19 +144,24 @@ export default function ServiceManagement(): JSX.Element {
     }
 
     async function createService(): Promise<void> {
-
         if (!isNewMode || !documentId) return;
         await checkFormValidity();
+    
         const documentReference: DocumentReference = await ServiceUtils.createService(
             pageData.serviceData
         );
+    
         pageData.serviceDocumentReference = documentReference;
         await updateServiceMaintenanceList();
         delete pageData.updateMap["new"];
-        alert(`Created!`); // note: remove later
-        window.open(`/management/services/${documentReference.id}`, `_self`);
-
+    
+        setQuickPopupMessage("Successfully Created");
+    
+        setTimeout(() => {
+            window.open(`/management/services/${documentReference.id}`, `_self`);
+        }, 2000);
     }
+    
 
     async function createServiceMaintenanceList(): Promise<void> {
 
@@ -332,24 +341,24 @@ export default function ServiceManagement(): JSX.Element {
 
     }
 
-    async function updateService(): Promise<void> {
 
+    async function updateService(): Promise<void> {
         if (!isEditMode || !documentId) return;
         await checkFormValidity();
         const { serviceData, updateMap } = pageData;
-        if (documentId in updateMap) {
 
+        if (documentId in updateMap) {
             await ServiceUtils.updateService(documentId, serviceData);
             pageData.serviceDefaultData = { ...pageData.serviceData };
             pageData.serviceName = serviceData.name;
-
         }
+
         delete updateMap[documentId];
         await updateServiceMaintenanceList();
         reloadPageData();
-        alert(`Updated!`); // note: remove later
-
+        setQuickPopupMessage("Successfully Updated");
     }
+
 
     async function updateServiceMaintenanceList(): Promise<void> {
 
@@ -394,6 +403,7 @@ export default function ServiceManagement(): JSX.Element {
     useEffect(() => { loadPageData(); }, []);
 
     return <>
+
         <EmployeeSidebar />
         <form onSubmit={submit}>
             <div className="servman-container">
@@ -401,11 +411,20 @@ export default function ServiceManagement(): JSX.Element {
                     <label htmlFor="service-main-content" className="service-management-location">Services & Packages - {pageData.serviceName}</label>
                     <div className="service-form-section">
                         <div className="service-header">
-                            <a href="#" className="service-back-arrow" aria-label="Back">
+                            <a
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    window.history.back();
+                                }}
+                                className="service-back-arrow"
+                                aria-label="Back"
+                            >
                                 <img src={BackButton} alt="Back" className="back-icon" />
                             </a>
                             <h1>{pageData.serviceName}</h1>
                         </div>
+
                         <div>
                             <div className="service-form-row-group">
                                 <div className="service-form-row">
@@ -445,7 +464,7 @@ export default function ServiceManagement(): JSX.Element {
                             <div className="service-form-row-group">
                                 <div className="service-form-row">
                                     <label htmlFor="service-duration">Duration (minutes)</label>
-                                    <FormSelect documentData={pageData.serviceData} documentDefaultData={pageData.serviceDefaultData} documentId={documentId} keyName="durationMin" name="service-duration" optionList={ SpaRadiseEnv.SERVICE_DURATION_LIST } pageData={pageData} required={true}>
+                                    <FormSelect documentData={pageData.serviceData} documentDefaultData={pageData.serviceDefaultData} documentId={documentId} keyName="durationMin" name="service-duration" optionList={SpaRadiseEnv.SERVICE_DURATION_LIST} pageData={pageData} required={true}>
                                         <option value="" disabled>Select duration</option>
                                         <option value="30">30</option>
                                         <option value="60">60</option>
@@ -538,8 +557,17 @@ export default function ServiceManagement(): JSX.Element {
                     </div>
                 </div>
             </div>
-            
+
+
+
         </form>
+
+        {quickPopupMessage && (
+            <QuickPopup
+                message={quickPopupMessage}
+                clearPopup={() => setQuickPopupMessage("")}
+            />
+        )}
     </>
 
 }

@@ -14,11 +14,13 @@ body {
   display: flex;
   font-family: 'Arial', sans-serif;
   background-color: #FDF9FE;
+  overflow-x: auto;
 }
 
 .servman-container {
   display: flex;
   width: 100%;
+  overflow-x: auto;
 }
 
 .service-main-content {
