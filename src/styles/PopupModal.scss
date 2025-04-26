@@ -1,21 +1,69 @@
 .popup-modal-wrapper {
-
-    display: flex;
-    z-index: 2;
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background: #00000080;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8); // bluish dark overlay
+    display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 1000;
+}
 
-    .popup-modal {
+.popup-modal {
+    background: white; // darker modern blue
+    color: black;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    width: 400px;
+    max-width: 90%;
+    text-align: center;
+    animation: fadeInScale 0.2s ease-out;
+}
 
-        height: 50%;
-        background: white;
-    
+.actions {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+button {
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-yes {
+    background-color: #9b5de5;
+    color: white;
+}
+
+.btn-yes:hover {
+    background-color: #7b39c4;
+}
+
+.btn-no {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-no:hover {
+    background-color: #5a6268;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
     }
-
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
