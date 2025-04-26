@@ -160,7 +160,8 @@ export default class ServiceTransactionUtils {
 
     public static async getServiceTransactionDataMapByDay(
         date: Date,
-        clientIgnoreDataMap: ClientDataMap
+        ignoreCanceled: boolean = true,
+        clientIgnoreDataMap?: ClientDataMap
     ): Promise< ServiceTransactionDataMap > {
     
         const
@@ -169,17 +170,20 @@ export default class ServiceTransactionUtils {
             ,
             dateTimeStart: Date = DateUtils.toFloorByDay( date ),
             dateTimeEnd: Date = DateUtils.toCeilByDay( date ),
-            clientIgnoreReferenceList: DocumentReference[] = Object.keys( clientIgnoreDataMap ).map(
-                clientId => SpaRadiseFirestore.getDocumentReference(
-                    clientId, SpaRadiseEnv.CLIENT_COLLECTION
-                )
-            ),
+            clientIgnoreReferenceList: DocumentReference[] =
+                clientIgnoreDataMap ? Object.keys( clientIgnoreDataMap ).map(
+                    clientId => SpaRadiseFirestore.getDocumentReference(
+                        clientId, SpaRadiseEnv.CLIENT_COLLECTION
+                    )
+                ) : []
+            ,
             queryList = [
-                where( "bookingDateTimeStart", "<=", dateTimeStart ),
-                where( "bookingDateTimeEnd", ">", dateTimeEnd ),
-                where( "canceled", "==", false )
+                where( "bookingDateTimeStart", "<", dateTimeEnd ),
+                where( "bookingDateTimeEnd", ">", dateTimeStart )
             ]
         ;
+        if( ignoreCanceled )
+            queryList.push( where( "canceled", "==", false ) );
         if( clientIgnoreReferenceList.length > 0 )
             queryList.push( where( "client", "not-in", clientIgnoreReferenceList ) );
         const

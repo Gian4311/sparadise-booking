@@ -1,7 +1,6 @@
 import {
     ChangeEvent,
     useEffect,
-    useRef,
     useState
 } from "react";
 import ObjectUtils from "../utils/ObjectUtils";
@@ -38,8 +37,7 @@ export default function FormNumberInput(
 ): JSX.Element {
 
     const
-        [ unparsedValue, setUnparsedValue ] = useState< string >( "" ),
-        ref = useRef< HTMLInputElement >( null )
+        [ unparsedValue, setUnparsedValue ] = useState< string >( "" )
     ;
 
     async function handleChange( event: ChangeEvent< HTMLInputElement > ): Promise< void > {
@@ -54,12 +52,6 @@ export default function FormNumberInput(
         documentData[ keyName ] = parsedValue;
         await handleDefault( parsedValue );
         if( onChange ) await onChange( parsedValue, unparsedValue, old );
-        if( ref.current ) {
-
-            ref.current.selectionStart = selectionStart;
-            ref.current.selectionEnd = selectionStart;
-
-        }
 
     }
 
@@ -119,7 +111,6 @@ export default function FormNumberInput(
         name={ name }
         placeholder={ placeholder }
         readOnly={ readOnly }
-        ref={ ref }
         required={ required }
         type="number"
         step={ step }

@@ -12,13 +12,14 @@ type leaveStatus = "approved" | "canceled" | "pending";
 type objectKeyName = number | string | symbol;
 type popupMode = "yesAndNo" | "yesOnly";
 type packageMaintenanceStatus = "active" | "inactive";
+type region =
+    "NCR" | "I" | "II" | "III" | "IV-A" | "IV-B" | "V" | "VI" | "VII" | "VIII" | "IX" | "X" | "XI"
+    | "XII" | "XIII" | "CAR" | "BARMM"
+;
 type roomType = "room" | "chair";
 type serviceTransactionStatus = "canceled" | "uncanceled";
 type serviceType = "body" | "browsAndLashes" | "facial" | "handsAndFeet" | "health" | "wax";
 type serviceMaintenanceStatus = packageMaintenanceStatus;
 type sex = "female" | "male" | "others";
-type region =
-    "NCR" | "I" | "II" | "III" | "IV-A" | "IV-B" | "V" | "VI" | "VII" | "VIII" | "IX" | "X" | "XI"
-    | "XII" | "XIII" | "CAR" | "BARMM"
-;
+type timeSlotRowPosition = ( "single" | "up" | "down" );
 type voucherStatus = "availed" | "canceled" | "pending";

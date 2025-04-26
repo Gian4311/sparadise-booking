@@ -158,7 +158,7 @@ export default function ServicePackageMenu(): JSX.Element {
                                 (sortMode === "ascending") ? "A - Z" : "Z - A"
                             }</button>
                             <select className="filter-btn" id="filter-select" value={showMode} onChange={event => handleChangeShowMode(event)}>
-                                <option value="">Show All</option>
+                                <option value="all">Show All</option>
                                 <option value="service">Services only</option>
                                 <option value="package">Packages only</option>
                             </select>

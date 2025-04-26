@@ -337,7 +337,7 @@ export default function NewBooking(): JSX.Element {
         await loadEmployeeData();
         pageData.serviceTransactionOfDayDataMap =
             await ServiceTransactionUtils.getServiceTransactionDataMapByDay(
-                date, clientDefaultDataMap
+                date, true, clientDefaultDataMap
             )
         ;
         await loadVoucherDataOfDayData();

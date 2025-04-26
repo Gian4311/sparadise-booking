@@ -13,8 +13,6 @@ import ObjectUtils from "./ObjectUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
 import StringUtils from "./StringUtils";
 
-type timeSlotRowPosition = ( "single" | "up" | "down" );
-
 interface CalendarRow {
 
     chairs: number,
@@ -60,12 +58,24 @@ interface ServiceTransactionEmployeeListKeyMap {
 
 }
 
+interface ServiceTransactionIncludedMap {
+
+    [ serviceTransactionId: documentId ]: number
+
+}
+
 interface TimeSlotData {
 
     clientId: documentId,
     serviceTransactionData: ServiceTransactionData,
     serviceTransactionId: string,
     rowPosition: timeSlotRowPosition
+
+}
+
+interface TimeSlotDataMap {
+
+    [ timeSlotId: string ]: CalendarRow
 
 }
 
@@ -79,7 +89,7 @@ const DATE_RANGE_FORMAT = "hh:mm-hh:mm";
 
 export default class BookingCalendar {
 
-    private readonly timeSlotDataMap: { [ timeSlotId: string ]: CalendarRow } = {};
+    private readonly timeSlotDataMap: TimeSlotDataMap = {};
 
     constructor(
         private readonly pageData: BookingCalendarPageData
@@ -333,7 +343,87 @@ export default class BookingCalendar {
 
     }
 
-    private getAvailableChairs( timeSlotId: string, clientIdIgnoreList: documentId[] = [] ): number {
+    public getArrangedTimeSlotDataMap(): TimeSlotDataMap {
+
+        const
+            timeSlotDataMap: TimeSlotDataMap = {},
+            clientIdChairIndexMap: { [ clientId: documentId ]: number } = {},
+            clientIdRoomIndexMap: { [ clientId: documentId ]: number } = {},
+            serviceTransactionIncluded: ServiceTransactionIncludedMap = {}
+        ;
+        let clientChairIndexNext: number = 0, clientRoomIndexNext: number = 0;
+        for( let timeSlotId in this.timeSlotDataMap ) {
+
+            const
+                calendarRow = { ...this.timeSlotDataMap[ timeSlotId ] },
+                chairTimeSlotDataList = [],
+                roomTimeSlotDataList = []
+            ;
+            for( let chairTimeSlotData of calendarRow.chairTimeSlotDataList ) {
+
+                const { clientId, serviceTransactionId } = chairTimeSlotData;
+                if( !( clientId in clientIdChairIndexMap ) ) {
+
+                    clientIdChairIndexMap[ clientId ] = clientChairIndexNext;
+                    chairTimeSlotDataList[ clientChairIndexNext ] = chairTimeSlotData;
+                    serviceTransactionIncluded[ serviceTransactionId ] = clientChairIndexNext;
+                    clientChairIndexNext += 2;
+
+                } else if( serviceTransactionId in serviceTransactionIncluded ) {
+
+                    const clientChairIndex: number =
+                        serviceTransactionIncluded[ serviceTransactionId ]
+                    ;
+                    chairTimeSlotDataList[ clientChairIndex ] = chairTimeSlotData;
+
+                } else {
+
+                    const clientChairIndex: number = clientIdChairIndexMap[ clientId ] + 1;
+                    chairTimeSlotDataList[ clientChairIndex ] = chairTimeSlotData;
+                    serviceTransactionIncluded[ serviceTransactionId ] = clientChairIndex;
+
+                }
+
+
+            }
+            for( let roomTimeSlotData of calendarRow.roomTimeSlotDataList ) {
+
+                const { clientId, serviceTransactionId } = roomTimeSlotData;
+                if( !( clientId in clientIdRoomIndexMap ) ) {
+
+                    clientIdRoomIndexMap[ clientId ] = clientRoomIndexNext;
+                    roomTimeSlotDataList[ clientRoomIndexNext ] = roomTimeSlotData;
+                    serviceTransactionIncluded[ serviceTransactionId ] = clientRoomIndexNext;
+                    clientRoomIndexNext += 2;
+
+                } else if( serviceTransactionId in serviceTransactionIncluded ) {
+
+                    const clientRoomIndex: number =
+                        serviceTransactionIncluded[ serviceTransactionId ]
+                    ;
+                    roomTimeSlotDataList[ clientRoomIndex ] = roomTimeSlotData;
+
+                } else {
+
+                    const clientRoomIndex: number = clientIdRoomIndexMap[ clientId ] + 1;
+                    roomTimeSlotDataList[ clientRoomIndex ] = roomTimeSlotData;
+                    serviceTransactionIncluded[ serviceTransactionId ] = clientRoomIndex;
+
+                }
+
+
+            }
+            timeSlotDataMap[ timeSlotId ] = calendarRow;
+
+        }
+
+        // rearrange
+
+        return timeSlotDataMap;
+
+    }
+
+    public getAvailableChairs( timeSlotId: string, clientIdIgnoreList: documentId[] = [] ): number {
 
         const
             clientMap: { [ clientId: documentId ]: undefined } = {},
@@ -345,7 +435,7 @@ export default class BookingCalendar {
 
     }
 
-    private getAvailableRooms( timeSlotId: string, clientIdIgnoreList: documentId[] = [] ): number {
+    public getAvailableRooms( timeSlotId: string, clientIdIgnoreList: documentId[] = [] ): number {
 
         const
             clientMap: { [ clientId: documentId ]: undefined } = {},
@@ -676,7 +766,18 @@ export default class BookingCalendar {
 
     private loadServiceTransactionData(): void {
 
-        
+        const { serviceTransactionDataMap } = this.pageData;
+        for( let serviceTransactionId in serviceTransactionDataMap ) {
+
+            const
+                serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ],
+                { client: { id: clientId } } = serviceTransactionData
+            ;
+            this.addServiceTransaction(
+                serviceTransactionData, serviceTransactionId, clientId
+            );
+
+        }
 
     }
 
