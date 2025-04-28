@@ -121,16 +121,13 @@ export default class BookingUtils {
 
     }
 
-    public static async getBookingListAll(): Promise< BookingDataMap > {
+    public static async getBookingDataMapAll(): Promise< BookingDataMap > {
     
         const
             bookingCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
                 SpaRadiseEnv.BOOKING_COLLECTION
             ),
-            bookingQuery = query(
-                bookingCollection,
-                orderBy( "name" )
-            ),
+            bookingQuery = query( bookingCollection ),
             snapshotList: QueryDocumentSnapshot[] = ( await getDocs( bookingQuery ) ).docs,
             bookingDataMap: BookingDataMap = {}
         ;

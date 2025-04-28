@@ -1,5 +1,7 @@
+import ArrayUtils from "../utils/ArrayUtils";
 import BookingCalendar from "../utils/BookingCalendar";
 import {
+    BookingDataMap,
     ClientData,
     ClientDataMap,
     EmployeeData,
@@ -14,13 +16,16 @@ import {
     ServiceTransactionDataMap,
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
+import BookingUtils from "../firebase/BookingUtils";
 import ClientUtils from "../firebase/ClientUtils";
+import DateUtils from "../utils/DateUtils";
 import EmployeeLeaveUtils from "../firebase/EmployeeLeaveUtils";
 import EmployeeSidebar from "../components/EmployeeSidebar";
 import EmployeeUtils from "../firebase/EmployeeUtils";
 import JobServiceUtils from "../firebase/JobServiceUtils";
 import JobUtils from "../firebase/JobUtils";
 import LoadingScreen from "../components/LoadingScreen";
+import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
 import PackageMaintenanceUtils from "../firebase/PackageMaintenanceUtils";
 import PersonUtils from "../utils/PersonUtils";
@@ -32,11 +37,13 @@ import {
     useState
 } from "react";
 
+import "../styles/BookingCalendar.scss";
 import "../styles/EmployeeBookingManagement.scss";
 
 interface EmployeeBookingManagementPageData extends SpaRadisePageData {
 
     bookingCalendar: BookingCalendar,
+    bookingDataMap: BookingDataMap,
     clientDataMap: ClientDataMap,
     date: Date,
     employeeDataMap: EmployeeDataMap,
@@ -54,6 +61,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
     const
         [ pageData, setPageData ] = useState< EmployeeBookingManagementPageData >( {
             bookingCalendar: null as unknown as BookingCalendar,
+            bookingDataMap: {},
             clientDataMap: {},
             date: new Date( "05-10-2025" ),
             employeeDataMap: {},
@@ -70,19 +78,17 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     async function handleChangeDate(): Promise< void > {
 
-        const { date } = pageData;
         await loadEmployeeData();
-        pageData.serviceTransactionOfDayDataMap =
-            await ServiceTransactionUtils.getServiceTransactionDataMapByDay(
-                date
-            )
-        ;
         await loadBookingCalendar();
 
     }
 
     async function loadBookingCalendar(): Promise< void > {
-    
+        
+        const { date } = pageData;
+        pageData.serviceTransactionOfDayDataMap =
+            await ServiceTransactionUtils.getServiceTransactionDataMapByDay( date )
+        ;
         const
             { employeeLeaveOfDayDataMap, serviceTransactionOfDayDataMap } = pageData,
             bookingCalendarPageData = {
@@ -95,8 +101,14 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     }
 
+    async function loadBookingData(): Promise< void > {
+
+        pageData.bookingDataMap = await BookingUtils.getBookingDataMapAll();
+
+    }
+
     async function loadClientData(): Promise< void > {
-    
+
         pageData.clientDataMap = await ClientUtils.getClientDataMapAll();
 
     }
@@ -111,21 +123,22 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     }
 
-    async function loadPageData(): Promise< void > {
-        
-        await loadServiceData();
-        await loadJobData();
-        await loadClientData();
-        await handleChangeDate();
-        pageData.loaded = true;
-        reloadPageData();
-
-    }
-
     async function loadJobData(): Promise< void > {
     
         pageData.jobDataMap = await JobUtils.getJobDataMapAll();
         pageData.jobServiceDataMap = await JobServiceUtils.getJobServiceDataMapAll();
+
+    }
+
+    async function loadPageData(): Promise< void > {
+        
+        await loadServiceData();
+        await loadJobData();
+        await loadBookingData();
+        await loadClientData();
+        await handleChangeDate();
+        pageData.loaded = true;
+        reloadPageData();
 
     }
 
@@ -165,8 +178,11 @@ function BookingCalendarMenu( { pageData, reloadPageData }: {
 
     if( !pageData.bookingCalendar ) return <></>;
     const
-        { bookingCalendar, clientDataMap, serviceDataMap, serviceTransactionOfDayDataMap } = pageData,
-        timeSlotDataMap = pageData.bookingCalendar.getArrangedTimeSlotDataMap()
+        { bookingCalendar, bookingDataMap, clientDataMap, serviceDataMap } = pageData,
+        timeSlotDataMap = pageData.bookingCalendar.getArrangedTimeSlotDataMap(
+            pageData.bookingDataMap,
+            pageData.clientDataMap
+        )
     ;
     let chairColumns: number = 0, roomColumns: number = 0;
     for( let timeSlotId in timeSlotDataMap ) {
@@ -178,20 +194,21 @@ function BookingCalendarMenu( { pageData, reloadPageData }: {
     }
 
     return <>
-        <table>
+        <table className="bookingCalendar">
             <thead><tr>
                 <td></td>
                 <td colSpan={ roomColumns + 1 }>ROOMS</td>
                 <td colSpan={ chairColumns + 1 }>CHAIRS</td>
             </tr></thead>
             <tbody>{
-                Object.keys( timeSlotDataMap ).map( timeSlotId => {
+                Object.keys( timeSlotDataMap ).map( ( timeSlotId, index ) => {
 
                     const
                         { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
                         emptyChairTimeSlotList: undefined[] = [],
                         emptyRoomTimeSlotList: undefined[] = []
                     ;
+                    let timeMark: string | undefined = undefined;
                     for(
                         let index: number = 0;
                         index < ( chairColumns - chairTimeSlotDataList.length );
@@ -202,17 +219,45 @@ function BookingCalendarMenu( { pageData, reloadPageData }: {
                         index < ( roomColumns - roomTimeSlotDataList.length );
                         index++
                     ) emptyRoomTimeSlotList.push( undefined );
+                    if( NumberUtils.isEven( index ) ) {
+
+                        const
+                            [ hr, min ] =
+                                timeSlotId.replace( `-`, `:` ).split( `:` ).map( value => +value )
+                            ,
+                            timeData: TimeData = { hr, min }
+                        ;
+                        timeMark = DateUtils.toString(
+                            DateUtils.setTime( pageData.date, timeData ), "h AM"
+                        )
+
+                    }
 
                     return <tr key={ timeSlotId }>
-                        <td>{ timeSlotId }</td>
+                        <td className="time-mark">{ timeMark }</td>
                         {
-                            roomTimeSlotDataList.map( ( {
-                                clientId, rowPosition, serviceTransactionId, serviceTransactionData,
-                                serviceTransactionData: { service: { id: serviceId } }
-                            } ) => {
+                            roomTimeSlotDataList.map( timeSlotData => {
 
+                                if( !timeSlotData ) return undefined;
+                                const
+                                    {
+                                        clientId, rowPosition, serviceTransactionId,
+                                        serviceTransactionData,
+                                        serviceTransactionData: { service: { id: serviceId } }
+                                    } = timeSlotData,
+                                    { booking: { id: bookingId } } = clientDataMap[ clientId ],
+                                    {
+                                        activeDateTime, finishedDateTime, canceledDateTime
+                                    } = bookingDataMap[ bookingId ],
+                                    className: string =
+                                        canceledDateTime ? "canceled"
+                                        : finishedDateTime ? "finished"
+                                        : activeDateTime ? "active"
+                                        : "reserved"
+                                ;
                                 if( rowPosition === "down" ) return undefined;
                                 return <TimeSlot
+                                    className={ className }
                                     clientData={ clientDataMap[ clientId ] }
                                     // employee
                                     key={ serviceTransactionId }
@@ -223,18 +268,33 @@ function BookingCalendarMenu( { pageData, reloadPageData }: {
 
                             } )
                         }
-                        <td>{ bookingCalendar.getAvailableRooms( timeSlotId ) } rooms left</td>
+                        <td className="time-slot room-info"><div>{ bookingCalendar.getAvailableRooms( timeSlotId ) } rooms available</div></td>
                         {
-                           emptyRoomTimeSlotList.map( ( _, index ) => <td key={ index }></td> )
+                           emptyRoomTimeSlotList.map( ( _, index ) => <td className="time-slot" key={ index }></td> )
                         }
                         {
-                            chairTimeSlotDataList.map( ( {
-                                clientId, rowPosition, serviceTransactionId, serviceTransactionData,
-                                serviceTransactionData: { service: { id: serviceId } }
-                            } ) => {
+                            chairTimeSlotDataList.map( timeSlotData => {
 
+                                if( !timeSlotData ) return undefined;
+                                const
+                                    {
+                                        clientId, rowPosition, serviceTransactionId,
+                                        serviceTransactionData,
+                                        serviceTransactionData: { service: { id: serviceId } }
+                                    } = timeSlotData,
+                                    { booking: { id: bookingId } } = clientDataMap[ clientId ],
+                                    {
+                                        activeDateTime, finishedDateTime, canceledDateTime
+                                    } = bookingDataMap[ bookingId ],
+                                    className: string =
+                                        canceledDateTime ? "canceled"
+                                        : finishedDateTime ? "finished"
+                                        : activeDateTime ? "active"
+                                        : "reserved"
+                                ;
                                 if( rowPosition === "down" ) return undefined;
                                 return <TimeSlot
+                                    className={ className }
                                     clientData={ clientDataMap[ clientId ] }
                                     // employee
                                     key={ serviceTransactionId }
@@ -245,14 +305,28 @@ function BookingCalendarMenu( { pageData, reloadPageData }: {
 
                             } )
                         }
-                        <td>{ bookingCalendar.getAvailableChairs( timeSlotId ) } chairs left</td>
+                        <td className="time-slot room-info"><div>{ bookingCalendar.getAvailableChairs( timeSlotId ) } chairs available</div></td>
                         {
-                            emptyChairTimeSlotList.map( ( _, index ) => <td key={ index }></td> )
+                            emptyChairTimeSlotList.map( ( _, index ) => <td className="time-slot" key={ index }></td> )
                         }
                     </tr>;
 
                 } )
             }</tbody>
+            <tfoot><tr><td>
+                {   
+                    ArrayUtils.createEmptyArray(
+                        Math.ceil( ObjectUtils.keyLength( timeSlotDataMap ) / 2 )
+                    ).map( ( _, index ) => <div
+                        className="grid-line horizontal"
+                        key={ index }
+                        style={ { bottom: ( 180 + 180 * index ) + `px` } }
+                    ></div> )
+                    
+                }
+                <div className="grid-line vertical" style={ { left: `86px` } }></div>
+                <div className="grid-line vertical" style={ { left: ( 248 + 162 * roomColumns ) + `px` } }></div>
+            </td></tr></tfoot>
         </table>
         
     </>;
@@ -260,8 +334,9 @@ function BookingCalendarMenu( { pageData, reloadPageData }: {
 }
 
 function TimeSlot( {
-    clientData, employeeData, rowPosition, serviceData
+    className, clientData, employeeData, rowPosition, serviceData
 }: {
+    className: string,
     clientData: ClientData,
     employeeData?: EmployeeData,
     rowPosition: timeSlotRowPosition,
@@ -269,13 +344,12 @@ function TimeSlot( {
     serviceTransactionData: ServiceTransactionData
 } ): JSX.Element {
 
+    className = `time-slot ${ className }`;
     const employeeName: string = employeeData ? PersonUtils.format( employeeData, "f mi l" ) : "-";
-    return <td rowSpan={ ( rowPosition === "up" ) ? 2 : undefined }>
-        { clientData.name }
-        <br/>
-        { serviceData.name }
-        <br/>
-        { employeeName }
+    return <td className={ className } rowSpan={ ( rowPosition === "up" ) ? 2 : undefined }>
+        <div>{ clientData.name }</div>
+        <div>{ serviceData.name }</div>
+        <div>{ employeeName }</div>
     </td>;
 
 }

@@ -1,6 +1,9 @@
+import ArrayUtils from "./ArrayUtils";
 import DateRange from "./DateRange";
 import DateUtils from "./DateUtils";
 import {
+    BookingDataMap,
+    ClientDataMap,
     EmployeeDataMap,
     EmployeeLeaveDataMap,
     JobDataMap,
@@ -16,9 +19,9 @@ import StringUtils from "./StringUtils";
 interface CalendarRow {
 
     chairs: number,
-    chairTimeSlotDataList: TimeSlotData[],
+    chairTimeSlotDataList: ( TimeSlotData | undefined )[],
     rooms: number,
-    roomTimeSlotDataList: TimeSlotData[]
+    roomTimeSlotDataList: ( TimeSlotData | undefined )[]
 
 }
 
@@ -147,7 +150,7 @@ export default class BookingCalendar {
                 clientId, serviceTransactionId, serviceTransactionData, rowPosition
             },
             { roomType } = serviceDataMap[ serviceId ],
-            timeSlotDataList: TimeSlotData[] =
+            timeSlotDataList: ( TimeSlotData | undefined )[] =
                 ( roomType === "chair" ) ? chairTimeSlotDataList
                 : roomTimeSlotDataList
         ;
@@ -331,7 +334,7 @@ export default class BookingCalendar {
             { service: { id: serviceId } } = serviceTransactionData,
             { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
             { roomType } = serviceDataMap[ serviceId ],
-            timeSlotDataList: TimeSlotData[] =
+            timeSlotDataList: ( TimeSlotData | undefined )[] =
                 ( roomType === "chair" ) ? chairTimeSlotDataList : roomTimeSlotDataList
             ,
             timeSlotIndex: number = this.indexOfServiceTransaction(
@@ -343,82 +346,130 @@ export default class BookingCalendar {
 
     }
 
-    public getArrangedTimeSlotDataMap(): TimeSlotDataMap {
+    public getArrangedTimeSlotDataMap(
+        bookingDataMap: BookingDataMap, clientDataMap: ClientDataMap
+    ): TimeSlotDataMap {
 
         const
-            timeSlotDataMap: TimeSlotDataMap = {},
-            clientIdChairIndexMap: { [ clientId: documentId ]: number } = {},
-            clientIdRoomIndexMap: { [ clientId: documentId ]: number } = {},
-            serviceTransactionIncluded: ServiceTransactionIncludedMap = {}
+            { serviceDataMap } = this.pageData,
+            timeSlotDataMap: TimeSlotDataMap = {}
         ;
-        let clientChairIndexNext: number = 0, clientRoomIndexNext: number = 0;
+        let maxChairColumns: number = 0, maxRoomColumns: number = 0;
+
+        function compareTimeSlotData(
+            timeSlotData1: TimeSlotData | undefined,
+            timeSlotData2: TimeSlotData | undefined
+        ): number {
+
+            if( !timeSlotData1 ) return 1;
+            if( !timeSlotData2 ) return -1;
+            const
+                { clientId: clientId1 } = timeSlotData1,
+                { clientId: clientId2 } = timeSlotData2,
+                { id: bookingId1 } = clientDataMap[ clientId1 ].booking,
+                { id: bookingId2 } = clientDataMap[ clientId2 ].booking,
+                { reservedDateTime: reservedDateTime1 } = bookingDataMap[ bookingId1 ],
+                { reservedDateTime: reservedDateTime2 } = bookingDataMap[ bookingId2 ],
+                ms1 = reservedDateTime1.getTime(),
+                ms2 = reservedDateTime2.getTime()
+            ;
+            if( ms1 > ms2 ) return 1;
+            if( ms1 < ms2 ) return -1;
+            const
+                { name: clientName1 } = clientDataMap[ clientId1 ],
+                { name: clientName2 } = clientDataMap[ clientId2 ]
+            ;
+            if( clientName1 > clientName2 ) return 1;
+            if( clientName1 < clientName2 ) return -1;
+            const
+                { id: serviceId1 } = timeSlotData1.serviceTransactionData.service,
+                { id: serviceId2 } = timeSlotData2.serviceTransactionData.service,
+                { name: serviceName1 } = serviceDataMap[ serviceId1 ],
+                { name: serviceName2 } = serviceDataMap[ serviceId2 ]
+            ;
+            if( serviceName1 > serviceName2 ) return 1;
+            return -1;
+
+        }
+
         for( let timeSlotId in this.timeSlotDataMap ) {
 
+            const calendarRow: CalendarRow = { ...this.timeSlotDataMap[ timeSlotId ] };
+            calendarRow.chairTimeSlotDataList = [ ...calendarRow.chairTimeSlotDataList.sort(
+                compareTimeSlotData
+            ) ];
+            calendarRow.roomTimeSlotDataList = [ ...calendarRow.roomTimeSlotDataList.sort(
+                compareTimeSlotData
+            ) ];
             const
-                calendarRow = { ...this.timeSlotDataMap[ timeSlotId ] },
-                chairTimeSlotDataList = [],
-                roomTimeSlotDataList = []
+                { length: chairColumns } = calendarRow.chairTimeSlotDataList,
+                { length: roomColumns } = calendarRow.roomTimeSlotDataList
             ;
-            for( let chairTimeSlotData of calendarRow.chairTimeSlotDataList ) {
-
-                const { clientId, serviceTransactionId } = chairTimeSlotData;
-                if( !( clientId in clientIdChairIndexMap ) ) {
-
-                    clientIdChairIndexMap[ clientId ] = clientChairIndexNext;
-                    chairTimeSlotDataList[ clientChairIndexNext ] = chairTimeSlotData;
-                    serviceTransactionIncluded[ serviceTransactionId ] = clientChairIndexNext;
-                    clientChairIndexNext += 2;
-
-                } else if( serviceTransactionId in serviceTransactionIncluded ) {
-
-                    const clientChairIndex: number =
-                        serviceTransactionIncluded[ serviceTransactionId ]
-                    ;
-                    chairTimeSlotDataList[ clientChairIndex ] = chairTimeSlotData;
-
-                } else {
-
-                    const clientChairIndex: number = clientIdChairIndexMap[ clientId ] + 1;
-                    chairTimeSlotDataList[ clientChairIndex ] = chairTimeSlotData;
-                    serviceTransactionIncluded[ serviceTransactionId ] = clientChairIndex;
-
-                }
-
-
-            }
-            for( let roomTimeSlotData of calendarRow.roomTimeSlotDataList ) {
-
-                const { clientId, serviceTransactionId } = roomTimeSlotData;
-                if( !( clientId in clientIdRoomIndexMap ) ) {
-
-                    clientIdRoomIndexMap[ clientId ] = clientRoomIndexNext;
-                    roomTimeSlotDataList[ clientRoomIndexNext ] = roomTimeSlotData;
-                    serviceTransactionIncluded[ serviceTransactionId ] = clientRoomIndexNext;
-                    clientRoomIndexNext += 2;
-
-                } else if( serviceTransactionId in serviceTransactionIncluded ) {
-
-                    const clientRoomIndex: number =
-                        serviceTransactionIncluded[ serviceTransactionId ]
-                    ;
-                    roomTimeSlotDataList[ clientRoomIndex ] = roomTimeSlotData;
-
-                } else {
-
-                    const clientRoomIndex: number = clientIdRoomIndexMap[ clientId ] + 1;
-                    roomTimeSlotDataList[ clientRoomIndex ] = roomTimeSlotData;
-                    serviceTransactionIncluded[ serviceTransactionId ] = clientRoomIndex;
-
-                }
-
-
-            }
+            maxChairColumns = Math.max( maxChairColumns, chairColumns );
+            maxRoomColumns = Math.max( maxRoomColumns, roomColumns );
             timeSlotDataMap[ timeSlotId ] = calendarRow;
 
         }
 
-        // rearrange
+        function rearrangeTable( mode: roomType ): void {
 
+            const isChair: boolean = ( mode === "chair" );
+            let maxColumns: number = isChair ? maxChairColumns : maxRoomColumns;
+            for( let column: number = 0; column < maxColumns; column++ ) {
+
+                for( let timeSlotId in timeSlotDataMap ) {
+    
+                    const
+                        {
+                            chairTimeSlotDataList, roomTimeSlotDataList
+                        } = timeSlotDataMap[ timeSlotId ],
+                        timeSlotDataList = isChair ? chairTimeSlotDataList : roomTimeSlotDataList,
+                        timeSlotData = timeSlotDataList[ column ]
+                    ;
+                    if( !timeSlotData ) continue;
+                    const {
+                        rowPosition, serviceTransactionId, serviceTransactionData
+                    } = timeSlotData;
+                    if( rowPosition === "single" ) continue;
+                    const
+                        { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+                        dateRangeMatch: DateRange = new DateRange(
+                            bookingDateTimeStart, bookingDateTimeEnd
+                        ).addTime( {
+                            min: 30 * ( rowPosition === "up" ? 1 : -1 )
+                        } ),
+                        timeSlotMatchId: string = dateRangeMatch.toString( DATE_RANGE_FORMAT ),
+                        {
+                            chairTimeSlotDataList: matchChairTimeSlotDataList,
+                            roomTimeSlotDataList: matchRoomTimeSlotDataList
+                        } = timeSlotDataMap[ timeSlotMatchId ],
+                        matchTimeSlotDataList =
+                            isChair ? matchChairTimeSlotDataList : matchRoomTimeSlotDataList
+                    ;
+                    let matchColumn: number = column;
+                    for( ; matchColumn < matchTimeSlotDataList.length; matchColumn++ ) {
+    
+                        const timeSlotData = matchTimeSlotDataList[ matchColumn ];
+                        if( !timeSlotData ) continue;
+                        const { serviceTransactionId: serviceTransactionIdCompare } = timeSlotData;
+                        if( serviceTransactionId === serviceTransactionIdCompare ) break;
+    
+                    }
+                    const arrayAdd: number = matchColumn - column;
+                    if( !arrayAdd ) continue;
+                    timeSlotDataList.splice(
+                        column, 0, ...ArrayUtils.createEmptyArray( arrayAdd )
+                    );
+                    maxColumns = Math.max( maxColumns, timeSlotDataList.length );
+    
+                }
+    
+            }
+
+        }
+
+        rearrangeTable( "chair" );
+        rearrangeTable( "room" );
         return timeSlotDataMap;
 
     }
@@ -429,8 +480,13 @@ export default class BookingCalendar {
             clientMap: { [ clientId: documentId ]: undefined } = {},
             { chairs, chairTimeSlotDataList } = this.timeSlotDataMap[ timeSlotId ]
         ;
-        for( let { clientId } of chairTimeSlotDataList )
+        for( let timeSlotData of chairTimeSlotDataList ) {
+
+            if( !timeSlotData ) continue;
+            const { clientId } = timeSlotData;
             if( !clientIdIgnoreList.includes( clientId ) ) clientMap[ clientId ] = undefined;
+
+        }
         return ( chairs - ObjectUtils.keyLength( clientMap ) );
 
     }
@@ -441,8 +497,13 @@ export default class BookingCalendar {
             clientMap: { [ clientId: documentId ]: undefined } = {},
             { rooms, roomTimeSlotDataList } = this.timeSlotDataMap[ timeSlotId ]
         ;
-        for( let { clientId } of roomTimeSlotDataList )
+        for( let timeSlotData of roomTimeSlotDataList ){
+
+            if( !timeSlotData ) continue;
+            const { clientId } = timeSlotData;
             if( !clientIdIgnoreList.includes( clientId ) ) clientMap[ clientId ] = undefined;
+
+        }
         return ( rooms - ObjectUtils.keyLength( clientMap ) );
 
     }
@@ -526,9 +587,13 @@ export default class BookingCalendar {
                 timeSlotIdBelow: string | undefined = this.getTimeSlotIdBelow( timeSlotId ),
                 rowTimeSlotDataList: TimeSlotData[] = [
                     ...chairTimeSlotDataList, ...roomTimeSlotDataList
-                ].filter( ( { serviceTransactionId: serviceTransactionIdCompare } ) =>
-                    ( serviceTransactionId !== serviceTransactionIdCompare )
-                )
+                ].filter( timeSlotData => {
+
+                    if( !timeSlotData ) return false;
+                    const { serviceTransactionId: serviceTransactionIdCompare } = timeSlotData;
+                    return ( serviceTransactionId !== serviceTransactionIdCompare );
+
+                } ) as TimeSlotData[]
             ;
             timeSlotDataList.push( ...rowTimeSlotDataList );
             let
@@ -611,11 +676,14 @@ export default class BookingCalendar {
             { service: { id: serviceId } } = serviceTransactionData,
             serviceData = serviceDataMap[ serviceId ],
             { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
-            timeSlotDataList: TimeSlotData[] = [ ...chairTimeSlotDataList, ...roomTimeSlotDataList ],
+            timeSlotDataList: ( TimeSlotData | undefined )[] = [
+                ...chairTimeSlotDataList, ...roomTimeSlotDataList
+            ],
             compatibleTimeSlotDataList: TimeSlotData[] = []
         ;
         for( let timeSlotData of timeSlotDataList ) {
 
+            if( !timeSlotData ) continue;
             const {
                 serviceTransactionId: serviceTransactionIdCompare,
                 clientId: clientIdCompare
@@ -676,10 +744,17 @@ export default class BookingCalendar {
         if( !( timeSlotId in timeSlotDataMap ) ) return false;
         const
             { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
-            timeSlotDataList: TimeSlotData[] = [ ...chairTimeSlotDataList, ...roomTimeSlotDataList ]
+            timeSlotDataList: ( TimeSlotData | undefined )[] = [
+                ...chairTimeSlotDataList, ...roomTimeSlotDataList
+            ]
         ;
-        for( let { serviceTransactionId: serviceTransactionIdCompare } of timeSlotDataList )
+        for( let timeSlotData of timeSlotDataList ) {
+
+            if( !timeSlotData ) continue;
+            const { serviceTransactionId: serviceTransactionIdCompare } = timeSlotData;
             if( serviceTransactionId === serviceTransactionIdCompare ) return true;
+
+        }
         return false;
 
     }
@@ -713,7 +788,9 @@ export default class BookingCalendar {
         if( !( timeSlotId in timeSlotDataMap ) ) return -1;
         const
             { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
-            timeSlotDataList: TimeSlotData[] = [ ...chairTimeSlotDataList, ...roomTimeSlotDataList ]
+            timeSlotDataList: ( TimeSlotData | undefined )[] = [
+                ...chairTimeSlotDataList, ...roomTimeSlotDataList
+            ]
         ;
         for(
             let timeSlotIndex: number = 0;
@@ -721,9 +798,9 @@ export default class BookingCalendar {
             timeSlotIndex++
         ) {
 
-            const {
-                serviceTransactionId: serviceTransactionIdCompare
-            } = timeSlotDataList[ timeSlotIndex ];
+            const timeSlotData = timeSlotDataList[ timeSlotIndex ];
+            if( !timeSlotData ) continue;
+            const { serviceTransactionId: serviceTransactionIdCompare } = timeSlotData;
             if( serviceTransactionId === serviceTransactionIdCompare ) return timeSlotIndex;
 
         }

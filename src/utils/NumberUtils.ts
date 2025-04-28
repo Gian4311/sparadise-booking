@@ -6,6 +6,12 @@ export default class NumberUtils {
 
     }
 
+    public static isEven( number: number ): boolean {
+
+        return number % 2 === 0;
+
+    }
+
     public static isInteger( number: number ): boolean {
 
         return ( number % 1 ) == 0;
@@ -21,6 +27,12 @@ export default class NumberUtils {
     public static isNumeric( value: unknown ): boolean {
 
         return !isNaN( +( value as number ) );
+
+    }
+
+    public static isOdd( number: number ): boolean {
+
+        return number % 2 === 1;
 
     }
 

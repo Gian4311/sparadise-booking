@@ -1,16 +1,3 @@
-interface TimeData {
-
-    yr?: number,
-    mon?: number,
-    week?: number,
-    day?: number,
-    hr?: number,
-    min?: number,
-    sec?: number,
-    ms?: number
-
-}
-
 export default class DateUtils {
 
     public static addTime( date: Date, timeData: TimeData ): Date {
@@ -155,7 +142,7 @@ export default class DateUtils {
 
         let
             yr: string, mon: string, day: string, hr: string, min: string,
-            hrValue: number, meridiem: string
+            hrValue: number, minValue: number, meridiem: string
         ;
         switch( format ) {
 
@@ -164,6 +151,14 @@ export default class DateUtils {
                 day = date.getDate().toString().padStart( 2, "0" );
                 yr = date.getFullYear().toString();
                 return `${ day } ${ mon } ${ yr }`;
+
+            case "h AM":
+                hrValue = date.getHours();
+                hr = ( ( hrValue + 11 ) % 12 + 1 ).toString();
+                minValue = date.getMinutes();
+                min = minValue.toString();
+                meridiem = `${ hrValue < 12 ? `A` : `P` }M`;
+                return `${ hr }${ minValue ? `:${ min }a` : `` } ${ meridiem }`;
 
             case "hhmm":
                 hr = date.getHours().toString().padStart( 2, "0" );

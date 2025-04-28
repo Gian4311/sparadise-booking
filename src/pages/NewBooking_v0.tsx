@@ -216,6 +216,7 @@ export default function NewBooking(): JSX.Element {
 
         if (!isNewMode || !bookingId) return;
         await checkFormValidity();
+        pageData.bookingData.reservedDateTime = new Date();
         const documentReference: DocumentReference = await BookingUtils.createBooking(
             pageData.bookingData
         );
@@ -339,7 +340,7 @@ export default function NewBooking(): JSX.Element {
             await ServiceTransactionUtils.getServiceTransactionDataMapByDay(
                 date, true, clientDefaultDataMap
             )
-            ;
+        ;
         await loadVoucherDataOfDayData();
         await loadBookingCalendar();
 

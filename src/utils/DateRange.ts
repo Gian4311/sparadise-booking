@@ -25,6 +25,16 @@ export default class DateRange {
 
     }
 
+    public addTime( timeData: TimeData ): DateRange {
+
+        const
+            start = DateUtils.addTime( this.start, timeData ),
+            end = DateUtils.addTime( this.end, timeData )
+        ;
+        return new DateRange( start, end );
+
+    }
+
     public getEnd(): Date {
 
         return this.end;

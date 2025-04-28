@@ -1,0 +1,106 @@
+table.bookingCalendar {
+
+    position: relative;
+    border-radius: 32px;
+    border-spacing: 12px 0px;
+    background: #F8E0E1;
+
+    thead {
+
+        text-align: center;
+        font-size: 24px;
+
+        td {
+
+            padding: 0.5em 0;
+
+        }
+
+    }
+
+    tbody {
+
+        td {
+
+            z-index: 1;
+            position: relative;
+            color: white;
+            height: 90px;
+
+            div {
+
+                display: block;
+                margin: auto;
+                width: calc( 150px - 1em );
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+
+            }
+
+        }
+
+        td.time-mark {
+
+            padding-right: 12px;
+            width: 62px;
+            color: black;
+            vertical-align: top;
+            text-align: right;
+
+        }
+
+        td.time-slot {
+
+            border-radius: 14px;
+            width: 150px;
+            text-align: center;
+            font-size: 14px;
+    
+        }
+
+        td.reserved, td.active, td.canceled { cursor: pointer; }
+
+        td.reserved {
+
+            background: #6B009E;
+    
+        }
+    
+        td.room-info {
+    
+            background: #555555;
+    
+        }
+
+    }
+
+    tfoot {
+
+        .grid-line {
+
+            z-index: 0;
+            position: absolute;
+            background: #552B59;
+
+        }
+
+        .grid-line.horizontal {
+
+            right: 0;
+            width: calc( 100% - 74px );
+            height: 1px;
+
+        }
+
+        .grid-line.vertical {
+
+            top: 0;
+            height: 100%;
+            width: 1px;
+
+        }
+
+    }
+
+}
