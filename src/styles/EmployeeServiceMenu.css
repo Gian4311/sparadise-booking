@@ -4,18 +4,22 @@ body {
     font-family: Arial, sans-serif;
     display: flex;
     background-color: #f8f9fa;
+    overflow-y: auto;
 }
 
 .container {
     display: flex;
     width: 100%;
+    overflow-y: auto;
+    min-height: 100vh;
 }
 
 .service-menu-main-content {
     margin-left: 17.5%;
     background-color: #FDF9FE;
     width: 80%;
-    position: fixed;
+    position: relative;
+    overflow-y: auto;
 }
 
 .service-menu-main-content-location {

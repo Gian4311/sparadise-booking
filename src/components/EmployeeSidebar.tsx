@@ -73,6 +73,16 @@ export default function EmployeeSidebar(): JSX.Element {
                         Rooms & Chairs
                     </NavLink>
                 </li>
+                <li>
+                    <NavLink 
+                        to="/management/jobs/menu" 
+                        className={({ isActive }) =>
+                            window.location.pathname.startsWith("/management/jobs") ? "active" : ""
+                        }
+                    >
+                        Jobs
+                    </NavLink>
+                </li>
                 <li><a href="#">Log Out</a></li>
             </ul>
         </div>
