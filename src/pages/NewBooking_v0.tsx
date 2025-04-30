@@ -794,7 +794,9 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
             )
             ;
         serviceTransactionDataMap[serviceTransactionId] = {
-            client: null as unknown as DocumentReference,
+            client: SpaRadiseFirestore.getDocumentReference(
+                clientIdActive, SpaRadiseEnv.CLIENT_COLLECTION
+            ),
             service: SpaRadiseFirestore.getDocumentReference(
                 serviceId, SpaRadiseEnv.SERVICE_COLLECTION
             ),

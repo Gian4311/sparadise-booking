@@ -6,6 +6,13 @@ interface ObjectParam< V > {
 
 export default class ObjectUtils {
 
+    public static clear< V, T >( object: ObjectParam< V > ): ObjectParam< V > {
+
+        for( let keyName in object ) delete object[ keyName ];
+        return object;
+
+    }
+
     public static filter< V >(
         object: ObjectParam< V >,
         filter: ( keyName: string, value: V, object: ObjectParam< V > ) => boolean
