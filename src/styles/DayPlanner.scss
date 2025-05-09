@@ -1,0 +1,149 @@
+table.dayPlanner {
+
+    position: relative;
+    border-radius: 32px;
+    border-spacing: 12px 0px;
+    background: #F8E0E1;
+
+    thead {
+
+        text-align: center;
+        font-size: 24px;
+
+        td {
+
+            height: 2.5em;
+            padding: 0.5em 0;
+
+        }
+
+    }
+
+    tbody {
+
+        td {
+
+            z-index: 1;
+            position: relative;
+            color: white;
+            height: 90px;
+
+            div {
+
+                display: block;
+                margin: auto;
+                width: calc( 150px - 1em );
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+
+            }
+
+        }
+
+        td.time-mark {
+
+            padding-right: 12px;
+            width: 62px;
+            color: black;
+            vertical-align: top;
+            text-align: right;
+
+        }
+
+        td.time-slot {
+
+            border-radius: 14px;
+            width: 150px;
+            text-align: center;
+            font-size: 14px;
+    
+        }
+
+        td.reserved, td.active, td.canceled, td.addition { cursor: pointer; }
+
+        td.reserved {
+
+            background: #6B009E;
+    
+        }
+
+        td.move {
+
+            background: #555555;
+
+        }
+
+        td.addition {
+
+            color: #552b59;
+
+            div{
+
+                display: inline-block;
+                border: 5px solid;
+                border-radius: 50%;
+                font-size: 32px;
+                width: 1.5em;
+                height: 1.5em;
+                vertical-align: middle;
+                font-weight: bold;
+                line-height: 1em;
+
+            }
+
+        }
+
+        td.addition:hover div {
+
+            color: #bb8083;
+
+        }
+
+        td.not-available {
+
+            color: #d8271a;
+
+        }
+
+    }
+
+    tfoot {
+
+        .grid-line {
+
+            z-index: 0;
+            position: absolute;
+            background: #552B59;
+
+        }
+
+        .grid-line.horizontal {
+
+            right: 0;
+            width: calc( 100% - 74px );
+            height: 1px;
+
+        }
+
+        .grid-line.vertical {
+
+            bottom: 0;
+            height: 100%;
+            width: 1px;
+
+        }
+
+    }
+
+}
+
+table.serviceTransactionManager {
+
+    button.inactive::after {
+
+        content: " +";
+
+    }
+
+}

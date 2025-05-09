@@ -197,6 +197,16 @@ export interface ServiceMaintenanceDataMap extends SpaRadiseDataMap< ServiceMain
 
 }
 
+export interface ServiceTransactionAvailabilityKeyMap {
+
+    [ serviceTransactionId: documentId ]: {
+
+        [ timeSlotId: string ]: boolean
+
+    }
+
+}
+
 export interface ServiceTransactionData extends SpaRadiseDocumentData {
 
     client: DocumentReference,

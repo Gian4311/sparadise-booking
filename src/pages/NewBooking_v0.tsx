@@ -1,6 +1,7 @@
 import {
     AccountData,
     BookingData,
+    BookingDataMap,
     ClientData,
     ClientDataMap,
     EmployeeDataMap,
@@ -31,6 +32,7 @@ import BookingUtils from "../firebase/BookingUtils";
 import Bullet from "../components/Bullet";
 import ClientUtils from "../firebase/ClientUtils";
 import DateUtils from "../utils/DateUtils";
+import DayPlanner from "../components/DayPlanner";
 import { DocumentReference } from "firebase/firestore/lite";
 import EmployeeLeaveUtils from "../firebase/EmployeeLeaveUtils";
 import EmployeeUtils from "../firebase/EmployeeUtils";
@@ -78,11 +80,6 @@ import NavBar from "../components/ClientNavBar";
 import LoadingScreen from "../components/LoadingScreen";
 import "../styles/NewBooking_v0.css"
 import DateRange from "../utils/DateRange";
-
-// booking
-// client
-// serviceTransaction
-// voucherTransaction
 
 export interface NewBookingPageData extends SpaRadisePageData {
 
@@ -404,7 +401,7 @@ export default function NewBooking(): JSX.Element {
             clientId: string = getClientId(-1)
             ;
         pageData.clientDataMap[clientId] = {
-            booking: null as unknown as DocumentReference,
+            booking: SpaRadiseFirestore.getDocumentReference( "new", SpaRadiseEnv.BOOKING_COLLECTION ),
             name: PersonUtils.format(accountData, "f mi l"),
             birthDate,
             notes: null
@@ -639,7 +636,7 @@ function ChooseClients({ pageData, reloadPageData }: {
             clientId: string = getClientId(clientIndex)
             ;
         clientDataMap[clientId] = {
-            booking: null as unknown as DocumentReference,
+            booking: SpaRadiseFirestore.getDocumentReference( "new", SpaRadiseEnv.BOOKING_COLLECTION ),
             name: null as unknown as string,
             birthDate: null as unknown as Date,
             notes: null
@@ -1051,6 +1048,69 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
 }
 
 function ChooseTimeSlots({ pageData, reloadPageData }: {
+    pageData: NewBookingPageData,
+    reloadPageData: () => void
+}): JSX.Element {
+
+    const
+        { bookingData, clientInfoMap, date, serviceTransactionOfDayDataMap } = pageData,
+        dayPlannerPageData = {
+            ...pageData,
+            bookingDataMap: { "new": bookingData } as BookingDataMap,
+            employeeLeaveDataMap: pageData.employeeLeaveOfDayDataMap,
+            serviceTransactionDefaultDataMap: serviceTransactionOfDayDataMap,
+            serviceTransactionToAddDataMap: {} as ServiceTransactionDataMap
+        }
+    ;
+
+    for( let clientId in clientInfoMap ) {
+
+        const { serviceTransactionDataMap } = clientInfoMap[ clientId ];
+        for( let serviceTransactionId in serviceTransactionDataMap )
+            dayPlannerPageData.serviceTransactionToAddDataMap[ serviceTransactionId ] =
+                serviceTransactionDataMap[ serviceTransactionId ];
+
+    }
+
+    async function checkFormValidity(): Promise<boolean> {
+
+        return true;
+
+    }
+
+    async function nextPage(): Promise<void> {
+
+        await checkFormValidity();
+        pageData.formIndex++;
+        reloadPageData();
+
+    }
+
+    async function previousPage(): Promise<void> {
+
+        pageData.formIndex--;
+        reloadPageData();
+
+    }
+
+    return <>
+        <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
+        <NavBar></NavBar>
+        <main className="booking-container">
+            <section className="form-section client-date-section">
+                <div className="time-slot-date">{DateUtils.toString(date, "Mmmm dd, yyyy")}</div>
+            </section>
+            <DayPlanner dayPlannerMode="newBooking" pageData={ dayPlannerPageData }/>
+            <section className="action-buttons">
+                <button className="back-btn" type="button" onClick={previousPage}>Back</button>
+                <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (3/4)</button>
+            </section>
+        </main>
+    </>;
+
+}
+
+function ChooseTimeSlots0({ pageData, reloadPageData }: {
     pageData: NewBookingPageData,
     reloadPageData: () => void
 }): JSX.Element {

@@ -2,7 +2,7 @@ import NewBooking from "./pages/NewBooking_v0";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DayPlannner from "./experiments/DayPlanner";
 import DevMenu from "./pages/DevMenu";
-import EmployeeBookingManagement from "./pages/EmployeeBookingMenu";
+import EmployeeBookingMenu from "./pages/EmployeeBookingMenu";
 import EmployeeLeaveManagement from "./pages/EmployeeLeaveManagement_v0";
 import EmployeeLeaves from "./pages/EmployeeLeaveMenu_v0 copy";
 import EmployeeManagement from "./pages/EmployeeManagement_v0";
@@ -37,7 +37,7 @@ function App() {
                 <Route path="dayPlanner" element={ <DayPlannner/> }/>
 
                 <Route path="management/dashboard" element={ <Dashboard/> }/>
-                <Route path="management/bookings/menu" element={ <EmployeeBookingManagement/> }/>
+                <Route path="management/bookings/menu" element={ <EmployeeBookingMenu/> }/>
                 <Route path="management/employees/menu" element={ <EmployeeMenu/> }/>
                 <Route path="management/employees/:id" element={ <EmployeeManagement/> }/>
                 <Route path="management/employeeLeaves/menu" element={ <EmployeeLeaves/> }/>

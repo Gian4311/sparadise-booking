@@ -3,22 +3,32 @@ import DateRange from "../utils/DateRange";
 import DateUtils from "../utils/DateUtils";
 import {
     BookingDataMap,
+    ClientData,
     ClientDataMap,
+    EmployeeData,
     EmployeeDataMap,
     EmployeeLeaveDataMap,
     JobDataMap,
     JobServiceDataMap,
+    ServiceData,
     ServiceDataMap,
+    ServiceTransactionAvailabilityKeyMap,
     ServiceTransactionData,
     ServiceTransactionDataMap
 } from "../firebase/SpaRadiseTypes";
+import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
+import PersonUtils from "../utils/PersonUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
 import StringUtils from "../utils/StringUtils";
 import {
     useEffect,
     useState
 } from "react";
+
+import "../styles/DayPlanner.scss";
+
+type dayPlannerMode = "newBooking" | "management";
 
 interface CalendarRow {
 
@@ -32,12 +42,13 @@ interface CalendarRow {
 interface DayPlannerPageData {
 
     date: Date,
+    bookingDataMap: BookingDataMap,
+    clientDataMap: ClientDataMap,
     employeeDataMap: EmployeeDataMap,
     employeeLeaveDataMap?: EmployeeLeaveDataMap,
     jobDataMap?: JobDataMap,
     jobServiceDataMap?: JobServiceDataMap,
     serviceDataMap: ServiceDataMap,
-    serviceTransactionAvailabilityKeyMap: ServiceTransactionAvailabilityKeyMap,
     serviceTransactionDefaultDataMap: ServiceTransactionDataMap,
     serviceTransactionToAddDataMap: ServiceTransactionDataMap
 
@@ -58,16 +69,6 @@ interface JobServiceKeyMap{
 interface ServiceEmployeeListKeyMap {
 
     [ serviceId: documentId ]: documentId[]
-
-}
-
-interface ServiceTransactionAvailabilityKeyMap {
-
-    [ serviceTransactionId: documentId ]: {
-
-        [ timeSlotId: string ]: boolean
-
-    }
 
 }
 
@@ -99,15 +100,24 @@ interface TimeSlotServiceEmployeeListKeyMap {
 
 const DATE_RANGE_FORMAT = "hh:mm-hh:mm";
 
-export default function DayPlanner( {
-    pageData
-}: {
+export default function DayPlanner( { dayPlannerMode, pageData }: {
+    dayPlannerMode: dayPlannerMode,
     pageData: DayPlannerPageData
 } ): JSX.Element {
 
     const
         [ date, setDate ] = useState< Date >( new Date( 0 ) ),
-        [ timeSlotDataMap, setTimeSlotDataMap ] = useState< TimeSlotDataMap >( {} )
+        [ timeSlotDataMap, setTimeSlotDataMap ] = useState< TimeSlotDataMap >( {} ),
+        [ clientServiceTransactionAddedMap ] = useState< { [ clientId: documentId ]: {
+            [ serviceTransactionId: documentId ]: boolean
+        } } >( {} ),
+        [
+            serviceTransactionIdActive, setServiceTransactionIdActive
+        ] = useState< documentId | undefined >( undefined ),
+        [ serviceTransactionAvailabilityKeyMap ] =
+            useState< ServiceTransactionAvailabilityKeyMap >( {} )
+        ,
+        isNewBookingMode: boolean = ( dayPlannerMode === "newBooking" )
     ;
 
     async function addServiceTransaction(
@@ -197,16 +207,14 @@ export default function DayPlanner( {
 
         // checking if time slot exists
         const
-            {
-                bookingDateTimeStart, bookingDateTimeEnd, client: { id: clientId }
-            } = serviceTransactionData,
+            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
             dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
             timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
         ;
         if( !( timeSlotId in timeSlotDataMap ) ) return false;
-
+        
         // checking if there's available rooms/chairs
-        if( !( await hasAvailableRoomType( serviceTransactionData, serviceTransactionId, clientId ) ) )
+        if( !( await hasAvailableRoomType( serviceTransactionData, serviceTransactionId ) ) )
             return false;
 
         // checking if there is assignable employee
@@ -295,66 +303,35 @@ export default function DayPlanner( {
 
     }
 
-    async function deleteServiceTransaction(
-        serviceTransactionData: ServiceTransactionData,
-        serviceTransactionId: documentId,
-        rowPosition?: timeSlotRowPosition
-    ): Promise< boolean > {
+    async function deleteServiceTransaction( serviceTransactionId: documentId ): Promise< void > {
 
-        if( !rowPosition ) {
+        function filterNonServiceTransactionId( timeSlotData: TimeSlotData | undefined ): boolean {
 
-            const serviceTransactionDataList = await preprocessServiceTransactionData(
-                serviceTransactionData
-            );
-            switch( serviceTransactionDataList.length ) {
-    
-                case 2: return (
-                    await deleteServiceTransaction(
-                        serviceTransactionDataList[ 0 ], serviceTransactionId, "up"
-                    ) && await deleteServiceTransaction(
-                        serviceTransactionDataList[ 1 ], serviceTransactionId, "down"
-                    )
-                );
-                
-                case 0: return false;
-    
-                default:
-                    serviceTransactionData = serviceTransactionDataList[ 0 ];
-                    rowPosition = "single";
-    
+            if( !timeSlotData ) return false;
+            return timeSlotData.serviceTransactionId !== serviceTransactionId;
+
+        }
+
+        for( let timeSlotId in timeSlotDataMap ) {
+
+            const { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ];
+            timeSlotDataMap[ timeSlotId ] = {
+                ...timeSlotDataMap[ timeSlotId ],
+                chairTimeSlotDataList: chairTimeSlotDataList.filter( filterNonServiceTransactionId ),
+                roomTimeSlotDataList: roomTimeSlotDataList.filter( filterNonServiceTransactionId )
             }
 
         }
-        const
-            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
-            timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
-        ;
-        if( !( timeSlotId in timeSlotDataMap ) ) return false;
-        const
-            { serviceDataMap } = pageData,
-            { service: { id: serviceId } } = serviceTransactionData,
-            { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
-            { roomType } = serviceDataMap[ serviceId ],
-            timeSlotDataList: ( TimeSlotData | undefined )[] =
-                ( roomType === "chair" ) ? chairTimeSlotDataList : roomTimeSlotDataList
-            ,
-            timeSlotIndex: number = await getIndexOfServiceTransaction(
-                serviceTransactionData, serviceTransactionId, rowPosition
-            )
-        ;
-        timeSlotDataList.splice( timeSlotIndex, 1 );
-        return true;
 
     }
 
-    function getArrangedTimeSlotDataMap(
-        bookingDataMap: BookingDataMap, clientDataMap: ClientDataMap
-    ): TimeSlotDataMap {
+    function getArrangedTimeSlotDataMap(): TimeSlotDataMap {
 
         const
-            { serviceDataMap } = pageData,
-            timeSlotDataMap: TimeSlotDataMap = {}
+            {
+                bookingDataMap, clientDataMap, serviceDataMap, serviceTransactionToAddDataMap
+            } = pageData,
+            timeSlotDataMapArranged: TimeSlotDataMap = {}
         ;
         let maxChairColumns: number = 0, maxRoomColumns: number = 0;
 
@@ -376,8 +353,8 @@ export default function DayPlanner( {
                 {
                     reservedDateTime: reservedDateTime2, canceledDateTime: canceledDateTime2
                 } = bookingDataMap[ bookingId2 ],
-                ms1 = reservedDateTime1.getTime(),
-                ms2 = reservedDateTime2.getTime()
+                ms1: number = reservedDateTime1?.getTime() ?? 0,
+                ms2: number = reservedDateTime2?.getTime() ?? 0
             ;
             if( canceledDateTime1 && !canceledDateTime2 ) return 1;
             if( ms1 > ms2 ) return 1;
@@ -399,22 +376,35 @@ export default function DayPlanner( {
 
         }
 
+        function filterToAddTimeSlotData( timeSlotData: TimeSlotData | undefined ): boolean {
+
+            if( !timeSlotData ) return false;
+            return timeSlotData.serviceTransactionId in serviceTransactionToAddDataMap;
+
+        }
+
         for( let timeSlotId in timeSlotDataMap ) {
 
             const calendarRow: CalendarRow = { ...timeSlotDataMap[ timeSlotId ] };
-            calendarRow.chairTimeSlotDataList = [ ...calendarRow.chairTimeSlotDataList.sort(
-                compareTimeSlotData
-            ) ];
-            calendarRow.roomTimeSlotDataList = [ ...calendarRow.roomTimeSlotDataList.sort(
-                compareTimeSlotData
-            ) ];
+            let
+                chairTimeSlotDataList = [ ...calendarRow.chairTimeSlotDataList ],
+                roomTimeSlotDataList = [ ...calendarRow.roomTimeSlotDataList ]
+            ;
+            if( isNewBookingMode ) {
+
+                chairTimeSlotDataList = chairTimeSlotDataList.filter( filterToAddTimeSlotData );
+                roomTimeSlotDataList = roomTimeSlotDataList.filter( filterToAddTimeSlotData );
+
+            }
+            chairTimeSlotDataList.sort( compareTimeSlotData );
+            roomTimeSlotDataList.sort( compareTimeSlotData );
             const
                 { length: chairColumns } = calendarRow.chairTimeSlotDataList,
                 { length: roomColumns } = calendarRow.roomTimeSlotDataList
             ;
             maxChairColumns = Math.max( maxChairColumns, chairColumns );
             maxRoomColumns = Math.max( maxRoomColumns, roomColumns );
-            timeSlotDataMap[ timeSlotId ] = calendarRow;
+            timeSlotDataMapArranged[ timeSlotId ] = calendarRow;
 
         }
 
@@ -424,12 +414,12 @@ export default function DayPlanner( {
             let maxColumns: number = isChair ? maxChairColumns : maxRoomColumns;
             for( let column: number = 0; column < maxColumns; column++ ) {
 
-                for( let timeSlotId in timeSlotDataMap ) {
+                for( let timeSlotId in timeSlotDataMapArranged ) {
     
                     const
                         {
                             chairTimeSlotDataList, roomTimeSlotDataList
-                        } = timeSlotDataMap[ timeSlotId ],
+                        } = timeSlotDataMapArranged[ timeSlotId ],
                         timeSlotDataList = isChair ? chairTimeSlotDataList : roomTimeSlotDataList,
                         timeSlotData = timeSlotDataList[ column ]
                     ;
@@ -449,7 +439,7 @@ export default function DayPlanner( {
                         {
                             chairTimeSlotDataList: matchChairTimeSlotDataList,
                             roomTimeSlotDataList: matchRoomTimeSlotDataList
-                        } = timeSlotDataMap[ timeSlotMatchId ],
+                        } = timeSlotDataMapArranged[ timeSlotMatchId ],
                         matchTimeSlotDataList =
                             isChair ? matchChairTimeSlotDataList : matchRoomTimeSlotDataList
                     ;
@@ -477,13 +467,13 @@ export default function DayPlanner( {
 
         rearrangeTable( "chair" );
         rearrangeTable( "room" );
-        return timeSlotDataMap;
+        return timeSlotDataMapArranged;
 
     }
 
-    async function getAvailableChairs(
+    function getAvailableChairs(
         timeSlotId: string, clientIdIgnoreList: documentId[] = []
-    ): Promise< number > {
+    ): number {
     
         const
             clientMap: { [ clientId: documentId ]: undefined } = {},
@@ -500,9 +490,9 @@ export default function DayPlanner( {
 
     }
 
-    async function getAvailableRooms(
+    function getAvailableRooms(
         timeSlotId: string, clientIdIgnoreList: documentId[] = []
-    ): Promise< number > {
+    ): number {
 
         const
             clientMap: { [ clientId: documentId ]: undefined } = {},
@@ -574,6 +564,7 @@ export default function DayPlanner( {
     function getDateRangeFromTimeSlotId( timeSlotId: string ): DateRange {
 
         const
+            { date } = pageData,
             [ hr1, min1, hr2, min2 ] =
                 timeSlotId.replace( `-`, `:` ).split( `:` ).map( value => +value )
             ,
@@ -669,10 +660,10 @@ export default function DayPlanner( {
 
         const
             dateRange: DateRange = getDateRangeFromTimeSlotId( timeSlotId ).addTime( { min: -30 } ),
-            timeSlotIdBelow: string = dateRange.toString( DATE_RANGE_FORMAT ),
-            exists: boolean = timeSlotIdBelow in timeSlotDataMap
+            timeSlotIdAbove: string = dateRange.toString( DATE_RANGE_FORMAT ),
+            exists: boolean = timeSlotIdAbove in timeSlotDataMap
         ;
-        return exists ? timeSlotIdBelow : undefined;
+        return exists ? timeSlotIdAbove : undefined;
 
     }
 
@@ -735,15 +726,47 @@ export default function DayPlanner( {
 
     }
 
+    async function handleAddToTimeSlot( timeSlotId: string ): Promise< void > {
+
+        if( !serviceTransactionIdActive ) return;
+        await deleteServiceTransaction( serviceTransactionIdActive );
+        const { serviceDataMap, serviceTransactionToAddDataMap } = pageData;
+        let serviceTransactionData = serviceTransactionToAddDataMap[ serviceTransactionIdActive ];
+        const
+            { id: serviceId } = serviceTransactionData.service,
+            { durationMin } = serviceDataMap[ serviceId ],
+            DURATION_ADD = { min: 30 }
+        ;
+        let dateRange: DateRange = getDateRangeFromTimeSlotId( timeSlotId );
+        if( durationMin > 30 ) dateRange = dateRange.addEnd( DURATION_ADD );
+        serviceTransactionData.bookingDateTimeStart = dateRange.getStart();
+        serviceTransactionData.bookingDateTimeEnd = dateRange.getEnd();
+        await addServiceTransaction( serviceTransactionData, serviceTransactionIdActive );
+        setServiceTransactionIdActive( undefined );
+        await loadServiceTransactionToAddData();
+        reloadTimeSlotDataMap();
+
+    }
+
+    async function handleChangeServiceTransactionIdActive(
+        serviceTransactionIdActive: documentId
+    ): Promise< void > {
+
+        setServiceTransactionIdActive( serviceTransactionIdActive );
+        reloadTimeSlotDataMap();
+
+    }
+
     async function hasAvailableRoomType(
         serviceTransactionData: ServiceTransactionData,
-        serviceTransactionId: documentId,
-        clientId: documentId
+        serviceTransactionId: documentId
     ): Promise< boolean > {
 
         const
             { serviceDataMap } = pageData,
-            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+            {
+                bookingDateTimeStart, bookingDateTimeEnd, client: { id: clientId }
+            } = serviceTransactionData,
             dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
             timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT ),
             { service: { id: serviceId } } = serviceTransactionData,
@@ -780,7 +803,7 @@ export default function DayPlanner( {
         }
         const
             { roomType } = serviceDataMap[ serviceId ],
-            roomTypeAvailableCount: number = await(
+            roomTypeAvailableCount: number = (
                 ( roomType === "chair" ) ? getAvailableChairs( timeSlotId, [ clientId ] )
                 : getAvailableRooms( timeSlotId, [ clientId ] )
             )
@@ -789,12 +812,79 @@ export default function DayPlanner( {
 
     }
 
+    async function hasServiceTransaction(
+        serviceTransactionData: ServiceTransactionData,
+        serviceTransactionId: documentId
+    ): Promise< boolean > {
+
+        const serviceTransactionDataList = await preprocessServiceTransactionData(
+            serviceTransactionData
+        );
+        switch( serviceTransactionDataList.length ) {
+
+            case 2: return (
+                await hasServiceTransaction( serviceTransactionDataList[ 1 ], serviceTransactionId )
+                && await hasServiceTransaction( serviceTransactionDataList[ 0 ], serviceTransactionId )
+            );
+            
+            case 0: return false;
+
+            default: serviceTransactionData = serviceTransactionDataList[ 0 ];
+
+        }
+        const
+            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
+            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
+            timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
+        ;
+        if( !( timeSlotId in timeSlotDataMap ) ) return false;
+        const
+            { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
+            timeSlotDataList: ( TimeSlotData | undefined )[] = [
+                ...chairTimeSlotDataList, ...roomTimeSlotDataList
+            ]
+        ;
+        for( let timeSlotData of timeSlotDataList ) {
+
+            if( !timeSlotData ) continue;
+            const { serviceTransactionId: serviceTransactionIdCompare } = timeSlotData;
+            if( serviceTransactionId === serviceTransactionIdCompare ) return true;
+
+        }
+        return false;
+
+    }
+
+    function hasUpServiceTransaction(
+        serviceTransactionId: documentId,
+        timeSlotId: string
+    ): boolean {
+
+        if( !( timeSlotId in timeSlotDataMap ) ) return false;
+        const
+            { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
+            timeSlotDataList: ( TimeSlotData | undefined )[] = [
+                ...chairTimeSlotDataList, ...roomTimeSlotDataList
+            ]
+        ;
+        for( let timeSlotData of timeSlotDataList ) {
+
+            if( !timeSlotData ) continue;
+            const { serviceTransactionId: serviceTransactionIdCompare, rowPosition } = timeSlotData;
+            if( rowPosition === "down" ) continue;
+            if( serviceTransactionId === serviceTransactionIdCompare ) return true;
+
+        }
+        return false;
+
+    }
+
     async function handleChangeDate(): Promise< void > {
 
         await loadTimeSlotIdList();
         await loadCapacityData();
         await loadServiceTransactionDefaultData();
-        await loadServiceTransactionToAddData();
+        setTimeSlotDataMap( { ...timeSlotDataMap } );
 
     }
 
@@ -814,27 +904,123 @@ export default function DayPlanner( {
     async function loadComponentData(): Promise< void > {
 
         const newDate: Date = pageData.date;
-        if( DateUtils.areSameByDay( date, newDate ) ) return;
-        setDate( newDate );
-        await handleChangeDate();
-        reloadComponentData();
+        if( !DateUtils.areSameByDay( date, newDate ) ) {
+
+            setDate( newDate );
+            await handleChangeDate();
+
+        }
+        await loadServiceTransactionToAddData();
+        reloadTimeSlotDataMap();
 
     }
 
     async function loadServiceTransactionToAddData(): Promise< void > {
 
-        pageData.serviceTransactionAvailabilityKeyMap = {};
-        const { serviceTransactionAvailabilityKeyMap, serviceTransactionToAddDataMap } = pageData;
+        ObjectUtils.clear( clientServiceTransactionAddedMap );
+        ObjectUtils.clear( serviceTransactionAvailabilityKeyMap );
+        const
+            { date, serviceDataMap, serviceTransactionToAddDataMap } = pageData,
+            serviceTransactionSameDayDataMap: ServiceTransactionDataMap = {},
+            serviceTransactionOtherDayDataMap: ServiceTransactionDataMap = {}
+        ;
+
         for( let serviceTransactionId in serviceTransactionToAddDataMap ) {
 
-            serviceTransactionAvailabilityKeyMap[ serviceTransactionId ] = {};
-            const serviceTransactionAvailabilityData =
-                serviceTransactionAvailabilityKeyMap[ serviceTransactionId ]
+            const
+                serviceTransactionData = serviceTransactionToAddDataMap[ serviceTransactionId ],
+                {
+                    bookingDateTimeEnd, bookingDateTimeStart, client: { id: clientId }
+                } = serviceTransactionData
             ;
+            if( !( clientId in clientServiceTransactionAddedMap ) )
+                clientServiceTransactionAddedMap[ clientId ] = {};
+            clientServiceTransactionAddedMap[ clientId ][ serviceTransactionId ] = false;
+            if( !bookingDateTimeEnd || !bookingDateTimeStart )
+                continue;
+            else if(
+                DateUtils.areSameByDay( date, bookingDateTimeStart )
+                && DateUtils.areSameByDay( date, bookingDateTimeEnd )
+            ) {
+                serviceTransactionSameDayDataMap[ serviceTransactionId ] = serviceTransactionData;
+                clientServiceTransactionAddedMap[ clientId ][ serviceTransactionId ] = true;
+            } else
+                serviceTransactionOtherDayDataMap[ serviceTransactionId ] = serviceTransactionData;
+
+        }
+
+        for( let serviceTransactionId in serviceTransactionSameDayDataMap ) {
+
+            const
+                serviceTransactionData = serviceTransactionSameDayDataMap[ serviceTransactionId ],
+                { client: { id: clientId } } = serviceTransactionData
+            ;
+            clientServiceTransactionAddedMap[ clientId ][ serviceTransactionId ] = true;
+
+        }
+
+        for( let serviceTransactionId in serviceTransactionToAddDataMap ) {
+
+            const
+                serviceTransactionData = serviceTransactionToAddDataMap[ serviceTransactionId ],
+                { id: serviceId } = serviceTransactionData.service,
+                { durationMin } = serviceDataMap[ serviceId ],
+                DURATION_ADD = { min: 30 }
+            ;
+            serviceTransactionAvailabilityKeyMap[ serviceTransactionId ] = {};
             for( let timeSlotId in timeSlotDataMap ) {
 
-                const dateRange: DateRange = getDateRangeFromTimeSlotId( timeSlotId );
+                let dateRange: DateRange = getDateRangeFromTimeSlotId( timeSlotId );
+                if( durationMin > 30 ) dateRange = dateRange.addEnd( DURATION_ADD );
+                
+                const serviceTransactionDataOption: ServiceTransactionData = {
+                    ...serviceTransactionData,
+                    bookingDateTimeStart: dateRange.getStart(),
+                    bookingDateTimeEnd: dateRange.getEnd()
+                };
+                serviceTransactionAvailabilityKeyMap[ serviceTransactionId ][ timeSlotId ] =
+                    await hasServiceTransaction(
+                        serviceTransactionDataOption, serviceTransactionId
+                    ) || await canAddServiceTransactionData(
+                        serviceTransactionDataOption, serviceTransactionId
+                    )
+                ;
 
+            }
+        
+        }
+
+        for( let serviceTransactionId in serviceTransactionOtherDayDataMap ) {
+
+            const
+                serviceTransactionData = serviceTransactionToAddDataMap[ serviceTransactionId ],
+                { client: { id: clientId } } = serviceTransactionData
+            ;
+            let { bookingDateTimeEnd, bookingDateTimeStart } = serviceTransactionData;
+            const dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd );
+            if( dateRange.getDifferenceMin() > 30 ) dateRange.addTime( { min: -30 } );
+            const timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT );
+            if( serviceTransactionAvailabilityKeyMap[ serviceTransactionId ][ timeSlotId ] ) {
+
+                const timeData: TimeData = {
+                    yr: date.getFullYear(),
+                    mon: date.getMonth(),
+                    day: date.getDate()
+                };
+                serviceTransactionData.bookingDateTimeStart = DateUtils.setTime(
+                    bookingDateTimeStart, timeData
+                );
+                serviceTransactionData.bookingDateTimeEnd = DateUtils.setTime(
+                    bookingDateTimeEnd, timeData
+                );
+                clientServiceTransactionAddedMap[ clientId ][ serviceTransactionId ] = true;
+
+            } else {
+
+                serviceTransactionData.bookingDateTimeStart = null as unknown as Date;
+                serviceTransactionData.bookingDateTimeEnd = null as unknown as Date;
+                clientServiceTransactionAddedMap[ clientId ][ serviceTransactionId ] = false;
+                deleteServiceTransaction( serviceTransactionId );
 
             }
 
@@ -856,6 +1042,7 @@ export default function DayPlanner( {
 
     async function loadTimeSlotIdList(): Promise< void > {
     
+        ObjectUtils.clear( timeSlotDataMap );
         const dateRange = getDateRangeOfDay();
         if( !dateRange ) return;
         const
@@ -917,10 +1104,281 @@ export default function DayPlanner( {
 
     }
 
-    function reloadComponentData(): void { setTimeSlotDataMap( { ...timeSlotDataMap } ); }
+    function reloadTimeSlotDataMap(): void {
+
+        setTimeSlotDataMap( { ...timeSlotDataMap } );
+
+    }
 
     useEffect( () => { loadComponentData(); }, [ pageData ]);
 
-    return <></>;
+    const timeSlotDataMapArranged = getArrangedTimeSlotDataMap();
+    let chairColumns: number = 0, roomColumns: number = 0;
+    if( !isNewBookingMode ) for( let timeSlotId in timeSlotDataMap ) {
+
+        const { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ];
+        chairColumns = Math.max( chairColumns, chairTimeSlotDataList.length );
+        roomColumns = Math.max( roomColumns, roomTimeSlotDataList.length );
+
+    }
+
+    return <>
+        <table className="dayPlanner">
+            <thead><tr>
+                <td></td>
+                {
+                    !isNewBookingMode ? <>
+                        <td colSpan={ roomColumns + 1 }>ROOMS</td>
+                        <td colSpan={ chairColumns + 1 }>CHAIRS</td>
+                    </> : <>
+                        <td colSpan={ roomColumns + chairColumns + 2 }>DAY PLANNER</td>
+                    </>
+                }
+            </tr></thead>
+            <tbody>{
+                Object.keys( timeSlotDataMapArranged ).map( ( timeSlotId, index ) => {
+
+                    const
+                        { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMapArranged[ timeSlotId ],
+                        emptyChairTimeSlotList: undefined[] = [],
+                        emptyRoomTimeSlotList: undefined[] = []
+                    ;
+                    let timeMark: string | undefined = undefined;
+                    for(
+                        let index: number = 0;
+                        index < ( chairColumns - chairTimeSlotDataList.length );
+                        index++
+                    ) emptyChairTimeSlotList.push( undefined );
+                    for(
+                        let index: number = 0;
+                        index < ( roomColumns - roomTimeSlotDataList.length );
+                        index++
+                    ) emptyRoomTimeSlotList.push( undefined );
+                    if( NumberUtils.isEven( index ) ) {
+
+                        const
+                            [ hr, min ] =
+                                timeSlotId.replace( `-`, `:` ).split( `:` ).map( value => +value )
+                            ,
+                            timeData: TimeData = { hr, min }
+                        ;
+                        timeMark = DateUtils.toString(
+                            DateUtils.setTime( pageData.date, timeData ), "h AM"
+                        )
+
+                    }
+
+                    return <tr key={ timeSlotId }>
+                        <td className="time-mark">{ timeMark }</td>
+                        {
+                            roomTimeSlotDataList.map( timeSlotData => {
+
+                                if( !timeSlotData ) return undefined;
+                                const
+                                    {
+                                        rowPosition, serviceTransactionId, serviceTransactionData,
+                                        serviceTransactionData: {
+                                            client: { id: clientId },
+                                            service: { id: serviceId }
+                                        }
+                                    } = timeSlotData,
+                                    { booking: { id: bookingId } } = pageData.clientDataMap[ clientId ],
+                                    {
+                                        activeDateTime, finishedDateTime, canceledDateTime
+                                    } = pageData.bookingDataMap[ bookingId ],
+                                    className: string =
+                                        canceledDateTime ? "canceled"
+                                        : finishedDateTime ? "finished"
+                                        : activeDateTime ? "active"
+                                        : "reserved"
+                                ;
+                                if( rowPosition === "down" ) return undefined;
+                                return <TimeSlot
+                                    className={ ( serviceTransactionIdActive !== serviceTransactionId ) ? className : `move` }
+                                    clientData={ pageData.clientDataMap[ clientId ] }
+                                    // employee
+                                    key={ serviceTransactionId }
+                                    onClick={ () => handleChangeServiceTransactionIdActive(
+                                        serviceTransactionId
+                                    ) }
+                                    rowPosition={ rowPosition }
+                                    serviceData={ pageData.serviceDataMap[ serviceId ] }
+                                    serviceTransactionData={ serviceTransactionData }
+                                />;
+
+                            } )
+                        }
+                        {
+                            !isNewBookingMode ? <td className="time-slot room-info"><div>{ getAvailableRooms( timeSlotId ) } rooms available</div></td>
+                            : undefined
+                        }
+                        {
+                            emptyRoomTimeSlotList.map( ( _, index ) => <td className="time-slot" key={ index }></td> )
+                        }
+                        {
+                            chairTimeSlotDataList.map( timeSlotData => {
+
+                                if( !timeSlotData ) return undefined;
+                                const
+                                    {
+                                        rowPosition, serviceTransactionId, serviceTransactionData,
+                                        serviceTransactionData: {
+                                            client: { id: clientId },
+                                            service: { id: serviceId }
+                                        }
+                                    } = timeSlotData,
+                                    { booking: { id: bookingId } } = pageData.clientDataMap[ clientId ],
+                                    {
+                                        activeDateTime, finishedDateTime, canceledDateTime
+                                    } = pageData.bookingDataMap[ bookingId ],
+                                    className: string =
+                                        canceledDateTime ? "canceled"
+                                        : finishedDateTime ? "finished"
+                                        : activeDateTime ? "active"
+                                        : "reserved"
+                                ;
+                                if( rowPosition === "down" ) return undefined;
+                                return <TimeSlot
+                                    className={ ( serviceTransactionIdActive !== serviceTransactionId ) ? className : `move` }
+                                    clientData={ pageData.clientDataMap[ clientId ] }
+                                    // employee
+                                    key={ serviceTransactionId }
+                                    onClick={ () => handleChangeServiceTransactionIdActive(
+                                        serviceTransactionId
+                                    ) }
+                                    rowPosition={ rowPosition }
+                                    serviceData={ pageData.serviceDataMap[ serviceId ] }
+                                    serviceTransactionData={ serviceTransactionData }
+                                />;
+
+                            } )
+                        }
+                        {
+                            !isNewBookingMode ? <td className="time-slot room-info"><div>{ getAvailableChairs( timeSlotId ) } chairs available</div></td>
+                            : undefined
+                        }
+                        {
+                            emptyChairTimeSlotList.map( ( _, index ) => <td className="time-slot" key={ index }></td> )
+                        }
+                        {
+                            (
+                                serviceTransactionIdActive === undefined || hasUpServiceTransaction( serviceTransactionIdActive, timeSlotId )
+                            ) ? undefined
+                            : ( serviceTransactionAvailabilityKeyMap[ serviceTransactionIdActive ][ timeSlotId ] ) ?
+                                <td className="time-slot addition" onClick={ () => handleAddToTimeSlot( timeSlotId ) }>
+                                    <div>+</div>
+                                </td>
+                            : <td className="time-slot not-available">Not available</td>
+                        }
+                    </tr>;
+
+                } )
+            }</tbody>
+            <tfoot><tr><td>
+                {   
+                    ArrayUtils.createEmptyArray(
+                        Math.ceil( ObjectUtils.keyLength( timeSlotDataMap ) / 2 )
+                    ).map( ( _, index ) => <div
+                        className="grid-line horizontal"
+                        key={ index }
+                        style={ { bottom: ( 180 + 180 * index ) + `px` } }
+                    ></div> )
+                    
+                }
+                <div className="grid-line vertical" style={ { left: `86px` } }></div>
+                {
+                    !isNewBookingMode ? <div className="grid-line vertical" style={ {
+                        left: ( 248 + 162 * roomColumns ) + `px`
+                    } }></div> : undefined
+                }
+                
+            </td></tr></tfoot>
+        </table>
+        {
+            isNewBookingMode ? <table className="serviceTransactionManager"><tbody>{
+                Object.keys( clientServiceTransactionAddedMap ).sort(
+                    ( clientId1, clientId2 ) => {
+    
+                        const
+                            { clientDataMap } = pageData,
+                            { name: name1 } = clientDataMap[ clientId1 ],
+                            { name: name2 } = clientDataMap[ clientId2 ]
+                        ;
+                        return StringUtils.compare( name1, name2 );
+    
+                    }
+                ).map( clientId => {
+                    
+                    return <tr key={ clientId }>
+                        <td>
+                            { pageData.clientDataMap[ clientId ].name }
+                        </td>
+                        <td>{
+                            Object
+                                .keys( clientServiceTransactionAddedMap[ clientId ] )
+                                .sort( ( serviceTransactionId1, serviceTransactionId2 ) => {
+    
+                                    const
+                                        { serviceDataMap } = pageData,
+                                        { id: serviceId1 } = pageData.serviceTransactionToAddDataMap[
+                                            serviceTransactionId1
+                                        ].service,
+                                        { id: serviceId2 } = pageData.serviceTransactionToAddDataMap[
+                                            serviceTransactionId2
+                                        ].service,
+                                        { name: name1 } = serviceDataMap[ serviceId1 ],
+                                        { name: name2 } = serviceDataMap[ serviceId2 ]
+                                    ;
+                                    return StringUtils.compare( name1, name2 );
+    
+                                } ).map( serviceTransactionId => {
+    
+                                    const
+                                        { serviceDataMap } = pageData,
+                                        { id: serviceId } = pageData.serviceTransactionToAddDataMap[
+                                            serviceTransactionId
+                                        ].service,
+                                        { name } = serviceDataMap[ serviceId ]
+                                    ;
+                                    return <button
+                                        className="inactive"
+                                        key={ serviceTransactionId }
+                                        type="button"
+                                        onClick={ () => handleChangeServiceTransactionIdActive(
+                                            serviceTransactionId
+                                        ) }
+                                    >{ name }</button>
+    
+                                } )
+                        }</td>
+                    </tr>;
+    
+                } )
+            }</tbody></table> : undefined
+        }
+    </>;
+
+}
+
+function TimeSlot( {
+    className, clientData, employeeData, rowPosition, serviceData,
+    onClick
+}: {
+    className: string,
+    clientData: ClientData,
+    employeeData?: EmployeeData,
+    rowPosition: timeSlotRowPosition,
+    serviceData: ServiceData,
+    serviceTransactionData: ServiceTransactionData,
+    onClick?: () => Promise< void > | void
+} ): JSX.Element {
+
+    className = `time-slot ${ className }`;
+    const employeeName: string = employeeData ? PersonUtils.format( employeeData, "f mi l" ) : "-";
+    return <td className={ className } rowSpan={ ( rowPosition === "up" ) ? 2 : undefined } onClick={ onClick }>
+        <div>{ clientData.name }</div>
+        <div>{ serviceData.name }</div>
+        <div>{ employeeName }</div>
+    </td>;
 
 }
