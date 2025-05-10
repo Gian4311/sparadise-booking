@@ -120,3 +120,12 @@ body {
     cursor: pointer;
   }
   
+  .accordion-content {
+    display: none;
+    padding: 10px;
+  }
+  
+  .accordion-item .accordion-content {
+    display: block;
+  }
+  
