@@ -48,7 +48,7 @@ import FormTinyTextInput from "../components/FormTinyTextInput";
 import FormVoucherInput from "../components/FormVoucherInput";
 import JobServiceUtils from "../firebase/JobServiceUtils";
 import JobUtils from "../firebase/JobUtils";
-import NewBookingDateInput from "../components/NewBookingDateInput";
+import BookingDateInput from "../components/BookingDateInput";
 import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
 import PackageMaintenanceUtils from "../firebase/PackageMaintenanceUtils";
@@ -936,7 +936,7 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
             <section className="form-section client-date-section">
                 <div className="date-input">
                     <label className="input-label">Choose date</label>
-                    <NewBookingDateInput pageData={pageData} onChange={handleChangeDate} reloadPageData={reloadPageData} />
+                    <BookingDateInput pageData={pageData} onChange={handleChangeDate} reloadPageData={reloadPageData} />
                 </div>
             </section>
             <div className="client-input">
@@ -1057,6 +1057,7 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
         dayPlannerPageData = {
             ...pageData,
             bookingDataMap: { "new": bookingData } as BookingDataMap,
+            bookingIdActive: "new",
             employeeLeaveDataMap: pageData.employeeLeaveOfDayDataMap,
             serviceTransactionDefaultDataMap: serviceTransactionOfDayDataMap,
             serviceTransactionToAddDataMap: {} as ServiceTransactionDataMap
@@ -1100,7 +1101,7 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
             <section className="form-section client-date-section">
                 <div className="time-slot-date">{DateUtils.toString(date, "Mmmm dd, yyyy")}</div>
             </section>
-            <DayPlanner dayPlannerMode="newBooking" pageData={ dayPlannerPageData }/>
+            <DayPlanner dayPlannerMode="newBooking" pageData={ dayPlannerPageData } reloadPageData={ reloadPageData }/>
             <section className="action-buttons">
                 <button className="back-btn" type="button" onClick={previousPage}>Back</button>
                 <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (3/4)</button>
