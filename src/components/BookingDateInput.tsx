@@ -4,20 +4,26 @@ import {
     useState
 } from "react";
 import DateUtils from "../utils/DateUtils";
-import { NewBookingPageData } from "../pages/NewBooking_v0";
+import { SpaRadisePageData } from "../firebase/SpaRadiseTypes";
 
 type main = Date;
 
 const DATE_FORMAT = "yyyy-mm-dd";
 
-export default function NewBookingDateInput(
+interface BookingManagementPageData extends SpaRadisePageData {
+
+    date: Date
+
+}
+
+export default function BookingDateInput(
     {
         className, name, pageData, placeholder, readOnly, required = true,
         onChange, reloadPageData, validate
     }: {
         className?: string,
         name?: string,
-        pageData: NewBookingPageData,
+        pageData: BookingManagementPageData,
         placeholder?: string,
         readOnly?: boolean,
         required?: boolean,

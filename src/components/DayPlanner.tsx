@@ -20,6 +20,7 @@ import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
 import PersonUtils from "../utils/PersonUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
+import { SpaRadisePageData } from "../firebase/SpaRadiseTypes";
 import StringUtils from "../utils/StringUtils";
 import {
     useEffect,
@@ -39,10 +40,11 @@ interface CalendarRow {
 
 }
 
-interface DayPlannerPageData {
+interface DayPlannerPageData extends SpaRadisePageData {
 
     date: Date,
     bookingDataMap: BookingDataMap,
+    bookingIdActive: string | undefined,
     clientDataMap: ClientDataMap,
     employeeDataMap: EmployeeDataMap,
     employeeLeaveDataMap?: EmployeeLeaveDataMap,
@@ -100,13 +102,13 @@ interface TimeSlotServiceEmployeeListKeyMap {
 
 const DATE_RANGE_FORMAT = "hh:mm-hh:mm";
 
-export default function DayPlanner( { dayPlannerMode, pageData }: {
+export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }: {
     dayPlannerMode: dayPlannerMode,
-    pageData: DayPlannerPageData
+    pageData: DayPlannerPageData,
+    reloadPageData: () => void
 } ): JSX.Element {
 
     const
-        [ date, setDate ] = useState< Date >( new Date( 0 ) ),
         [ timeSlotDataMap, setTimeSlotDataMap ] = useState< TimeSlotDataMap >( {} ),
         [ clientServiceTransactionAddedMap ] = useState< { [ clientId: documentId ]: {
             [ serviceTransactionId: documentId ]: boolean
@@ -167,8 +169,15 @@ export default function DayPlanner( { dayPlannerMode, pageData }: {
             timeSlotDataList: ( TimeSlotData | undefined )[] =
                 ( roomType === "chair" ) ? chairTimeSlotDataList
                 : roomTimeSlotDataList
+            ,
+            added: boolean = Boolean( timeSlotDataList.find( timeSlotData => {
+
+                if( !timeSlotData ) return false;
+                return timeSlotData.serviceTransactionId === serviceTransactionId;
+
+            } ) )
         ;
-        timeSlotDataList.push( timeSlotData );
+        if( !added ) timeSlotDataList.push( timeSlotData );
         return true;
 
     }
@@ -741,7 +750,6 @@ export default function DayPlanner( { dayPlannerMode, pageData }: {
         if( durationMin > 30 ) dateRange = dateRange.addEnd( DURATION_ADD );
         serviceTransactionData.bookingDateTimeStart = dateRange.getStart();
         serviceTransactionData.bookingDateTimeEnd = dateRange.getEnd();
-        await addServiceTransaction( serviceTransactionData, serviceTransactionIdActive );
         setServiceTransactionIdActive( undefined );
         await loadServiceTransactionToAddData();
         reloadTimeSlotDataMap();
@@ -884,7 +892,6 @@ export default function DayPlanner( { dayPlannerMode, pageData }: {
         await loadTimeSlotIdList();
         await loadCapacityData();
         await loadServiceTransactionDefaultData();
-        setTimeSlotDataMap( { ...timeSlotDataMap } );
 
     }
 
@@ -903,13 +910,7 @@ export default function DayPlanner( { dayPlannerMode, pageData }: {
 
     async function loadComponentData(): Promise< void > {
 
-        const newDate: Date = pageData.date;
-        if( !DateUtils.areSameByDay( date, newDate ) ) {
-
-            setDate( newDate );
-            await handleChangeDate();
-
-        }
+        await handleChangeDate();
         await loadServiceTransactionToAddData();
         reloadTimeSlotDataMap();
 
@@ -944,6 +945,7 @@ export default function DayPlanner( { dayPlannerMode, pageData }: {
             ) {
                 serviceTransactionSameDayDataMap[ serviceTransactionId ] = serviceTransactionData;
                 clientServiceTransactionAddedMap[ clientId ][ serviceTransactionId ] = true;
+                await addServiceTransaction( serviceTransactionData, serviceTransactionId );
             } else
                 serviceTransactionOtherDayDataMap[ serviceTransactionId ] = serviceTransactionData;
 
@@ -1171,7 +1173,7 @@ export default function DayPlanner( { dayPlannerMode, pageData }: {
                     return <tr key={ timeSlotId }>
                         <td className="time-mark">{ timeMark }</td>
                         {
-                            roomTimeSlotDataList.map( timeSlotData => {
+                            roomTimeSlotDataList.map( ( timeSlotData, index ) => {
 
                                 if( !timeSlotData ) return undefined;
                                 const
@@ -1194,16 +1196,21 @@ export default function DayPlanner( { dayPlannerMode, pageData }: {
                                 ;
                                 if( rowPosition === "down" ) return undefined;
                                 return <TimeSlot
-                                    className={ ( serviceTransactionIdActive !== serviceTransactionId ) ? className : `move` }
+                                    className={ ( !isNewBookingMode || serviceTransactionIdActive !== serviceTransactionId ) ? className : `move` }
                                     clientData={ pageData.clientDataMap[ clientId ] }
+                                    columnIndex={ index }
+                                    dayPlannerMode={ dayPlannerMode }
                                     // employee
                                     key={ serviceTransactionId }
+                                    rowPosition={ rowPosition }
+                                    serviceData={ pageData.serviceDataMap[ serviceId ] }
+                                    serviceTransactionId={ serviceTransactionId }
+                                    serviceTransactionIdActive={ serviceTransactionIdActive }
+                                    serviceTransactionData={ serviceTransactionData }
                                     onClick={ () => handleChangeServiceTransactionIdActive(
                                         serviceTransactionId
                                     ) }
-                                    rowPosition={ rowPosition }
-                                    serviceData={ pageData.serviceDataMap[ serviceId ] }
-                                    serviceTransactionData={ serviceTransactionData }
+                                    reloadPageData={ reloadPageData }
                                 />;
 
                             } )
@@ -1216,7 +1223,7 @@ export default function DayPlanner( { dayPlannerMode, pageData }: {
                             emptyRoomTimeSlotList.map( ( _, index ) => <td className="time-slot" key={ index }></td> )
                         }
                         {
-                            chairTimeSlotDataList.map( timeSlotData => {
+                            chairTimeSlotDataList.map( ( timeSlotData, index ) => {
 
                                 if( !timeSlotData ) return undefined;
                                 const
@@ -1239,16 +1246,21 @@ export default function DayPlanner( { dayPlannerMode, pageData }: {
                                 ;
                                 if( rowPosition === "down" ) return undefined;
                                 return <TimeSlot
-                                    className={ ( serviceTransactionIdActive !== serviceTransactionId ) ? className : `move` }
+                                    className={ ( !isNewBookingMode || serviceTransactionIdActive !== serviceTransactionId ) ? className : `move` }
                                     clientData={ pageData.clientDataMap[ clientId ] }
+                                    columnIndex={ roomColumns + index + 1 }
+                                    dayPlannerMode={ dayPlannerMode }
                                     // employee
                                     key={ serviceTransactionId }
+                                    rowPosition={ rowPosition }
+                                    serviceData={ pageData.serviceDataMap[ serviceId ] }
+                                    serviceTransactionId={ serviceTransactionId }
+                                    serviceTransactionIdActive={ serviceTransactionIdActive }
+                                    serviceTransactionData={ serviceTransactionData }
                                     onClick={ () => handleChangeServiceTransactionIdActive(
                                         serviceTransactionId
                                     ) }
-                                    rowPosition={ rowPosition }
-                                    serviceData={ pageData.serviceDataMap[ serviceId ] }
-                                    serviceTransactionData={ serviceTransactionData }
+                                    reloadPageData={ reloadPageData }
                                 />;
 
                             } )
@@ -1261,8 +1273,10 @@ export default function DayPlanner( { dayPlannerMode, pageData }: {
                             emptyChairTimeSlotList.map( ( _, index ) => <td className="time-slot" key={ index }></td> )
                         }
                         {
-                            (
-                                serviceTransactionIdActive === undefined || hasUpServiceTransaction( serviceTransactionIdActive, timeSlotId )
+                            (   
+                                !isNewBookingMode
+                                || serviceTransactionIdActive === undefined
+                                || hasUpServiceTransaction( serviceTransactionIdActive, timeSlotId )
                             ) ? undefined
                             : ( serviceTransactionAvailabilityKeyMap[ serviceTransactionIdActive ][ timeSlotId ] ) ?
                                 <td className="time-slot addition" onClick={ () => handleAddToTimeSlot( timeSlotId ) }>
@@ -1361,24 +1375,50 @@ export default function DayPlanner( { dayPlannerMode, pageData }: {
 }
 
 function TimeSlot( {
-    className, clientData, employeeData, rowPosition, serviceData,
-    onClick
+    className, clientData, columnIndex, employeeData, dayPlannerMode, rowPosition, serviceData,
+    serviceTransactionId, serviceTransactionIdActive,
+    onClick, reloadPageData
 }: {
     className: string,
     clientData: ClientData,
+    columnIndex: number,
+    dayPlannerMode: dayPlannerMode,
     employeeData?: EmployeeData,
     rowPosition: timeSlotRowPosition,
     serviceData: ServiceData,
     serviceTransactionData: ServiceTransactionData,
-    onClick?: () => Promise< void > | void
+    serviceTransactionId: string,
+    serviceTransactionIdActive: string | undefined,
+    onClick?: () => Promise< void > | void,
+    reloadPageData: () => void
 } ): JSX.Element {
 
+    const isNewBookingMode: boolean = ( dayPlannerMode === "newBooking" );
+
+    async function handleTimeSlotClick(): Promise< void > {
+
+        if( onClick ) await onClick();
+
+
+    }
+
     className = `time-slot ${ className }`;
-    const employeeName: string = employeeData ? PersonUtils.format( employeeData, "f mi l" ) : "-";
-    return <td className={ className } rowSpan={ ( rowPosition === "up" ) ? 2 : undefined } onClick={ onClick }>
+    const employeeName: string = employeeData ? PersonUtils.format( employeeData, "f mi l" ) : "(Unassigned)";
+    return <td
+        className={ className }
+        rowSpan={ ( rowPosition === "up" ) ? 2 : undefined }
+        onClick={ handleTimeSlotClick }
+    >
         <div>{ clientData.name }</div>
         <div>{ serviceData.name }</div>
-        <div>{ employeeName }</div>
+        {
+            !isNewBookingMode ? <div>{ employeeName }</div> : undefined
+        }
+        {
+            ( !isNewBookingMode && serviceTransactionId === serviceTransactionIdActive ) ? <>
+                wdwdw
+            </> : undefined
+        }
     </td>;
 
 }
