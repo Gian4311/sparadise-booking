@@ -158,6 +158,34 @@ export default class ServiceTransactionUtils {
 
     }
 
+    public static async getServiceTransactionDataMapByClient(
+        by: documentId | DocumentReference | DocumentSnapshot
+    ): Promise< ServiceTransactionDataMap > {
+    
+        const
+            serviceTransactionCollection: CollectionReference =
+                SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.SERVICE_TRANSACTION_COLLECTION )
+            ,
+            clientReference: DocumentReference = SpaRadiseFirestore.getDocumentReference(
+                by, SpaRadiseEnv.CLIENT_COLLECTION
+            ),
+            clientTransactionQuery = query(
+                serviceTransactionCollection,
+                where( "client", "==", clientReference )
+            ),
+            snapshotList: QueryDocumentSnapshot[] =
+                ( await getDocs( clientTransactionQuery ) ).docs
+            ,
+            serviceTransactionDataMap: ServiceTransactionDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            serviceTransactionDataMap[ snapshot.id ] =
+                await ServiceTransactionUtils.getServiceTransactionData( snapshot )
+            ;
+        return serviceTransactionDataMap;
+
+    }
+
     public static async getServiceTransactionDataMapByDay(
         date: Date,
         ignoreCanceled: boolean = true,

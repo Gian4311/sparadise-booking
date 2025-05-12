@@ -1,21 +1,15 @@
-import ArrayUtils from "../utils/ArrayUtils";
-import BookingCalendar from "../utils/BookingCalendar";
 import BookingDateInput from "../components/BookingDateInput";
 import {
     BookingDataMap,
-    ClientData,
     ClientDataMap,
-    EmployeeData,
     EmployeeDataMap,
     EmployeeLeaveDataMap,
     JobDataMap,
     JobServiceDataMap,
     PackageDataMap,
     PackageMaintenanceData,
-    ServiceData,
     ServiceDataMap,
     ServiceMaintenanceData,
-    ServiceTransactionData,
     ServiceTransactionDataMap,
     ServiceTransactionEmployeeListKeyMap,
     SpaRadisePageData
@@ -23,7 +17,6 @@ import {
 import BookingUtils from "../firebase/BookingUtils";
 import ClientUtils from "../firebase/ClientUtils";
 import DateRange from "../utils/DateRange";
-import DateUtils from "../utils/DateUtils";
 import DayPlanner from "../components/DayPlanner";
 import EmployeeLeaveUtils from "../firebase/EmployeeLeaveUtils";
 import EmployeeSidebar from "../components/EmployeeSidebar";
@@ -31,11 +24,8 @@ import EmployeeUtils from "../firebase/EmployeeUtils";
 import JobServiceUtils from "../firebase/JobServiceUtils";
 import JobUtils from "../firebase/JobUtils";
 import LoadingScreen from "../components/LoadingScreen";
-import NumberUtils from "../utils/NumberUtils";
-import ObjectUtils from "../utils/ObjectUtils";
 import PackageMaintenanceUtils from "../firebase/PackageMaintenanceUtils";
 import PackageUtils from "../firebase/PackageUtils";
-import PersonUtils from "../utils/PersonUtils";
 import ServiceMaintenanceUtils from "../firebase/ServiceMaintenanceUtils";
 import ServiceTransactionUtils from "../firebase/ServiceTransactionUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
@@ -49,7 +39,6 @@ import "../styles/EmployeeBookingMenu.scss";
 
 interface EmployeeBookingMenuPageData extends SpaRadisePageData {
 
-    bookingCalendar: BookingCalendar,
     bookingDataMap: BookingDataMap,
     bookingIdActive: string | undefined,
     clientDataMap: ClientDataMap,
@@ -62,8 +51,7 @@ interface EmployeeBookingMenuPageData extends SpaRadisePageData {
     packageDataMap: PackageDataMap,
     serviceDataMap: ServiceDataMap,
     serviceTransactionEmployeeListKeyMap: ServiceTransactionEmployeeListKeyMap,
-    serviceTransactionOfDayDataMap: ServiceTransactionDataMap,
-    subpageIndex: number
+    serviceTransactionOfDayDataMap: ServiceTransactionDataMap
 
 }
 
@@ -71,7 +59,6 @@ export default function EmployeeBookingMenu(): JSX.Element {
 
     const
         [ pageData, setPageData ] = useState< EmployeeBookingMenuPageData >( {
-            bookingCalendar: null as unknown as BookingCalendar,
             bookingDataMap: {},
             bookingIdActive: undefined,
             clientDataMap: {},
@@ -86,34 +73,23 @@ export default function EmployeeBookingMenu(): JSX.Element {
             serviceDataMap: {},
             serviceTransactionEmployeeListKeyMap: {},
             serviceTransactionOfDayDataMap: {},
-            subpageIndex: 0,
             updateMap: {}
-        } )
+        } ),
+        dayPlannerPageData = {
+            ...pageData,
+            employeeLeaveDataMap: pageData.employeeLeaveOfDayDataMap,
+            serviceTransactionDefaultDataMap: pageData.serviceTransactionOfDayDataMap,
+            serviceTransactionToAddDataMap: {} as ServiceTransactionDataMap
+        }
     ;
 
     async function handleChangeDate(): Promise< void > {
 
         await loadMaintenanceData();
         await loadEmployeeData();
-        await loadBookingCalendar();
-
-    }
-
-    async function loadBookingCalendar(): Promise< void > {
-        
-        const { date } = pageData;
         pageData.serviceTransactionOfDayDataMap =
-            await ServiceTransactionUtils.getServiceTransactionDataMapByDay( date )
+            await ServiceTransactionUtils.getServiceTransactionDataMapByDay( pageData.date, false )
         ;
-        const
-            { employeeLeaveOfDayDataMap, serviceTransactionOfDayDataMap } = pageData,
-            bookingCalendarPageData = {
-                ...pageData,
-                employeeLeaveDataMap: employeeLeaveOfDayDataMap,
-                serviceTransactionDataMap: serviceTransactionOfDayDataMap
-            }
-        ;
-        pageData.bookingCalendar = new BookingCalendar( bookingCalendarPageData );
 
     }
 
@@ -191,48 +167,10 @@ export default function EmployeeBookingMenu(): JSX.Element {
         <LoadingScreen loading={ !pageData.loaded }/>
         <EmployeeSidebar/>
         <main className="employee-booking-management-main-content">
-            {
-                ( pageData.subpageIndex === 0 ) ? <BookingCalendarMenu pageData={ pageData } handleChangeDate={ handleChangeDate } reloadPageData={ reloadPageData }/>
-                : ( pageData.subpageIndex === 1 ) ? <BookingManagement pageData={ pageData } reloadPageData={ reloadPageData }/>
-                : <div>None</div>
-            }
+            <BookingDateInput pageData={ pageData } onChange={ handleChangeDate } reloadPageData={ reloadPageData }/>
+            <DayPlanner dayPlannerMode="management" pageData={ dayPlannerPageData }/>
             <button onClick={ () => console.log( pageData ) }>Log page data</button>
         </main>
-    </>;
-
-}
-
-function BookingCalendarMenu( { pageData, handleChangeDate, reloadPageData }: {
-    pageData: EmployeeBookingMenuPageData,
-    handleChangeDate: () => Promise< void >,
-    reloadPageData: () => void
-} ): JSX.Element {
-
-    const
-        dayPlannerPageData = {
-            ...pageData,
-            employeeLeaveDataMap: pageData.employeeLeaveOfDayDataMap,
-            serviceTransactionDefaultDataMap: pageData.serviceTransactionOfDayDataMap,
-            serviceTransactionToAddDataMap: {} as ServiceTransactionDataMap
-        },
-        { clientDataMap, serviceTransactionDefaultDataMap } = dayPlannerPageData
-    ;
-
-    function handleEditBooking( serviceTransactionId: documentId ): void {
-
-        pageData.subpageIndex = 1;
-        const
-            { id: clientId } = serviceTransactionDefaultDataMap[ serviceTransactionId ].client,
-            { id: bookingId } = clientDataMap[ clientId ].booking
-        ;
-        pageData.bookingIdActive = bookingId;
-        reloadPageData();
-
-    }
-
-    return <>
-        <BookingDateInput pageData={ pageData } onChange={ handleChangeDate } reloadPageData={ reloadPageData }/>
-        <DayPlanner dayPlannerMode="management" pageData={ dayPlannerPageData }/>
     </>;
 
 }
@@ -260,13 +198,6 @@ function BookingManagement( { pageData, reloadPageData }: {
     async function handleChangeClientActive( clientId: string ): Promise<void> {
 
         setClientIdActive( clientId );
-        reloadPageData();
-
-    }
-
-    async function previousPage(): Promise< void > {
-
-        pageData.subpageIndex--;
         reloadPageData();
 
     }
@@ -327,7 +258,6 @@ function BookingManagement( { pageData, reloadPageData }: {
                 }
             </div>
         </div>
-        <button type="button" onClick={ previousPage }>Back</button>
     </>;
 
 }

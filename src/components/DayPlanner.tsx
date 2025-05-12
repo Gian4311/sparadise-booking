@@ -17,16 +17,17 @@ import {
     ServiceTransactionDataMap,
     ServiceTransactionEmployeeListKeyMap
 } from "../firebase/SpaRadiseTypes";
+import {
+    useEffect,
+    useState
+} from "react";
 import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
 import PersonUtils from "../utils/PersonUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
 import { SpaRadisePageData } from "../firebase/SpaRadiseTypes";
 import StringUtils from "../utils/StringUtils";
-import {
-    useEffect,
-    useState
-} from "react";
+import { useNavigate } from "react-router-dom";
 
 import "../styles/DayPlanner.scss";
 
@@ -49,14 +50,13 @@ interface CalendarRowDataMap {
 
 interface DayPlannerPageData extends SpaRadisePageData {
 
-    date: Date,
     bookingDataMap: BookingDataMap,
-    bookingIdActive: string | undefined,
     clientDataMap: ClientDataMap,
+    date: Date,
     employeeDataMap: EmployeeDataMap,
-    employeeLeaveDataMap?: EmployeeLeaveDataMap,
-    jobDataMap?: JobDataMap,
-    jobServiceDataMap?: JobServiceDataMap,
+    employeeLeaveDataMap: EmployeeLeaveDataMap,
+    jobDataMap: JobDataMap,
+    jobServiceDataMap: JobServiceDataMap,
     serviceDataMap: ServiceDataMap,
     serviceTransactionDefaultDataMap: ServiceTransactionDataMap,
     serviceTransactionEmployeeListKeyMap: ServiceTransactionEmployeeListKeyMap,
@@ -99,10 +99,11 @@ interface TimeSlotServiceEmployeeListKeyMap {
 const DATE_RANGE_FORMAT = "hh:mm-hh:mm";
 
 export default function DayPlanner( {
-    dayPlannerMode, pageData
+    dayPlannerMode, pageData, show = true
 }: {
     dayPlannerMode: dayPlannerMode,
-    pageData: DayPlannerPageData
+    pageData: DayPlannerPageData,
+    show?: boolean
 } ): JSX.Element {
 
     const
@@ -117,7 +118,8 @@ export default function DayPlanner( {
             useState< ServiceTransactionAvailabilityKeyMap >( {} )
         ,
         [ timeSlotServiceEmployeeListKeyMap ] = useState< TimeSlotServiceEmployeeListKeyMap >( {} ),
-        isNewBookingMode: boolean = ( dayPlannerMode === "newBooking" )
+        isNewBookingMode: boolean = ( dayPlannerMode === "newBooking" ),
+        navigate = useNavigate()
     ;
 
     async function addServiceTransaction(
@@ -634,54 +636,6 @@ export default function DayPlanner( {
 
     }
 
-    async function getIndexOfServiceTransaction(
-        serviceTransactionData: ServiceTransactionData,
-        serviceTransactionId: documentId,
-        rowPosition: timeSlotRowPosition
-    ): Promise< number > {
-
-        const serviceTransactionDataList = await preprocessServiceTransactionData(
-            serviceTransactionData
-        );
-        switch( serviceTransactionDataList.length ) {
-
-            case 2:
-                if( rowPosition === "down" ) serviceTransactionData = serviceTransactionDataList[ 1 ];
-                break;
-            
-            case 0: return -1;
-
-            default: serviceTransactionData = serviceTransactionDataList[ 0 ];
-
-        }
-        const
-            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
-            timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
-        ;
-        if( !( timeSlotId in calendarRowDataMap ) ) return -1;
-        const
-            { chairTimeSlotDataList, roomTimeSlotDataList } = calendarRowDataMap[ timeSlotId ],
-            timeSlotDataList: ( TimeSlotData | undefined )[] = [
-                ...chairTimeSlotDataList, ...roomTimeSlotDataList
-            ]
-        ;
-        for(
-            let timeSlotIndex: number = 0;
-            timeSlotIndex < timeSlotDataList.length;
-            timeSlotIndex++
-        ) {
-
-            const timeSlotData = timeSlotDataList[ timeSlotIndex ];
-            if( !timeSlotData ) continue;
-            const { serviceTransactionId: serviceTransactionIdCompare } = timeSlotData;
-            if( serviceTransactionId === serviceTransactionIdCompare ) return timeSlotIndex;
-
-        }
-        return -1;
-
-    }
-
     async function getTimeSlotList(): Promise< TimeSlotData[] > {
 
         const timeSlotDataList: TimeSlotData[] = [];
@@ -897,6 +851,7 @@ export default function DayPlanner( {
 
     async function loadComponentData(): Promise< void > {
 
+        if( !pageData.date ) return;
         await loadTimeSlotIdList();
         await loadCapacityData();
         await loadServiceTransactionDefaultData();
@@ -1038,10 +993,6 @@ export default function DayPlanner( {
         const
             { jobDataMap, jobServiceDataMap, serviceDataMap } = pageData
         ;
-        if( !pageData.employeeLeaveDataMap )
-            throw new Error( `Employee leave data map is not given!` );
-        if( !jobDataMap ) throw new Error( `Job data map is not given!` );
-        if( !jobServiceDataMap ) throw new Error( `Job service data map is not given!` );
         ObjectUtils.clear( timeSlotServiceEmployeeListKeyMap );
         for( let timeSlotId in calendarRowDataMap ) {
 
@@ -1132,6 +1083,20 @@ export default function DayPlanner( {
 
     }
 
+    function openBooking(): void {
+
+        if( !serviceTransactionIdActive ) return;
+        const
+            { clientDataMap, serviceTransactionDefaultDataMap } = pageData,
+            { client: { id: clientId } } =
+                serviceTransactionDefaultDataMap[ serviceTransactionIdActive ]
+            ,
+            { booking: { id: bookingId } } = clientDataMap[ clientId ]
+        ;
+        navigate( `/management/bookings/${ bookingId }` );
+
+    }
+
     async function preprocessServiceTransactionData(
         serviceTransactionData: ServiceTransactionData
     ): Promise< ServiceTransactionData[] > {
@@ -1185,9 +1150,10 @@ export default function DayPlanner( {
         roomColumns = Math.max( roomColumns, roomTimeSlotDataList.length );
 
     }
+    if( !show ) return <></>;
 
     return <>
-        <table className="dayPlanner">
+        <table className="dayPlanner" onClick={ () => setServiceTransactionIdActive( undefined ) }>
             <thead><tr>
                 <td></td>
                 {
@@ -1235,7 +1201,7 @@ export default function DayPlanner( {
                     return <tr key={ timeSlotId }>
                         <td className="time-mark">{ timeMark }</td>
                         {
-                            roomTimeSlotDataList.map( ( timeSlotData, index ) => {
+                            roomTimeSlotDataList.map( timeSlotData => {
 
                                 if( !timeSlotData ) return undefined;
                                 const
@@ -1245,20 +1211,45 @@ export default function DayPlanner( {
                                             client: { id: clientId },
                                             service: { id: serviceId }
                                         }
-                                    } = timeSlotData,
-                                    { booking: { id: bookingId } } = pageData.clientDataMap[ clientId ],
-                                    {
-                                        activeDateTime, finishedDateTime, canceledDateTime
-                                    } = pageData.bookingDataMap[ bookingId ],
-                                    className: string =
-                                        canceledDateTime ? "canceled"
-                                        : finishedDateTime ? "finished"
-                                        : activeDateTime ? "active"
-                                        : "reserved"
+                                    } = timeSlotData
                                 ;
                                 if( rowPosition === "down" ) return undefined;
+                                const
+                                    {
+                                        bookingDataMap, clientDataMap, serviceTransactionDefaultDataMap
+                                    } = pageData,
+                                    { booking: { id: bookingId } } = clientDataMap[ clientId ],
+                                    {
+                                        activeDateTime, finishedDateTime, canceledDateTime
+                                    } = bookingDataMap[ bookingId ]
+                                ;
+                                let bookingSelected: boolean = false;
+                                if( !isNewBookingMode && serviceTransactionIdActive ) {
+
+                                    const
+                                        { client: { id: clientIdActive } } =
+                                            serviceTransactionDefaultDataMap[
+                                                serviceTransactionIdActive
+                                            ]
+                                        ,
+                                        { booking: { id: bookingIdActive } } = clientDataMap[
+                                            clientIdActive
+                                        ]
+                                    ;
+                                    bookingSelected = ( bookingId === bookingIdActive )
+
+                                }
+                                const className: string =
+                                    ( isNewBookingMode && serviceTransactionIdActive === serviceTransactionId ) ? `move`
+                                    : (
+                                        canceledDateTime ? `canceled`
+                                        : finishedDateTime ? `finished`
+                                        : activeDateTime ? `active`
+                                        : `reserved`
+                                    ) + ( bookingSelected ? ` booking-selected` : `` )
+                                ;
                                 return <TimeSlot
-                                    className={ ( !isNewBookingMode || serviceTransactionIdActive !== serviceTransactionId ) ? className : `move` }
+                                    className={ className }
                                     clientData={ pageData.clientDataMap[ clientId ] }
                                     dayPlannerMode={ dayPlannerMode }
                                     // employee
@@ -1281,7 +1272,7 @@ export default function DayPlanner( {
                             emptyRoomTimeSlotList.map( ( _, index ) => <td className="time-slot" key={ index }></td> )
                         }
                         {
-                            chairTimeSlotDataList.map( ( timeSlotData, index ) => {
+                            chairTimeSlotDataList.map( timeSlotData => {
 
                                 if( !timeSlotData ) return undefined;
                                 const
@@ -1291,18 +1282,43 @@ export default function DayPlanner( {
                                             client: { id: clientId },
                                             service: { id: serviceId }
                                         }
-                                    } = timeSlotData,
-                                    { booking: { id: bookingId } } = pageData.clientDataMap[ clientId ],
-                                    {
-                                        activeDateTime, finishedDateTime, canceledDateTime
-                                    } = pageData.bookingDataMap[ bookingId ],
-                                    className: string =
-                                        canceledDateTime ? "canceled"
-                                        : finishedDateTime ? "finished"
-                                        : activeDateTime ? "active"
-                                        : "reserved"
+                                    } = timeSlotData
                                 ;
                                 if( rowPosition === "down" ) return undefined;
+                                const
+                                    {
+                                        bookingDataMap, clientDataMap, serviceTransactionDefaultDataMap
+                                    } = pageData,
+                                    { booking: { id: bookingId } } = clientDataMap[ clientId ],
+                                    {
+                                        activeDateTime, finishedDateTime, canceledDateTime
+                                    } = bookingDataMap[ bookingId ]
+                                ;
+                                let bookingSelected: boolean = false;
+                                if( !isNewBookingMode && serviceTransactionIdActive ) {
+
+                                    const
+                                        { client: { id: clientIdActive } } =
+                                            serviceTransactionDefaultDataMap[
+                                                serviceTransactionIdActive
+                                            ]
+                                        ,
+                                        { booking: { id: bookingIdActive } } = clientDataMap[
+                                            clientIdActive
+                                        ]
+                                    ;
+                                    bookingSelected = ( bookingId === bookingIdActive )
+
+                                }
+                                const className: string =
+                                    ( isNewBookingMode && serviceTransactionIdActive === serviceTransactionId ) ? `move`
+                                    : (
+                                        canceledDateTime ? `canceled`
+                                        : finishedDateTime ? `finished`
+                                        : activeDateTime ? `active`
+                                        : `reserved`
+                                    ) + ( bookingSelected ? ` booking-selected` : `` )
+                                ;
                                 return <TimeSlot
                                     className={ ( !isNewBookingMode || serviceTransactionIdActive !== serviceTransactionId ) ? className : `move` }
                                     clientData={ pageData.clientDataMap[ clientId ] }
@@ -1363,66 +1379,70 @@ export default function DayPlanner( {
             </td></tr></tfoot>
         </table>
         {
-            isNewBookingMode ? <table className="serviceTransactionManager"><tbody>{
-                Object.keys( clientServiceTransactionAddedMap ).sort(
-                    ( clientId1, clientId2 ) => {
-    
-                        const
-                            { clientDataMap } = pageData,
-                            { name: name1 } = clientDataMap[ clientId1 ],
-                            { name: name2 } = clientDataMap[ clientId2 ]
-                        ;
-                        return StringUtils.compare( name1, name2 );
-    
-                    }
-                ).map( clientId => {
-                    
-                    return <tr key={ clientId }>
-                        <td>
-                            { pageData.clientDataMap[ clientId ].name }
-                        </td>
-                        <td>{
-                            Object
-                                .keys( clientServiceTransactionAddedMap[ clientId ] )
-                                .sort( ( serviceTransactionId1, serviceTransactionId2 ) => {
-    
-                                    const
-                                        { serviceDataMap } = pageData,
-                                        { id: serviceId1 } = pageData.serviceTransactionToAddDataMap[
-                                            serviceTransactionId1
-                                        ].service,
-                                        { id: serviceId2 } = pageData.serviceTransactionToAddDataMap[
-                                            serviceTransactionId2
-                                        ].service,
-                                        { name: name1 } = serviceDataMap[ serviceId1 ],
-                                        { name: name2 } = serviceDataMap[ serviceId2 ]
-                                    ;
-                                    return StringUtils.compare( name1, name2 );
-    
-                                } ).map( serviceTransactionId => {
-    
-                                    const
-                                        { serviceDataMap } = pageData,
-                                        { id: serviceId } = pageData.serviceTransactionToAddDataMap[
-                                            serviceTransactionId
-                                        ].service,
-                                        { name } = serviceDataMap[ serviceId ]
-                                    ;
-                                    return <button
-                                        className="inactive"
-                                        key={ serviceTransactionId }
-                                        type="button"
-                                        onClick={ () => handleChangeServiceTransactionIdActive(
-                                            serviceTransactionId
-                                        ) }
-                                    >{ name }</button>
-    
-                                } )
-                        }</td>
-                    </tr>;
-    
-                } )
-            }</tbody></table> : undefined
+            isNewBookingMode ? <>
+                <table className="serviceTransactionManager"><tbody>{
+                    Object.keys( clientServiceTransactionAddedMap ).sort(
+                        ( clientId1, clientId2 ) => {
+        
+                            const
+                                { clientDataMap } = pageData,
+                                { name: name1 } = clientDataMap[ clientId1 ],
+                                { name: name2 } = clientDataMap[ clientId2 ]
+                            ;
+                            return StringUtils.compare( name1, name2 );
+        
+                        }
+                    ).map( clientId => {
+                        
+                        return <tr key={ clientId }>
+                            <td>
+                                { pageData.clientDataMap[ clientId ].name }
+                            </td>
+                            <td>{
+                                Object
+                                    .keys( clientServiceTransactionAddedMap[ clientId ] )
+                                    .sort( ( serviceTransactionId1, serviceTransactionId2 ) => {
+        
+                                        const
+                                            { serviceDataMap } = pageData,
+                                            { id: serviceId1 } = pageData.serviceTransactionToAddDataMap[
+                                                serviceTransactionId1
+                                            ].service,
+                                            { id: serviceId2 } = pageData.serviceTransactionToAddDataMap[
+                                                serviceTransactionId2
+                                            ].service,
+                                            { name: name1 } = serviceDataMap[ serviceId1 ],
+                                            { name: name2 } = serviceDataMap[ serviceId2 ]
+                                        ;
+                                        return StringUtils.compare( name1, name2 );
+        
+                                    } ).map( serviceTransactionId => {
+        
+                                        const
+                                            { serviceDataMap } = pageData,
+                                            { id: serviceId } = pageData.serviceTransactionToAddDataMap[
+                                                serviceTransactionId
+                                            ].service,
+                                            { name } = serviceDataMap[ serviceId ]
+                                        ;
+                                        return <button
+                                            className="inactive"
+                                            key={ serviceTransactionId }
+                                            type="button"
+                                            onClick={ () => handleChangeServiceTransactionIdActive(
+                                                serviceTransactionId
+                                            ) }
+                                        >{ name }</button>
+        
+                                    } )
+                            }</td>
+                        </tr>;
+        
+                    } )
+                }</tbody></table>
+            </> : <>
+                <button type="button" onClick={ openBooking }>Edit</button>
+            </>
         }
     </>;
 
@@ -1439,7 +1459,7 @@ function TimeSlot( {
     rowPosition: timeSlotRowPosition,
     serviceData: ServiceData,
     serviceTransactionData: ServiceTransactionData,
-    onClick?: () => Promise< void > | void
+    onClick?: () => void
 } ): JSX.Element {
 
     const
@@ -1450,16 +1470,19 @@ function TimeSlot( {
     ;
     className = `time-slot ${ className }`;
 
-    async function handleTimeSlotClick(): Promise< void > {
+    function handleTimeSlotClick(
+        event: React.MouseEvent< HTMLTableCellElement >
+    ): void {
 
-        if( onClick ) await onClick();
+        event.stopPropagation();
+        if( onClick ) onClick();
 
     }
 
     return <td
         className={ className }
         rowSpan={ ( rowPosition === "up" ) ? 2 : undefined }
-        onClick={ handleTimeSlotClick }
+        onClick={ event => handleTimeSlotClick( event ) }
     >
         <div>{ clientData.name }</div>
         <div>{ serviceData.name }</div>

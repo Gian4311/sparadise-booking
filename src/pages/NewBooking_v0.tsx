@@ -27,7 +27,6 @@ import {
 import "../styles/ClientIndex.css";
 import "../styles/ClientBookingCreation.css";
 import AccountUtils from "../firebase/AccountUtils";
-import BookingCalendar from "../utils/BookingCalendar";
 import BookingReceipt from "../components/BookingReceipt";
 import BookingUtils from "../firebase/BookingUtils";
 import Bullet from "../components/Bullet";
@@ -57,7 +56,6 @@ import PackageServiceUtils from "../firebase/PackageServiceUtils";
 import PackageUtils from "../firebase/PackageUtils";
 import PersonUtils from "../utils/PersonUtils";
 import ServiceMaintenanceUtils from "../firebase/ServiceMaintenanceUtils";
-import ServiceTransactionTimeSlot from "../components/ServiceTransactionTimeSlot";
 import ServiceTransactionUtils from "../firebase/ServiceTransactionUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
 import SpaRadiseDataMapUtils from "../firebase/SpaRadiseDataMapUtils";
@@ -85,7 +83,6 @@ import DateRange from "../utils/DateRange";
 export interface NewBookingPageData extends SpaRadisePageData {
 
     accountData: AccountData,
-    bookingCalendar: BookingCalendar,
     bookingData: BookingData,
     bookingDefaultData: BookingData,
     bookingDocumentReference?: DocumentReference,
@@ -141,7 +138,6 @@ export default function NewBooking(): JSX.Element {
         [pageData, setPageData] = useState<NewBookingPageData>({
             accountData: {} as AccountData,
             bookingDefaultData: {} as BookingData,
-            bookingCalendar: null as unknown as BookingCalendar,
             bookingData: {
                 account: null as unknown as DocumentReference,
                 reservedDateTime: null as unknown as Date,
@@ -342,7 +338,6 @@ export default function NewBooking(): JSX.Element {
             )
         ;
         await loadVoucherDataOfDayData();
-        await loadBookingCalendar();
 
     }
 
@@ -357,23 +352,6 @@ export default function NewBooking(): JSX.Element {
         await loadClientList();
         await loadServiceTransactionList();
         await loadVoucherTransactionList();
-
-    }
-
-    async function loadBookingCalendar(): Promise<void> {
-
-        const
-            { employeeLeaveOfDayDataMap, serviceTransactionOfDayDataMap } = pageData,
-            serviceTransactionDataMap: ServiceTransactionDataMap = {
-                ...serviceTransactionOfDayDataMap
-            },
-            bookingCalendarPageData = {
-                ...pageData,
-                employeeLeaveDataMap: employeeLeaveOfDayDataMap,
-                serviceTransactionDataMap
-            }
-            ;
-        pageData.bookingCalendar = new BookingCalendar(bookingCalendarPageData);
 
     }
 
@@ -486,7 +464,7 @@ export default function NewBooking(): JSX.Element {
             await ServiceTransactionUtils.getServiceTransactionDataMapByClientDataMap(
                 pageData.clientDataMap
             )
-            ;
+        ;
         pageData.serviceTransactionDefaultDataMap = SpaRadiseDataMapUtils.clone(
             pageData.serviceTransactionDefaultDataMap
         );
@@ -1105,133 +1083,6 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
                 <div className="time-slot-date">{DateUtils.toString(date, "Mmmm dd, yyyy")}</div>
             </section>
             <DayPlanner dayPlannerMode="newBooking" pageData={ dayPlannerPageData }/>
-            <section className="action-buttons">
-                <button className="back-btn" type="button" onClick={previousPage}>Back</button>
-                <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (3/4)</button>
-            </section>
-        </main>
-    </>;
-
-}
-
-function ChooseTimeSlots0({ pageData, reloadPageData }: {
-    pageData: NewBookingPageData,
-    reloadPageData: () => void
-}): JSX.Element {
-
-    const { clientDataMap, clientInfoMap, clientIdActive, date } = pageData;
-
-    async function checkFormValidity(): Promise<boolean> {
-
-        for (let clientId in clientDataMap) {
-
-            const { serviceTransactionDataMap } = clientInfoMap[clientId];
-            for (let serviceTransactionId in serviceTransactionDataMap) {
-
-                const
-                    { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionDataMap[
-                        serviceTransactionId
-                    ]
-                    ;
-                if (!bookingDateTimeStart)
-                    throw new Error(`Booking from date time in ${serviceTransactionId} is undefined.`);
-                if (!bookingDateTimeEnd)
-                    throw new Error(`Booking to date time in ${serviceTransactionId} is undefined.`);
-
-            }
-
-        }
-        return true;
-
-    }
-
-    async function handleChangeClientActive(clientId: string): Promise<void> {
-
-        pageData.clientIdActive = clientId;
-        reloadPageData();
-
-    }
-
-    async function nextPage(): Promise<void> {
-
-        await checkFormValidity();
-        pageData.formIndex++;
-        reloadPageData();
-
-    }
-
-    async function previousPage(): Promise<void> {
-
-        pageData.formIndex--;
-        reloadPageData();
-
-    }
-
-    return <>
-        <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
-        <NavBar></NavBar>
-        <main className="booking-container">
-            <section className="form-section client-date-section">
-                <div className="time-slot-date">{DateUtils.toString(date, "Mmmm dd, yyyy")}</div>
-            </section>
-            <div className="client-input">
-                <label htmlFor="client-selection" className="input-label">Select Client:</label>
-                <div id="client-selection" className="clickable-bars">
-                    {Object.keys(clientDataMap).sort().map(clientId => (
-                        <div
-                            key={clientId}
-                            className={`client-item ${clientId === clientIdActive ? "active" : ""}`}
-                            data-client={`client${clientId}`}
-                            onClick={() => handleChangeClientActive(clientId)}
-                        >
-                            {clientDataMap[clientId].name}
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            <p className="time-slot-note">
-                *NOTE: Services marked<Bullet color="#ffc100" size="12px" style={{ margin: "0 5px" }} />
-                can be done together with<Bullet color="#6699ff" size="12px" style={{ margin: "0 5px" }} />
-                or<Bullet color="#3bba23" size="12px" style={{ margin: "0 5px" }} />.
-            </p>
-            <table className="time-slot-table">
-                <thead className="time-slot-table-th"><tr>
-                    <td></td>
-                    <td>Service</td>
-                    <td>Time Slot</td>
-                    <td>Duration</td>
-                </tr></thead>
-                <tbody>{
-                    Object.keys(pageData.clientInfoMap[clientIdActive].serviceTransactionDataMap).map(serviceTransactionId => {
-
-                        const
-                            serviceTransactionData = pageData
-                                .clientInfoMap[clientIdActive]
-                                .serviceTransactionDataMap[serviceTransactionId]
-                            ,
-                            { service: { id: serviceId } } = serviceTransactionData,
-                            { name, serviceType, durationMin } = pageData.serviceDataMap[serviceId]
-                            ;
-                        return <tr key={serviceTransactionId}>
-                            <td>{
-                                (serviceType === "handsAndFeet") ? <Bullet color="#ffc100" size="12px" style={{ margin: "0 5px" }} />
-                                    : (serviceType === "browsAndLashes") ? <Bullet color="#6699ff" size="12px" style={{ margin: "0 5px" }} />
-                                        : (serviceType === "facial") ? <Bullet color="#3bba23" size="12px" style={{ margin: "0 5px" }} />
-                                            : <Bullet color="#cd8385" size="12px" style={{ margin: "0 5px" }} />
-                            }</td>
-                            <td>{name}</td>
-                            <td>
-                                <ServiceTransactionTimeSlot clientId={clientIdActive.toString()} documentData={serviceTransactionData} duration={durationMin} keyNameFrom="bookingDateTimeStart" keyNameTo="bookingDateTimeEnd" pageData={pageData} serviceTransactionId={serviceTransactionId} reloadPageData={reloadPageData}>
-                                    <option value="" disabled>Select time slot</option>
-                                </ServiceTransactionTimeSlot>
-                            </td>
-                            <td>{durationMin}</td>
-                        </tr>;
-
-                    })
-                }</tbody>
-            </table>
             <section className="action-buttons">
                 <button className="back-btn" type="button" onClick={previousPage}>Back</button>
                 <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (3/4)</button>
