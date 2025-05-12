@@ -229,6 +229,12 @@ export interface ServiceTransactionDataMap extends SpaRadiseDataMap< ServiceTran
 
 }
 
+export interface ServiceTransactionEmployeeListKeyMap {
+
+    [ serviceTransactionId: string ]: documentId[]
+
+}
+
 export interface SpaRadiseDataMap< T extends SpaRadiseDocumentData > {
 
     [ documentId: objectKeyName ]: T

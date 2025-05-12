@@ -15,6 +15,7 @@ import {
     ServiceMaintenanceData,
     ServiceTransactionData,
     ServiceTransactionDataMap,
+    ServiceTransactionEmployeeListKeyMap,
     SpaRadisePageData,
     VoucherData,
     VoucherDataMap,
@@ -117,6 +118,7 @@ export interface NewBookingPageData extends SpaRadisePageData {
     },
     serviceDataMap: ServiceDataMap,
     serviceTransactionDefaultDataMap: ServiceTransactionDataMap,
+    serviceTransactionEmployeeListKeyMap: ServiceTransactionEmployeeListKeyMap,
     serviceTransactionOfDayDataMap: ServiceTransactionDataMap,
     voucherDataMap: VoucherDataMap,
     voucherDataOfDayMap: VoucherDataMap,
@@ -165,6 +167,7 @@ export default function NewBooking(): JSX.Element {
             packageServiceKeyMap: {},
             serviceDataMap: {},
             serviceTransactionDefaultDataMap: {},
+            serviceTransactionEmployeeListKeyMap: {},
             serviceTransactionOfDayDataMap: {},
             updateMap: {},
             voucherDataMap: {},
@@ -943,7 +946,7 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
                 <label className="client-selection">Select Client:</label>
                 <div className="clickable-bars" id="client-selection">
                     {
-                        Object.keys(clientDataMap).sort().map(clientId =>
+                        Object.keys(clientDataMap).map(clientId =>
                             <div
                                 key={clientId}
                                 className={`client-item ${(clientId === clientIdActive) ? 'active' : ''}`}
@@ -1101,7 +1104,7 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
             <section className="form-section client-date-section">
                 <div className="time-slot-date">{DateUtils.toString(date, "Mmmm dd, yyyy")}</div>
             </section>
-            <DayPlanner dayPlannerMode="newBooking" pageData={ dayPlannerPageData } reloadPageData={ reloadPageData }/>
+            <DayPlanner dayPlannerMode="newBooking" pageData={ dayPlannerPageData }/>
             <section className="action-buttons">
                 <button className="back-btn" type="button" onClick={previousPage}>Back</button>
                 <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (3/4)</button>

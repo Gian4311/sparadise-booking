@@ -14,7 +14,8 @@ import {
     ServiceDataMap,
     ServiceTransactionAvailabilityKeyMap,
     ServiceTransactionData,
-    ServiceTransactionDataMap
+    ServiceTransactionDataMap,
+    ServiceTransactionEmployeeListKeyMap
 } from "../firebase/SpaRadiseTypes";
 import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
@@ -40,6 +41,12 @@ interface CalendarRow {
 
 }
 
+interface CalendarRowDataMap {
+
+    [ timeSlotId: string ]: CalendarRow
+
+}
+
 interface DayPlannerPageData extends SpaRadisePageData {
 
     date: Date,
@@ -52,6 +59,7 @@ interface DayPlannerPageData extends SpaRadisePageData {
     jobServiceDataMap?: JobServiceDataMap,
     serviceDataMap: ServiceDataMap,
     serviceTransactionDefaultDataMap: ServiceTransactionDataMap,
+    serviceTransactionEmployeeListKeyMap: ServiceTransactionEmployeeListKeyMap,
     serviceTransactionToAddDataMap: ServiceTransactionDataMap
 
 }
@@ -74,23 +82,11 @@ interface ServiceEmployeeListKeyMap {
 
 }
 
-interface ServiceTransactionEmployeeListKeyMap {
-
-    [ serviceTransactionId: string ]: documentId[]
-
-}
-
 interface TimeSlotData {
 
     serviceTransactionData: ServiceTransactionData,
     serviceTransactionId: string,
     rowPosition: timeSlotRowPosition
-
-}
-
-interface TimeSlotDataMap {
-
-    [ timeSlotId: string ]: CalendarRow
 
 }
 
@@ -102,14 +98,15 @@ interface TimeSlotServiceEmployeeListKeyMap {
 
 const DATE_RANGE_FORMAT = "hh:mm-hh:mm";
 
-export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }: {
+export default function DayPlanner( {
+    dayPlannerMode, pageData
+}: {
     dayPlannerMode: dayPlannerMode,
-    pageData: DayPlannerPageData,
-    reloadPageData: () => void
+    pageData: DayPlannerPageData
 } ): JSX.Element {
 
     const
-        [ timeSlotDataMap, setTimeSlotDataMap ] = useState< TimeSlotDataMap >( {} ),
+        [ calendarRowDataMap, setCalendarRowDataMap ] = useState< CalendarRowDataMap >( {} ),
         [ clientServiceTransactionAddedMap ] = useState< { [ clientId: documentId ]: {
             [ serviceTransactionId: documentId ]: boolean
         } } >( {} ),
@@ -119,6 +116,7 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
         [ serviceTransactionAvailabilityKeyMap ] =
             useState< ServiceTransactionAvailabilityKeyMap >( {} )
         ,
+        [ timeSlotServiceEmployeeListKeyMap ] = useState< TimeSlotServiceEmployeeListKeyMap >( {} ),
         isNewBookingMode: boolean = ( dayPlannerMode === "newBooking" )
     ;
 
@@ -157,11 +155,11 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
             dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
             timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
         ;
-        if( !( timeSlotId in timeSlotDataMap ) ) return false;
+        if( !( timeSlotId in calendarRowDataMap ) ) return false;
         const
             { serviceDataMap } = pageData,
             { service: { id: serviceId } } = serviceTransactionData,
-            { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
+            { chairTimeSlotDataList, roomTimeSlotDataList } = calendarRowDataMap[ timeSlotId ],
             timeSlotData: TimeSlotData = {
                 serviceTransactionId, serviceTransactionData, rowPosition
             },
@@ -220,65 +218,68 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
             dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
             timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
         ;
-        if( !( timeSlotId in timeSlotDataMap ) ) return false;
+        if( !( timeSlotId in calendarRowDataMap ) ) return false;
         
         // checking if there's available rooms/chairs
         if( !( await hasAvailableRoomType( serviceTransactionData, serviceTransactionId ) ) )
             return false;
 
         // checking if there is assignable employee
-        const
-            timeSlotData: TimeSlotData = {
+
+        if( rowPosition === "up" ) return true;
+        let
+            timeSlotDataList: TimeSlotData[] = [ {
                 serviceTransactionId, serviceTransactionData, rowPosition
-            },
-            timeSlotDataConflictingList: TimeSlotData[] = [
-                ...( await getTimeSlotDataConflictingList(
-                    serviceTransactionData, serviceTransactionId
-                ) ),
-                timeSlotData
-            ],
-            serviceTransactionEmployeeListKeyMap: ServiceTransactionEmployeeListKeyMap = {},
-            timeSlotServiceEmployeeListKeyMap: TimeSlotServiceEmployeeListKeyMap = {}
+            } ],
+            timeSlotIdRange: string[] = [ timeSlotId ]
         ;
-        for( let timeSlotData of timeSlotDataConflictingList ) {
+        if( rowPosition === "down" ) {
 
             const
                 {
-                    serviceTransactionData: {
-                        bookingDateTimeStart, bookingDateTimeEnd, service: { id: serviceId }
-                    },
-                    serviceTransactionId
-                } = timeSlotData,
-                dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
-                timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
+                    serviceTransactionData: { bookingDateTimeStart },
+                    serviceTransactionData
+                } = timeSlotDataList[ 0 ]
             ;
-            if( !( timeSlotId in timeSlotServiceEmployeeListKeyMap ) )
-                timeSlotServiceEmployeeListKeyMap[ timeSlotId ] =
-                    await getServiceEmployeeKeyMap( dateRange )
-                ;
-            serviceTransactionEmployeeListKeyMap[ serviceTransactionId ] =
-                ( serviceTransactionId in serviceTransactionEmployeeListKeyMap ) ?
-                    StringUtils.arrayIntersection(
-                        serviceTransactionEmployeeListKeyMap[ serviceTransactionId ],
-                        timeSlotServiceEmployeeListKeyMap[ timeSlotId ][ serviceId ]
-                    )
-                : timeSlotServiceEmployeeListKeyMap[ timeSlotId ][ serviceId ]
-            ;
+            timeSlotDataList.push( {
+                serviceTransactionData: {
+                    ...serviceTransactionData,
+                    bookingDateTimeStart: DateUtils.addTime( bookingDateTimeStart,{ min: -30 } ),
+                    bookingDateTimeEnd: bookingDateTimeStart
+                },
+                serviceTransactionId,
+                rowPosition: "up"
+            } );
+            timeSlotIdRange.push( getTimeSlotIdAbove( timeSlotId ) as string );
 
         }
+        timeSlotDataList.push( ...( await getTimeSlotDataConflictingList(
+            timeSlotIdRange, [ serviceTransactionId ]
+        ) ) );
+        timeSlotDataList = timeSlotDataList.filter(
+            ( { rowPosition } ) => ( rowPosition !== "up" )
+        );
+        const serviceTransactionEmployeeListKeyMap: ServiceTransactionEmployeeListKeyMap =
+            await getTimeSlotServiceTransactionEmployeeListKeyMap( timeSlotDataList )
+        ;
         const
-            employeeAssignedIdList: number[] = timeSlotDataConflictingList.map( () => 0 ),
+            employeeAssignedIdList: number[] = timeSlotDataList.map( () => 0 ),
             employeeAssignedIndexMap: EmployeeAssignedIndexMap = {}
         ;
         for(
             let timeSlotIndex: number = 0;
-            timeSlotIndex >= 0 && timeSlotIndex < timeSlotDataConflictingList.length;
+            timeSlotIndex >= 0 && timeSlotIndex < timeSlotDataList.length;
             timeSlotIndex++
         ) {
 
             const
-                { serviceTransactionId } = timeSlotDataConflictingList[ timeSlotIndex ],
-                serviceEmployeeList = serviceTransactionEmployeeListKeyMap[ serviceTransactionId ]
+                {
+                    serviceTransactionData: { employee },
+                    serviceTransactionId
+                } = timeSlotDataList[ timeSlotIndex ],
+                serviceEmployeeList =
+                    !employee ? serviceTransactionEmployeeListKeyMap[ serviceTransactionId ]
+                    : [ employee.id ]
             ;
             let
                 oldEmployeeIndex: number = employeeAssignedIdList[ timeSlotIndex ],
@@ -307,7 +308,7 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
 
         }
         return (
-            timeSlotDataConflictingList.length === ObjectUtils.keyLength( employeeAssignedIndexMap )
+            timeSlotDataList.length === ObjectUtils.keyLength( employeeAssignedIndexMap )
         );
 
     }
@@ -321,11 +322,11 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
 
         }
 
-        for( let timeSlotId in timeSlotDataMap ) {
+        for( let timeSlotId in calendarRowDataMap ) {
 
-            const { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ];
-            timeSlotDataMap[ timeSlotId ] = {
-                ...timeSlotDataMap[ timeSlotId ],
+            const { chairTimeSlotDataList, roomTimeSlotDataList } = calendarRowDataMap[ timeSlotId ];
+            calendarRowDataMap[ timeSlotId ] = {
+                ...calendarRowDataMap[ timeSlotId ],
                 chairTimeSlotDataList: chairTimeSlotDataList.filter( filterNonServiceTransactionId ),
                 roomTimeSlotDataList: roomTimeSlotDataList.filter( filterNonServiceTransactionId )
             }
@@ -334,13 +335,13 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
 
     }
 
-    function getArrangedTimeSlotDataMap(): TimeSlotDataMap {
+    function getArrangedCalendarRowDataMap(): CalendarRowDataMap {
 
         const
             {
                 bookingDataMap, clientDataMap, serviceDataMap, serviceTransactionToAddDataMap
             } = pageData,
-            timeSlotDataMapArranged: TimeSlotDataMap = {}
+            calendarRowDataMapArranged: CalendarRowDataMap = {}
         ;
         let maxChairColumns: number = 0, maxRoomColumns: number = 0;
 
@@ -392,9 +393,9 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
 
         }
 
-        for( let timeSlotId in timeSlotDataMap ) {
+        for( let timeSlotId in calendarRowDataMap ) {
 
-            const calendarRow: CalendarRow = { ...timeSlotDataMap[ timeSlotId ] };
+            const calendarRow: CalendarRow = { ...calendarRowDataMap[ timeSlotId ] };
             let
                 chairTimeSlotDataList = [ ...calendarRow.chairTimeSlotDataList ],
                 roomTimeSlotDataList = [ ...calendarRow.roomTimeSlotDataList ]
@@ -413,7 +414,7 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
             ;
             maxChairColumns = Math.max( maxChairColumns, chairColumns );
             maxRoomColumns = Math.max( maxRoomColumns, roomColumns );
-            timeSlotDataMapArranged[ timeSlotId ] = calendarRow;
+            calendarRowDataMapArranged[ timeSlotId ] = calendarRow;
 
         }
 
@@ -423,12 +424,12 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
             let maxColumns: number = isChair ? maxChairColumns : maxRoomColumns;
             for( let column: number = 0; column < maxColumns; column++ ) {
 
-                for( let timeSlotId in timeSlotDataMapArranged ) {
+                for( let timeSlotId in calendarRowDataMapArranged ) {
     
                     const
                         {
                             chairTimeSlotDataList, roomTimeSlotDataList
-                        } = timeSlotDataMapArranged[ timeSlotId ],
+                        } = calendarRowDataMapArranged[ timeSlotId ],
                         timeSlotDataList = isChair ? chairTimeSlotDataList : roomTimeSlotDataList,
                         timeSlotData = timeSlotDataList[ column ]
                     ;
@@ -448,7 +449,7 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
                         {
                             chairTimeSlotDataList: matchChairTimeSlotDataList,
                             roomTimeSlotDataList: matchRoomTimeSlotDataList
-                        } = timeSlotDataMapArranged[ timeSlotMatchId ],
+                        } = calendarRowDataMapArranged[ timeSlotMatchId ],
                         matchTimeSlotDataList =
                             isChair ? matchChairTimeSlotDataList : matchRoomTimeSlotDataList
                     ;
@@ -476,7 +477,7 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
 
         rearrangeTable( "chair" );
         rearrangeTable( "room" );
-        return timeSlotDataMapArranged;
+        return calendarRowDataMapArranged;
 
     }
 
@@ -486,7 +487,7 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
     
         const
             clientMap: { [ clientId: documentId ]: undefined } = {},
-            { chairs, chairTimeSlotDataList } = timeSlotDataMap[ timeSlotId ]
+            { chairs, chairTimeSlotDataList } = calendarRowDataMap[ timeSlotId ]
         ;
         for( let timeSlotData of chairTimeSlotDataList ) {
 
@@ -505,7 +506,7 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
 
         const
             clientMap: { [ clientId: documentId ]: undefined } = {},
-            { rooms, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ]
+            { rooms, roomTimeSlotDataList } = calendarRowDataMap[ timeSlotId ]
         ;
         for( let timeSlotData of roomTimeSlotDataList ){
 
@@ -515,58 +516,6 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
 
         }
         return ( rooms - ObjectUtils.keyLength( clientMap ) );
-
-    }
-
-    async function getServiceEmployeeKeyMap(
-        dateRange: DateRange
-    ): Promise< ServiceEmployeeListKeyMap > {
-    
-        const
-            { jobDataMap, jobServiceDataMap, serviceDataMap } = pageData
-        ;
-        let { employeeDataMap, employeeLeaveDataMap } = pageData;
-        if( !employeeLeaveDataMap ) throw new Error( `Employee leave data map is not given!` );
-        if( !jobDataMap ) throw new Error( `Job data map is not given!` );
-        if( !jobServiceDataMap ) throw new Error( `Job service data map is not given!` );
-        const
-            employeeOnLeaveIdMap: { [ employeeId: string ]: undefined } = {},
-            serviceEmployeeKeyMap: ServiceEmployeeListKeyMap = {}
-        ;
-        employeeLeaveDataMap = ObjectUtils.filter(
-            employeeLeaveDataMap,
-            ( employeeLeaveId, { dateTimeStart, dateTimeEnd } ) => dateRange.overlapsWith(
-                new DateRange( dateTimeStart, dateTimeEnd )
-            )
-        )
-        for( let employeeLeaveId in employeeLeaveDataMap ) {
-
-            const { employee: { id: employeeId } } = employeeLeaveDataMap[ employeeLeaveId ];
-            employeeOnLeaveIdMap[ employeeId ] = undefined;
-
-        }
-        employeeDataMap = ObjectUtils.filter(
-            employeeDataMap, employeeId => !( employeeId in employeeOnLeaveIdMap )
-        );
-        const jobServiceKeyMap: JobServiceKeyMap = {};
-        for( let jobId in jobDataMap ) jobServiceKeyMap[ jobId ] = {};
-        for( let jobServiceId in jobServiceDataMap ) {
-
-            const {
-                job: { id: jobId }, service: { id: serviceId }
-            } = jobServiceDataMap[ jobServiceId ];
-            jobServiceKeyMap[ jobId ][ serviceId ] = jobServiceId;
-
-        }
-        for( let serviceId in serviceDataMap ) serviceEmployeeKeyMap[ serviceId ] = [];
-        for( let employeeId in employeeDataMap ) {
-
-            const { job: { id: jobId } } = employeeDataMap[ employeeId ];
-            for( let serviceId in jobServiceKeyMap[ jobId ] )
-                serviceEmployeeKeyMap[ serviceId ].push( employeeId );
-
-        }
-        return serviceEmployeeKeyMap;
 
     }
 
@@ -604,22 +553,19 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
     }
 
     async function getTimeSlotDataConflictingList(
-        serviceTransactionData: ServiceTransactionData,
-        serviceTransactionId: documentId
+        timeSlotIdList: string[],
+        serviceTransactionIdIgnoreList: documentId[] = []
     ): Promise< TimeSlotData[] > {
 
         const
-            { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData,
-            dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
-            timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT ),
-            timeSlotIdList: string[] = [ timeSlotId ],
+            timeSlotIdListNew: string[] = [ ...timeSlotIdList ],
             timeSlotDataList: TimeSlotData[] = []
         ;
-        for( let index: number = 0; index < timeSlotIdList.length; index++ ) {
+        for( let index: number = 0; index < timeSlotIdListNew.length; index++ ) {
 
             const
-                timeSlotId: string = timeSlotIdList[ index ],
-                { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
+                timeSlotId: string = timeSlotIdListNew[ index ],
+                { chairTimeSlotDataList, roomTimeSlotDataList } = calendarRowDataMap[ timeSlotId ],
                 timeSlotIdAbove: string | undefined = getTimeSlotIdAbove( timeSlotId ),
                 timeSlotIdBelow: string | undefined = getTimeSlotIdBelow( timeSlotId ),
                 rowTimeSlotDataList: TimeSlotData[] = [
@@ -627,8 +573,9 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
                 ].filter( timeSlotData => {
 
                     if( !timeSlotData ) return false;
+                    if( !serviceTransactionIdIgnoreList ) return true;
                     const { serviceTransactionId: serviceTransactionIdCompare } = timeSlotData;
-                    return ( serviceTransactionId !== serviceTransactionIdCompare );
+                    return !serviceTransactionIdIgnoreList.includes( serviceTransactionIdCompare );
 
                 } ) as TimeSlotData[]
             ;
@@ -643,13 +590,13 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
     
                     case "down":
                         if( mightConflictWithAbove ) break;
-                        if( timeSlotIdAbove && !timeSlotIdList.includes( timeSlotIdAbove ) )
+                        if( timeSlotIdAbove && !timeSlotIdListNew.includes( timeSlotIdAbove ) )
                         mightConflictWithAbove = true;
                         break;
                     
                     case "up":
                         if( mightConflictWithBelow ) break;
-                        if( timeSlotIdBelow && !timeSlotIdList.includes( timeSlotIdBelow ) )
+                        if( timeSlotIdBelow && !timeSlotIdListNew.includes( timeSlotIdBelow ) )
                         mightConflictWithBelow = true;
                         break;
     
@@ -657,8 +604,8 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
                 if( mightConflictWithAbove && mightConflictWithBelow ) break;
     
             }
-            if( timeSlotIdAbove && mightConflictWithAbove ) timeSlotIdList.push( timeSlotIdAbove );
-            if( timeSlotIdBelow && mightConflictWithBelow ) timeSlotIdList.push( timeSlotIdBelow );
+            if( timeSlotIdAbove && mightConflictWithAbove ) timeSlotIdListNew.push( timeSlotIdAbove );
+            if( timeSlotIdBelow && mightConflictWithBelow ) timeSlotIdListNew.push( timeSlotIdBelow );
 
         }
         return timeSlotDataList;
@@ -670,7 +617,7 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
         const
             dateRange: DateRange = getDateRangeFromTimeSlotId( timeSlotId ).addTime( { min: -30 } ),
             timeSlotIdAbove: string = dateRange.toString( DATE_RANGE_FORMAT ),
-            exists: boolean = timeSlotIdAbove in timeSlotDataMap
+            exists: boolean = timeSlotIdAbove in calendarRowDataMap
         ;
         return exists ? timeSlotIdAbove : undefined;
 
@@ -681,7 +628,7 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
         const
             dateRange: DateRange = getDateRangeFromTimeSlotId( timeSlotId ).addTime( { min: 30 } ),
             timeSlotIdBelow: string = dateRange.toString( DATE_RANGE_FORMAT ),
-            exists: boolean = timeSlotIdBelow in timeSlotDataMap
+            exists: boolean = timeSlotIdBelow in calendarRowDataMap
         ;
         return exists ? timeSlotIdBelow : undefined;
 
@@ -712,9 +659,9 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
             dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
             timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
         ;
-        if( !( timeSlotId in timeSlotDataMap ) ) return -1;
+        if( !( timeSlotId in calendarRowDataMap ) ) return -1;
         const
-            { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
+            { chairTimeSlotDataList, roomTimeSlotDataList } = calendarRowDataMap[ timeSlotId ],
             timeSlotDataList: ( TimeSlotData | undefined )[] = [
                 ...chairTimeSlotDataList, ...roomTimeSlotDataList
             ]
@@ -735,6 +682,54 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
 
     }
 
+    async function getTimeSlotList(): Promise< TimeSlotData[] > {
+
+        const timeSlotDataList: TimeSlotData[] = [];
+        for( let timeSlotId in calendarRowDataMap ) {
+
+            const { roomTimeSlotDataList, chairTimeSlotDataList } = calendarRowDataMap[ timeSlotId ];
+            timeSlotDataList.push(
+                ...ArrayUtils.union( roomTimeSlotDataList, chairTimeSlotDataList ).filter(
+                    timeSlotData => timeSlotData
+                ) as TimeSlotData[]
+            );
+
+        }
+        return timeSlotDataList;
+
+    }
+
+    async function getTimeSlotServiceTransactionEmployeeListKeyMap(
+        timeSlotDataList: TimeSlotData[]
+    ): Promise< ServiceTransactionEmployeeListKeyMap > {
+
+        const serviceTransactionEmployeeListKeyMap: ServiceTransactionEmployeeListKeyMap = {};
+        for( let timeSlotData of timeSlotDataList ) {
+
+            const
+                {
+                    serviceTransactionData: {
+                        service: { id: serviceId }, bookingDateTimeStart, bookingDateTimeEnd,
+                    },
+                    serviceTransactionId
+                } = timeSlotData,
+                dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
+                timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
+            ;
+            serviceTransactionEmployeeListKeyMap[ serviceTransactionId ] =
+                ( serviceTransactionId in serviceTransactionEmployeeListKeyMap ) ?
+                    StringUtils.arrayIntersection(
+                        serviceTransactionEmployeeListKeyMap[ serviceTransactionId ],
+                        timeSlotServiceEmployeeListKeyMap[ timeSlotId ][ serviceId ]
+                    )
+                : timeSlotServiceEmployeeListKeyMap[ timeSlotId ][ serviceId ]
+            ;
+
+        }
+        return serviceTransactionEmployeeListKeyMap;
+
+    }
+
     async function handleAddToTimeSlot( timeSlotId: string ): Promise< void > {
 
         if( !serviceTransactionIdActive ) return;
@@ -752,7 +747,7 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
         serviceTransactionData.bookingDateTimeEnd = dateRange.getEnd();
         setServiceTransactionIdActive( undefined );
         await loadServiceTransactionToAddData();
-        reloadTimeSlotDataMap();
+        reloadCalendarRowDataMap();
 
     }
 
@@ -761,7 +756,7 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
     ): Promise< void > {
 
         setServiceTransactionIdActive( serviceTransactionIdActive );
-        reloadTimeSlotDataMap();
+        reloadCalendarRowDataMap();
 
     }
 
@@ -779,7 +774,7 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
             timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT ),
             { service: { id: serviceId } } = serviceTransactionData,
             serviceData = serviceDataMap[ serviceId ],
-            { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
+            { chairTimeSlotDataList, roomTimeSlotDataList } = calendarRowDataMap[ timeSlotId ],
             timeSlotDataList: ( TimeSlotData | undefined )[] = [
                 ...chairTimeSlotDataList, ...roomTimeSlotDataList
             ],
@@ -845,9 +840,9 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
             dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
             timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT )
         ;
-        if( !( timeSlotId in timeSlotDataMap ) ) return false;
+        if( !( timeSlotId in calendarRowDataMap ) ) return false;
         const
-            { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
+            { chairTimeSlotDataList, roomTimeSlotDataList } = calendarRowDataMap[ timeSlotId ],
             timeSlotDataList: ( TimeSlotData | undefined )[] = [
                 ...chairTimeSlotDataList, ...roomTimeSlotDataList
             ]
@@ -868,9 +863,9 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
         timeSlotId: string
     ): boolean {
 
-        if( !( timeSlotId in timeSlotDataMap ) ) return false;
+        if( !( timeSlotId in calendarRowDataMap ) ) return false;
         const
-            { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ],
+            { chairTimeSlotDataList, roomTimeSlotDataList } = calendarRowDataMap[ timeSlotId ],
             timeSlotDataList: ( TimeSlotData | undefined )[] = [
                 ...chairTimeSlotDataList, ...roomTimeSlotDataList
             ]
@@ -887,20 +882,12 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
 
     }
 
-    async function handleChangeDate(): Promise< void > {
-
-        await loadTimeSlotIdList();
-        await loadCapacityData();
-        await loadServiceTransactionDefaultData();
-
-    }
-
     async function loadCapacityData(): Promise< void > {
 
         // initial
-        for( let timeSlotId in timeSlotDataMap ) {
+        for( let timeSlotId in calendarRowDataMap ) {
 
-            const calendarRow = timeSlotDataMap[ timeSlotId ];
+            const calendarRow = calendarRowDataMap[ timeSlotId ];
             calendarRow.chairs = 5;
             calendarRow.rooms = 5;
 
@@ -910,9 +897,13 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
 
     async function loadComponentData(): Promise< void > {
 
-        await handleChangeDate();
+        await loadTimeSlotIdList();
+        await loadCapacityData();
+        await loadServiceTransactionDefaultData();
+        await loadTimeSlotServiceEmployeeListKeyMap();
+        await loadTimeSlotServiceTransactionEmployeeListKeyMap();
         await loadServiceTransactionToAddData();
-        reloadTimeSlotDataMap();
+        reloadCalendarRowDataMap();
 
     }
 
@@ -970,7 +961,7 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
                 DURATION_ADD = { min: 30 }
             ;
             serviceTransactionAvailabilityKeyMap[ serviceTransactionId ] = {};
-            for( let timeSlotId in timeSlotDataMap ) {
+            for( let timeSlotId in calendarRowDataMap ) {
 
                 let dateRange: DateRange = getDateRangeFromTimeSlotId( timeSlotId );
                 if( durationMin > 30 ) dateRange = dateRange.addEnd( DURATION_ADD );
@@ -1042,9 +1033,80 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
 
     }
 
+    async function loadTimeSlotServiceEmployeeListKeyMap(): Promise< void > {
+
+        const
+            { jobDataMap, jobServiceDataMap, serviceDataMap } = pageData
+        ;
+        if( !pageData.employeeLeaveDataMap )
+            throw new Error( `Employee leave data map is not given!` );
+        if( !jobDataMap ) throw new Error( `Job data map is not given!` );
+        if( !jobServiceDataMap ) throw new Error( `Job service data map is not given!` );
+        ObjectUtils.clear( timeSlotServiceEmployeeListKeyMap );
+        for( let timeSlotId in calendarRowDataMap ) {
+
+            const
+                dateRange: DateRange = getDateRangeFromTimeSlotId( timeSlotId ),
+                employeeOnLeaveIdMap: { [ employeeId: string ]: undefined } = {},
+                serviceEmployeeKeyMap: ServiceEmployeeListKeyMap = {}
+            ;
+            let { employeeDataMap, employeeLeaveDataMap } = pageData;
+            employeeLeaveDataMap = ObjectUtils.filter(
+                employeeLeaveDataMap,
+                ( employeeLeaveId, { dateTimeStart, dateTimeEnd } ) => dateRange.overlapsWith(
+                    new DateRange( dateTimeStart, dateTimeEnd )
+                )
+            )
+            for( let employeeLeaveId in employeeLeaveDataMap ) {
+
+                const { employee: { id: employeeId } } = employeeLeaveDataMap[ employeeLeaveId ];
+                employeeOnLeaveIdMap[ employeeId ] = undefined;
+
+            }
+            employeeDataMap = ObjectUtils.filter(
+                employeeDataMap, employeeId => !( employeeId in employeeOnLeaveIdMap )
+            );
+            const jobServiceKeyMap: JobServiceKeyMap = {};
+            for( let jobId in jobDataMap ) jobServiceKeyMap[ jobId ] = {};
+            for( let jobServiceId in jobServiceDataMap ) {
+
+                const {
+                    job: { id: jobId }, service: { id: serviceId }
+                } = jobServiceDataMap[ jobServiceId ];
+                jobServiceKeyMap[ jobId ][ serviceId ] = jobServiceId;
+
+            }
+            for( let serviceId in serviceDataMap ) serviceEmployeeKeyMap[ serviceId ] = [];
+            for( let employeeId in employeeDataMap ) {
+
+                const { job: { id: jobId } } = employeeDataMap[ employeeId ];
+                for( let serviceId in jobServiceKeyMap[ jobId ] )
+                    serviceEmployeeKeyMap[ serviceId ].push( employeeId );
+
+            }
+            timeSlotServiceEmployeeListKeyMap[ timeSlotId ] = serviceEmployeeKeyMap;
+
+        }
+
+    }
+
+    async function loadTimeSlotServiceTransactionEmployeeListKeyMap(): Promise< void > {
+
+        const
+            { serviceTransactionEmployeeListKeyMap } = pageData,
+            timeSlotDataList: TimeSlotData[] = await getTimeSlotList()
+        ;
+        ObjectUtils.clear( serviceTransactionEmployeeListKeyMap );
+        ObjectUtils.fill(
+            serviceTransactionEmployeeListKeyMap,
+            await getTimeSlotServiceTransactionEmployeeListKeyMap( timeSlotDataList )
+        );
+
+    }
+
     async function loadTimeSlotIdList(): Promise< void > {
     
-        ObjectUtils.clear( timeSlotDataMap );
+        ObjectUtils.clear( calendarRowDataMap );
         const dateRange = getDateRangeOfDay();
         if( !dateRange ) return;
         const
@@ -1060,7 +1122,7 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
                 dateRange: DateRange = new DateRange( date, end ),
                 timeSlotId: string = dateRange.toString( DATE_RANGE_FORMAT );
             ;
-            timeSlotDataMap[ timeSlotId ] = {
+            calendarRowDataMap[ timeSlotId ] = {
                 chairs: 0, chairTimeSlotDataList: [],
                 rooms: 0, roomTimeSlotDataList: []
             };
@@ -1106,19 +1168,19 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
 
     }
 
-    function reloadTimeSlotDataMap(): void {
+    function reloadCalendarRowDataMap(): void {
 
-        setTimeSlotDataMap( { ...timeSlotDataMap } );
+        setCalendarRowDataMap( { ...calendarRowDataMap } );
 
     }
 
     useEffect( () => { loadComponentData(); }, [ pageData ]);
 
-    const timeSlotDataMapArranged = getArrangedTimeSlotDataMap();
+    const calendarRowDataMapArranged = getArrangedCalendarRowDataMap();
     let chairColumns: number = 0, roomColumns: number = 0;
-    if( !isNewBookingMode ) for( let timeSlotId in timeSlotDataMap ) {
+    if( !isNewBookingMode ) for( let timeSlotId in calendarRowDataMap ) {
 
-        const { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMap[ timeSlotId ];
+        const { chairTimeSlotDataList, roomTimeSlotDataList } = calendarRowDataMap[ timeSlotId ];
         chairColumns = Math.max( chairColumns, chairTimeSlotDataList.length );
         roomColumns = Math.max( roomColumns, roomTimeSlotDataList.length );
 
@@ -1138,10 +1200,10 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
                 }
             </tr></thead>
             <tbody>{
-                Object.keys( timeSlotDataMapArranged ).map( ( timeSlotId, index ) => {
+                Object.keys( calendarRowDataMapArranged ).map( ( timeSlotId, index ) => {
 
                     const
-                        { chairTimeSlotDataList, roomTimeSlotDataList } = timeSlotDataMapArranged[ timeSlotId ],
+                        { chairTimeSlotDataList, roomTimeSlotDataList } = calendarRowDataMapArranged[ timeSlotId ],
                         emptyChairTimeSlotList: undefined[] = [],
                         emptyRoomTimeSlotList: undefined[] = []
                     ;
@@ -1198,19 +1260,15 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
                                 return <TimeSlot
                                     className={ ( !isNewBookingMode || serviceTransactionIdActive !== serviceTransactionId ) ? className : `move` }
                                     clientData={ pageData.clientDataMap[ clientId ] }
-                                    columnIndex={ index }
                                     dayPlannerMode={ dayPlannerMode }
                                     // employee
                                     key={ serviceTransactionId }
                                     rowPosition={ rowPosition }
                                     serviceData={ pageData.serviceDataMap[ serviceId ] }
-                                    serviceTransactionId={ serviceTransactionId }
-                                    serviceTransactionIdActive={ serviceTransactionIdActive }
                                     serviceTransactionData={ serviceTransactionData }
                                     onClick={ () => handleChangeServiceTransactionIdActive(
                                         serviceTransactionId
                                     ) }
-                                    reloadPageData={ reloadPageData }
                                 />;
 
                             } )
@@ -1248,19 +1306,15 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
                                 return <TimeSlot
                                     className={ ( !isNewBookingMode || serviceTransactionIdActive !== serviceTransactionId ) ? className : `move` }
                                     clientData={ pageData.clientDataMap[ clientId ] }
-                                    columnIndex={ roomColumns + index + 1 }
                                     dayPlannerMode={ dayPlannerMode }
                                     // employee
                                     key={ serviceTransactionId }
                                     rowPosition={ rowPosition }
                                     serviceData={ pageData.serviceDataMap[ serviceId ] }
-                                    serviceTransactionId={ serviceTransactionId }
-                                    serviceTransactionIdActive={ serviceTransactionIdActive }
                                     serviceTransactionData={ serviceTransactionData }
                                     onClick={ () => handleChangeServiceTransactionIdActive(
                                         serviceTransactionId
                                     ) }
-                                    reloadPageData={ reloadPageData }
                                 />;
 
                             } )
@@ -1291,7 +1345,7 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
             <tfoot><tr><td>
                 {   
                     ArrayUtils.createEmptyArray(
-                        Math.ceil( ObjectUtils.keyLength( timeSlotDataMap ) / 2 )
+                        Math.ceil( ObjectUtils.keyLength( calendarRowDataMap ) / 2 )
                     ).map( ( _, index ) => <div
                         className="grid-line horizontal"
                         key={ index }
@@ -1375,35 +1429,33 @@ export default function DayPlanner( { dayPlannerMode, pageData, reloadPageData }
 }
 
 function TimeSlot( {
-    className, clientData, columnIndex, employeeData, dayPlannerMode, rowPosition, serviceData,
-    serviceTransactionId, serviceTransactionIdActive,
-    onClick, reloadPageData
+    className, clientData, employeeData, dayPlannerMode, rowPosition, serviceData,
+    onClick
 }: {
     className: string,
     clientData: ClientData,
-    columnIndex: number,
     dayPlannerMode: dayPlannerMode,
     employeeData?: EmployeeData,
     rowPosition: timeSlotRowPosition,
     serviceData: ServiceData,
     serviceTransactionData: ServiceTransactionData,
-    serviceTransactionId: string,
-    serviceTransactionIdActive: string | undefined,
-    onClick?: () => Promise< void > | void,
-    reloadPageData: () => void
+    onClick?: () => Promise< void > | void
 } ): JSX.Element {
 
-    const isNewBookingMode: boolean = ( dayPlannerMode === "newBooking" );
+    const
+        isNewBookingMode: boolean = ( dayPlannerMode === "newBooking" ),
+        employeeName: string =
+        employeeData ? PersonUtils.format( employeeData, "f mi l" )
+        : "(Unassigned)"
+    ;
+    className = `time-slot ${ className }`;
 
     async function handleTimeSlotClick(): Promise< void > {
 
         if( onClick ) await onClick();
 
-
     }
 
-    className = `time-slot ${ className }`;
-    const employeeName: string = employeeData ? PersonUtils.format( employeeData, "f mi l" ) : "(Unassigned)";
     return <td
         className={ className }
         rowSpan={ ( rowPosition === "up" ) ? 2 : undefined }
@@ -1413,11 +1465,6 @@ function TimeSlot( {
         <div>{ serviceData.name }</div>
         {
             !isNewBookingMode ? <div>{ employeeName }</div> : undefined
-        }
-        {
-            ( !isNewBookingMode && serviceTransactionId === serviceTransactionIdActive ) ? <>
-                wdwdw
-            </> : undefined
         }
     </td>;
 

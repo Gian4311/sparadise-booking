@@ -15,4 +15,12 @@ export default class ArrayUtils {
 
     }
 
+    public static union< T >( ...arrayList: T[][] ): T[] {
+
+        const arrayUnion: T[] = [];
+        for( let array of arrayList ) arrayUnion.push( ...array );
+        return arrayUnion;
+
+    }
+
 }
