@@ -23,12 +23,14 @@ import {
 import AccountUtils from "../firebase/AccountUtils";
 import BookingUtils from "../firebase/BookingUtils";
 import ClientUtils from "../firebase/ClientUtils";
+import DateRange from "../utils/DateRange";
 import DateUtils from "../utils/DateUtils";
 import DayPlanner from "../components/DayPlanner";
 import { DocumentReference } from "firebase/firestore/lite";
 import EmployeeLeaveUtils from "../firebase/EmployeeLeaveUtils";
 import EmployeeSidebar from "../components/EmployeeSidebar";
 import EmployeeUtils from "../firebase/EmployeeUtils";
+import FormEmployeeSelect from "../components/FormEmployeeSelect";
 import {
     FormEvent,
     useEffect,
@@ -46,12 +48,13 @@ import PackageUtils from "../firebase/PackageUtils";
 import ServiceMaintenanceUtils from "../firebase/ServiceMaintenanceUtils";
 import ServiceTransactionUtils from "../firebase/ServiceTransactionUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
+import SpaRadiseDataMapUtils from "../firebase/SpaRadiseDataMapUtils";
+import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import {
     useNavigate,
     useParams
 } from "react-router-dom";
-import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 
 interface EmployeeBookingManagementPageData extends SpaRadisePageData {
 
@@ -61,6 +64,7 @@ interface EmployeeBookingManagementPageData extends SpaRadisePageData {
     bookingDataMap: BookingDataMap,
     bookingDocumentReference?: DocumentReference,
     clientDataMap: ClientDataMap,
+    clientIdActive: documentId,
     clientInfoMap: {
         [ clientId: string ]: ServiceTransactionDataMap
     },
@@ -72,6 +76,7 @@ interface EmployeeBookingManagementPageData extends SpaRadisePageData {
     maintenanceDataMap: { [ documentId: documentId]: PackageMaintenanceData | ServiceMaintenanceData },
     packageDataMap: PackageDataMap,
     serviceDataMap: ServiceDataMap,
+    serviceTransactionDefaultDataMap: ServiceTransactionDataMap,
     serviceTransactionEmployeeListKeyMap: ServiceTransactionEmployeeListKeyMap,
     serviceTransactionOfDayDataMap: ServiceTransactionDataMap
 
@@ -92,6 +97,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
             bookingDefaultData: {} as BookingData,
             bookingDataMap: {},
             clientDataMap: {},
+            clientIdActive: null as unknown as string,
             clientInfoMap: {},
             date: null as unknown as Date,
             employeeDataMap: {},
@@ -102,6 +108,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
             maintenanceDataMap: {},
             packageDataMap: {},
             serviceDataMap: {},
+            serviceTransactionDefaultDataMap: {},
             serviceTransactionEmployeeListKeyMap: {},
             serviceTransactionOfDayDataMap: {},
             updateMap: {}
@@ -136,6 +143,13 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     }
 
+    async function handleChangeClientActive( clientId: string ): Promise< void > {
+
+        pageData.clientIdActive = clientId;
+        reloadPageData();
+
+    }
+
     async function loadBookingData(): Promise< void > {
     
         pageData.bookingDataMap = await BookingUtils.getBookingDataMapAll();
@@ -167,6 +181,9 @@ export default function EmployeeBookingManagement(): JSX.Element {
     async function loadClientData(): Promise< void > {
     
         pageData.clientDataMap = await ClientUtils.getClientDataMapAll();
+        pageData.clientIdActive =
+            ObjectUtils.getFirstKeyName( pageData.clientDataMap ) ?? null as unknown as string
+        ;
 
     }
 
@@ -239,6 +256,9 @@ export default function EmployeeBookingManagement(): JSX.Element {
                 clientInfoMap[ clientId ][ serviceTransactionId ] = serviceTransactionData;
 
         }
+        pageData.serviceTransactionDefaultDataMap = SpaRadiseDataMapUtils.clone(
+            serviceTransactionOfDayDataMap
+        );
 
     }
 
@@ -296,6 +316,97 @@ export default function EmployeeBookingManagement(): JSX.Element {
             </p>
             <form onSubmit={ submit }>
                 <DayPlanner dayPlannerMode="management" pageData={ dayPlannerPageData } show={ false }/>
+                <section className="client-input">
+                    <label className="client-selection">Select Client:</label>
+                    <div className="clickable-bars" id="client-selection">
+                        {
+                            Object.keys( pageData.clientDataMap ).map( clientId =>
+                                <div
+                                    className={ `client-item ${ ( clientId === pageData.clientIdActive ) ? 'active' : '' }` }
+                                    data-client={ `client${ clientId }` }
+                                    key={ clientId }
+                                    onClick={ () => handleChangeClientActive( clientId ) }
+                                >
+                                    { pageData.clientDataMap[ clientId ].name }
+                                </div>
+                            )
+                        }
+                    </div>
+                </section>
+                <section className="service-scroll-container">{
+                    pageData.clientIdActive ? Object.keys( pageData.clientInfoMap[ pageData.clientIdActive ] ).map( serviceTransactionId => {
+
+                        const
+                            {
+                                clientIdActive, clientInfoMap, employeeDataMap, packageDataMap,
+                                serviceDataMap, serviceTransactionDefaultDataMap,
+                                serviceTransactionEmployeeListKeyMap
+                            } = pageData
+                        ;
+                        if( !serviceTransactionEmployeeListKeyMap[ serviceTransactionId ] )
+                            return undefined;
+                        const
+                            serviceTransactionDataMap = clientInfoMap[ clientIdActive ],
+                            serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ],
+                            {
+                                service: { id: serviceId },
+                                bookingDateTimeEnd, bookingDateTimeStart
+                            } = serviceTransactionData,
+                            dateRange: DateRange = new DateRange(
+                                bookingDateTimeStart, bookingDateTimeEnd
+                            ),
+                            serviceTransactionDefaultData =
+                                serviceTransactionDefaultDataMap[ serviceTransactionId ]
+                            ,
+                            serviceTransactionEmployeeDataMap: EmployeeDataMap = ObjectUtils.filter(
+                                employeeDataMap,
+                                employeeId =>
+                                    serviceTransactionEmployeeListKeyMap
+                                        [ serviceTransactionId ]
+                                        .includes( employeeId )
+                            )
+                        ;
+
+                        return <div className="service-scroll-item" key={ serviceTransactionId }>
+                            <div className="">
+                                <div className="service-name">{ serviceDataMap[ serviceId ].name }</div>
+                                Employee Assigned<br/>
+                                { dateRange.toString( "h:mmAM-h:mmAM" ) }<br/>
+                                <FormEmployeeSelect
+                                    documentData={ serviceTransactionData }
+                                    documentDefaultData={ serviceTransactionDefaultData }
+                                    documentId={ serviceTransactionId }
+                                    employeeDataMap={ serviceTransactionEmployeeDataMap }
+                                    pageData={ pageData }
+                                    keyName="employee"
+                                    required={ true }
+                                >
+                                    <option value="" disabled>Assign employee</option>
+                                </FormEmployeeSelect>
+                                <br/>
+                                Actual Start Time<br/>
+                                Actual End Time<br/>
+                                Notes<br/>
+                                <FormTextArea documentData={ serviceTransactionData } documentDefaultData={ serviceTransactionDefaultData } documentId={ serviceTransactionId } keyName="notes" pageData={ pageData }/>
+                            </div>
+                            {/* <div className="service-price">₱{price}</div>
+                            <div className="service-name">{name}</div>
+                            <div className="service-description">{description}</div>
+                            {
+                                (serviceId in singleServiceIncludedMap) ? (
+                                    <button className="remove-btn" type="button" onClick={() => deleteSingleService(serviceId)}>Remove</button>
+                                ) : isConflictingService(serviceId) ? (
+                                    <button className="conf-btn" type="button">In Conflict</button>
+                                ) : (
+                                    <button className="add-btn" type="button" onClick={() => addSingleService(serviceId)}>Add</button>
+                                )
+                            } */}
+                        </div>;
+
+                    } )
+                    : undefined
+                }</section>
+                
                 <button type="button" onClick={ () => console.log( pageData ) }>Log page data</button>
             </form>
         </main>

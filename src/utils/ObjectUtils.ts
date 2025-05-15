@@ -35,6 +35,12 @@ export default class ObjectUtils {
 
     }
 
+    public static getFirstKeyName< V >( object: ObjectParam< V > ): string | undefined {
+
+        for( let keyName in object ) return keyName;
+
+    }
+
     public static hasKeys( object: Object ): boolean {
 
         return Object.keys( object ).length > 0;
