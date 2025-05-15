@@ -16,9 +16,9 @@ const DATETIME_FORMAT = "yyyy-mm-ddThh:mm";
 
 export default function FormDateTimeInput(
     {
-        className,documentData, documentDefaultData, documentId, keyName, max, min,
+        className, documentData, documentDefaultData, documentId, keyName, max, min,
         name = keyName.toString(),
-        pageData, placeholder, readOnly, required,
+        pageData, readOnly, required,
         onChange, validate
     }: {
         className?: string,
@@ -30,7 +30,6 @@ export default function FormDateTimeInput(
         min?: Date,
         name?: string,
         pageData: SpaRadisePageData,
-        placeholder?: string,
         readOnly?: boolean,
         required?: boolean,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
@@ -42,6 +41,7 @@ export default function FormDateTimeInput(
 
     async function handleChange( event: ChangeEvent< HTMLInputElement > ): Promise< void > {
 
+        if( readOnly ) return;
         const
             unparsedValue: string = event.target.value,
             parsedValue: main | null = await parseValue( unparsedValue ),
@@ -108,7 +108,6 @@ export default function FormDateTimeInput(
         max={ max ? DateUtils.toString( max, DATETIME_FORMAT ) : undefined }
         min={ min ? DateUtils.toString( min, DATETIME_FORMAT ) : undefined }
         name={ name }
-        placeholder={ placeholder }
         readOnly={ readOnly }
         required={ required }
         type="datetime-local"

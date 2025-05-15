@@ -231,4 +231,19 @@ export default class DateUtils {
 
     }
 
+    public static toTimeData( date: Date ): TimeData {
+
+        return {
+            yr: date.getFullYear(),
+            mon: date.getMonth(),
+            // set week
+            day: date.getDate(),
+            hr: date.getHours(),
+            min: date.getMinutes(),
+            sec: date.getSeconds(),
+            ms: date.getMilliseconds()
+        };
+
+    }
+
 }

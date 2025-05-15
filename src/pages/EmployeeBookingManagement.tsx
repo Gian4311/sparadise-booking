@@ -36,7 +36,9 @@ import {
     useEffect,
     useState
 } from "react";
+import FormMarkButton from "../components/FormMarkButton";
 import FormTextArea from "../components/FormTextArea";
+import FormTimeInput from "../components/FormTimeInput";
 import FormTinyTextInput from "../components/FormTinyTextInput";
 import LoadingScreen from "../components/LoadingScreen";
 import NumberUtils from "../utils/NumberUtils";
@@ -45,6 +47,7 @@ import JobUtils from "../firebase/JobUtils";
 import JobServiceUtils from "../firebase/JobServiceUtils";
 import PackageMaintenanceUtils from "../firebase/PackageMaintenanceUtils";
 import PackageUtils from "../firebase/PackageUtils";
+import PopupModal from "../components/PopupModal";
 import ServiceMaintenanceUtils from "../firebase/ServiceMaintenanceUtils";
 import ServiceTransactionUtils from "../firebase/ServiceTransactionUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
@@ -284,6 +287,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     return <>
         <LoadingScreen loading={ !pageData.loaded }/>
+        <PopupModal pageData={ pageData } reloadPageData={ reloadPageData } />
         <EmployeeSidebar/>
         <main className="employee-booking-management-main-content">
             <button type="button" onClick={ previousPage }>{ "<---" }</button>
@@ -338,7 +342,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
                         const
                             {
-                                clientIdActive, clientInfoMap, employeeDataMap, packageDataMap,
+                                clientIdActive, clientInfoMap, date, employeeDataMap, packageDataMap,
                                 serviceDataMap, serviceTransactionDefaultDataMap,
                                 serviceTransactionEmployeeListKeyMap
                             } = pageData
@@ -350,11 +354,13 @@ export default function EmployeeBookingManagement(): JSX.Element {
                             serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ],
                             {
                                 service: { id: serviceId },
-                                bookingDateTimeEnd, bookingDateTimeStart
+                                actualBookingDateTimeEnd, actualBookingDateTimeStart,
+                                bookingDateTimeEnd, bookingDateTimeStart, canceled, employee
                             } = serviceTransactionData,
                             dateRange: DateRange = new DateRange(
                                 bookingDateTimeStart, bookingDateTimeEnd
                             ),
+                            packageId: string | undefined = serviceTransactionData.package?.id,
                             serviceTransactionDefaultData =
                                 serviceTransactionDefaultDataMap[ serviceTransactionId ]
                             ,
@@ -364,43 +370,84 @@ export default function EmployeeBookingManagement(): JSX.Element {
                                     serviceTransactionEmployeeListKeyMap
                                         [ serviceTransactionId ]
                                         .includes( employeeId )
+                            ),
+                            status = (
+                                canceled ? "canceled"
+                                : actualBookingDateTimeEnd ? "finished"
+                                : actualBookingDateTimeStart ? "active"
+                                : "pending"
                             )
                         ;
 
-                        return <div className="service-scroll-item" key={ serviceTransactionId }>
-                            <div className="">
-                                <div className="service-name">{ serviceDataMap[ serviceId ].name }</div>
-                                Employee Assigned<br/>
-                                { dateRange.toString( "h:mmAM-h:mmAM" ) }<br/>
-                                <FormEmployeeSelect
+                        return <div className={ `service-scroll-item ${ status }` } key={ serviceTransactionId }>
+                            <div className="service-name">{ serviceDataMap[ serviceId ].name }</div>
+                            { packageId ? packageDataMap[ packageId ].name : "" }<br/>
+                            Employee Assigned<br/>
+                            { dateRange.toString( "h:mmAM-h:mmAM" ) }<br/>
+                            <FormEmployeeSelect
+                                documentData={ serviceTransactionData }
+                                documentDefaultData={ serviceTransactionDefaultData }
+                                documentId={ serviceTransactionId }
+                                employeeDataMap={ serviceTransactionEmployeeDataMap }
+                                pageData={ pageData }
+                                keyName="employee"
+                                readOnly={ canceled }
+                                required={ true }
+                            >
+                                <option value="" disabled>Assign employee</option>
+                            </FormEmployeeSelect>
+                            <br/>
+                            Actual Start Time<br/>
+                            <FormTimeInput
+                                className="start"
+                                date={ date }
+                                documentData={ serviceTransactionData }
+                                documentDefaultData={ serviceTransactionDefaultData }
+                                documentId={ serviceTransactionId }
+                                pageData={ pageData }
+                                keyName="actualBookingDateTimeStart"
+                                readOnly={ canceled || !employee }
+                                required={ true }
+                            />
+                            <br/>
+                            Actual End Time<br/>
+                            <FormTimeInput
+                                className="end"
+                                date={ date }
+                                documentData={ serviceTransactionData }
+                                documentDefaultData={ serviceTransactionDefaultData }
+                                documentId={ serviceTransactionId }
+                                pageData={ pageData }
+                                keyName="actualBookingDateTimeEnd"
+                                readOnly={ canceled || !employee || !actualBookingDateTimeStart }
+                                required={ true }
+                            />
+                            <br/>
+                            Notes<br/>
+                            <FormTextArea
+                                documentData={ serviceTransactionData }
+                                documentDefaultData={ serviceTransactionDefaultData }
+                                documentId={ serviceTransactionId }
+                                keyName="notes"
+                                pageData={ pageData }
+                            />
+                            {
+                                ( status === "active" ) ? `a`
+                                : ( status === "canceled" ) ? `CANCELED`
+                                : ( status === "finished" ) ? `c`
+                                : <FormMarkButton< boolean >
+                                    confirmMessage="Would you like to cancel this service transaction?"
                                     documentData={ serviceTransactionData }
                                     documentDefaultData={ serviceTransactionDefaultData }
                                     documentId={ serviceTransactionId }
-                                    employeeDataMap={ serviceTransactionEmployeeDataMap }
+                                    keyName="canceled"
+                                    noText="Back"
                                     pageData={ pageData }
-                                    keyName="employee"
-                                    required={ true }
-                                >
-                                    <option value="" disabled>Assign employee</option>
-                                </FormEmployeeSelect>
-                                <br/>
-                                Actual Start Time<br/>
-                                Actual End Time<br/>
-                                Notes<br/>
-                                <FormTextArea documentData={ serviceTransactionData } documentDefaultData={ serviceTransactionDefaultData } documentId={ serviceTransactionId } keyName="notes" pageData={ pageData }/>
-                            </div>
-                            {/* <div className="service-price">₱{price}</div>
-                            <div className="service-name">{name}</div>
-                            <div className="service-description">{description}</div>
-                            {
-                                (serviceId in singleServiceIncludedMap) ? (
-                                    <button className="remove-btn" type="button" onClick={() => deleteSingleService(serviceId)}>Remove</button>
-                                ) : isConflictingService(serviceId) ? (
-                                    <button className="conf-btn" type="button">In Conflict</button>
-                                ) : (
-                                    <button className="add-btn" type="button" onClick={() => addSingleService(serviceId)}>Add</button>
-                                )
-                            } */}
+                                    value={ true }
+                                    reloadPageData={ reloadPageData }
+                                    yesText="Yes, Cancel This"
+                                >CANCEL</FormMarkButton>
+                            }
                         </div>;
 
                     } )

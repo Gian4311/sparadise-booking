@@ -1,0 +1,33 @@
+input.actual-datetime-input {
+
+    //
+
+}
+
+input.actual-datetime-input:invalid:before {
+
+    color: #9d9d9d;
+    position: absolute;
+    background: #fff;
+    cursor: pointer;
+
+}
+
+input.actual-datetime-input.start:invalid:before {
+
+    content: 'Start Now';
+
+}
+
+input.actual-datetime-input.end:invalid:before {
+
+    content: 'End Now';
+
+}
+
+input.actual-datetime-input:focus:before {
+
+    width: 0;
+    content: "";
+
+}

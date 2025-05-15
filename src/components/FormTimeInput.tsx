@@ -1,5 +1,7 @@
 import {
     ChangeEvent,
+    CSSProperties,
+    MouseEvent,
     useEffect,
     useState
 } from "react";
@@ -10,18 +12,21 @@ import {
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
 
+import "../styles/FormTimeInput.scss";
+
 type main = Date;
 
-const DATE_FORMAT = "yyyy-mm-dd";
+const DATETIME_FORMAT = "yyyy-mm-ddThh:mm";
 
-export default function FormDateInput(
+export default function FormTimeInput(
     {
-        className, documentData, documentDefaultData, documentId, keyName, max, min,
+        className, date, documentData, documentDefaultData, documentId, keyName, max, min,
         name = keyName.toString(),
         pageData, readOnly, required,
         onChange, validate
     }: {
         className?: string,
+        date: Date,
         documentData: SpaRadiseDocumentData,
         documentDefaultData?: SpaRadiseDocumentData,
         documentId?: string,
@@ -33,7 +38,7 @@ export default function FormDateInput(
         readOnly?: boolean,
         required?: boolean,
         onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
-        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< boolean >
+        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >
     }
 ): JSX.Element {
 
@@ -55,13 +60,23 @@ export default function FormDateInput(
 
     }
 
+    async function handleClick( event: MouseEvent< HTMLInputElement > ): Promise< void > {
+
+        const { hr, min } = DateUtils.toTimeData( new Date() );
+        if( !hr || !min ) return;
+        await handleChange( {
+            target: { value: `${ hr }:${ min }` }
+        } as ChangeEvent< HTMLInputElement > );
+
+    }
+
     async function handleDefault( parsedValue: main | null ): Promise< void > {
         
         if( !documentDefaultData || !documentId ) return;
         const
             { updateMap } = pageData,
             dateDefault = documentDefaultData[ keyName ] as Date | null,
-            isDefault: boolean = ( dateDefault && parsedValue ) ? DateUtils.areSameByDay(
+            isDefault: boolean = ( dateDefault && parsedValue ) ? DateUtils.areSameByMinute(
                 dateDefault, parsedValue
             ) : !parsedValue,
             hasUpdateRecord: boolean = ( documentId in updateMap )
@@ -82,13 +97,18 @@ export default function FormDateInput(
 
     async function parseValue( unparsedValue: string ): Promise< main | null > {
 
-        return unparsedValue ? new Date( unparsedValue ) : null;
+        if( !unparsedValue ) return null;
+        const
+            [ hr, min ] = unparsedValue.split( ":" ).map( value => +value ),
+            newDate: Date = DateUtils.setTime( date, { hr, min } )
+        ;
+        return newDate;
 
     }
 
     async function unparseValue( parsedValue: main | null ): Promise< string > {
 
-        return parsedValue ? DateUtils.toString( parsedValue, DATE_FORMAT ) : "";
+        return parsedValue ? DateUtils.toString( parsedValue, DATETIME_FORMAT ) : "";
 
     }
 
@@ -103,16 +123,17 @@ export default function FormDateInput(
     } )() }, [ pageData ] );
 
     return <input
-        className={ className }
+        className={ `actual-datetime-input ${ className }` }
         id={ name }
-        max={ max ? DateUtils.toString( max, DATE_FORMAT ) : undefined }
-        min={ min ? DateUtils.toString( min, DATE_FORMAT ) : undefined }
+        max={ max ? DateUtils.toString( max, DATETIME_FORMAT ) : undefined }
+        min={ min ? DateUtils.toString( min, DATETIME_FORMAT ) : undefined }
         name={ name }
         readOnly={ readOnly }
         required={ required }
-        type="date"
+        type="time"
         value={ unparsedValue }
         onChange={ event => handleChange( event ) }
+        onClick={ event => handleClick( event ) }
     />;
 
 }

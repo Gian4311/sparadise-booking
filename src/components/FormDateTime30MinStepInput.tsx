@@ -53,6 +53,7 @@ export default function FormDateTime30MinStepInput(
 
     async function handleChange( date: Date ): Promise< void > {
 
+        if( readOnly ) return;
         const
             unparsedValueNew: string = DateUtils.toString( adjustToMinMax( date ), DATETIME_FORMAT ),
             parsedValue: main | null = await parseValue( unparsedValueNew ),
