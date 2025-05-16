@@ -73,7 +73,9 @@ interface EmployeeBookingManagementPageData extends SpaRadisePageData {
     clientDefaultDataMap: ClientDataMap,
     clientIdActive: documentId,
     clientInfoMap: {
-        [ clientId: string ]: ServiceTransactionDataMap
+        [ clientId: string ]: {
+            serviceTransactionDataMap: ServiceTransactionDataMap
+        }
     },
     date: Date,
     employeeDataMap: EmployeeDataMap,
@@ -154,7 +156,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
         let clientId: documentId = "";
         for( clientId in clientDataMap )
             if( clientDataMap[ clientId ].booking.id === bookingId )
-                clientInfoMap[ clientId ] = {};
+                clientInfoMap[ clientId ].serviceTransactionDataMap = {};
         const
             serviceTransactionOfClientDataMap: ServiceTransactionDataMap =
                 await ServiceTransactionUtils.getServiceTransactionDataMapByClient( clientId )
@@ -244,7 +246,9 @@ export default function EmployeeBookingManagement(): JSX.Element {
                 clientId = serviceTransactionData.client.id
             ;
             if( clientId in clientInfoMap )
-                clientInfoMap[ clientId ][ serviceTransactionId ] = serviceTransactionData;
+                clientInfoMap[ clientId ].serviceTransactionDataMap[ serviceTransactionId ] =
+                    serviceTransactionData
+                ;
 
         }
         pageData.serviceTransactionDefaultDataMap = SpaRadiseDataMapUtils.clone(
@@ -372,10 +376,12 @@ function EditServiceTransactions( { bookingId, pageData, reloadPageData }: {
         ;
         for( let clientId in clientInfoMap ) {
 
-            const serviceTransactionMap = clientInfoMap[ clientId ];
-            for( let serviceTransactionId in serviceTransactionMap ) {
+            const { serviceTransactionDataMap } = clientInfoMap[ clientId ];
+            for( let serviceTransactionId in serviceTransactionDataMap ) {
 
-                const { actualBookingDateTimeStart } = serviceTransactionMap[ serviceTransactionId ];
+                const {
+                    actualBookingDateTimeStart
+                } = serviceTransactionDataMap[ serviceTransactionId ];
                 if( !actualBookingDateTimeStart ) continue;
                 dateList.push( actualBookingDateTimeStart );
 
@@ -418,10 +424,10 @@ function EditServiceTransactions( { bookingId, pageData, reloadPageData }: {
         ;
         for( let clientId in clientInfoMap ) {
 
-            const serviceTransactionMap = clientInfoMap[ clientId ];
-            for( let serviceTransactionId in serviceTransactionMap ) {
+            const { serviceTransactionDataMap } = clientInfoMap[ clientId ];
+            for( let serviceTransactionId in serviceTransactionDataMap ) {
 
-                const { actualBookingDateTimeEnd } = serviceTransactionMap[ serviceTransactionId ];
+                const { actualBookingDateTimeEnd } = serviceTransactionDataMap[ serviceTransactionId ];
                 if( !actualBookingDateTimeEnd ) {
 
                     isFinished = false;
@@ -487,7 +493,7 @@ function EditServiceTransactions( { bookingId, pageData, reloadPageData }: {
 
             const
                 clientData = clientDataMap[ clientId ],
-                serviceTransactionMap = clientInfoMap[ clientId ]
+                { serviceTransactionDataMap } = clientInfoMap[ clientId ]
             ;
             if( clientId in updateMap ) {
 
@@ -496,10 +502,10 @@ function EditServiceTransactions( { bookingId, pageData, reloadPageData }: {
                 delete updateMap[ clientId ];
 
             }
-            for( let serviceTransactionId in serviceTransactionMap ) {
+            for( let serviceTransactionId in serviceTransactionDataMap ) {
 
                 if( !( serviceTransactionId in updateMap ) ) continue;
-                const serviceTransactionData = serviceTransactionMap[ serviceTransactionId ];
+                const serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ];
                 await ServiceTransactionUtils.updateServiceTransaction(
                     serviceTransactionId, serviceTransactionData
                 );
@@ -546,7 +552,7 @@ function EditServiceTransactions( { bookingId, pageData, reloadPageData }: {
                 if( !serviceTransactionEmployeeListKeyMap[ serviceTransactionId ] )
                     return undefined;
                 const
-                    serviceTransactionDataMap = clientInfoMap[ clientIdActive ],
+                    { serviceTransactionDataMap } = clientInfoMap[ clientIdActive ],
                     serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ],
                     {
                         service: { id: serviceId },
@@ -666,12 +672,10 @@ function EditPayments( { bookingId, pageData, reloadPageData }: {
     reloadPageData: () => void
 } ): JSX.Element {
 
-    return <>jiefjief</>;
+    return <></>
 
     async function checkFormValidity(): Promise< boolean > {
 
-        const { canceledDateTime, finishedDateTime } = pageData.bookingData;
-        if( canceledDateTime || !finishedDateTime ) return false;
         return true;
 
     }
@@ -685,7 +689,9 @@ function EditPayments( { bookingId, pageData, reloadPageData }: {
 
     async function nextPage(): Promise<void> {
 
-        if( !( await checkFormValidity() ) ) return;
+        const { canceledDateTime, finishedDateTime } = pageData.bookingData;
+        if( canceledDateTime || !finishedDateTime ) return;
+        await updateBooking();
         pageData.formIndex++;
         reloadPageData();
 
@@ -700,10 +706,12 @@ function EditPayments( { bookingId, pageData, reloadPageData }: {
         ;
         for( let clientId in clientInfoMap ) {
 
-            const serviceTransactionMap = clientInfoMap[ clientId ];
-            for( let serviceTransactionId in serviceTransactionMap ) {
+            const { serviceTransactionDataMap } = clientInfoMap[ clientId ];
+            for( let serviceTransactionId in serviceTransactionDataMap ) {
 
-                const { actualBookingDateTimeStart } = serviceTransactionMap[ serviceTransactionId ];
+                const {
+                    actualBookingDateTimeStart
+                } = serviceTransactionDataMap[ serviceTransactionId ];
                 if( !actualBookingDateTimeStart ) continue;
                 dateList.push( actualBookingDateTimeStart );
 
@@ -719,15 +727,15 @@ function EditPayments( { bookingId, pageData, reloadPageData }: {
             ) : !minimum,
             hasUpdateRecord: boolean = ( bookingId in updateMap )
         ;
-        if( isDefault ) {
-
-            if( hasUpdateRecord ) delete updateMap[ bookingId ].activeDateTime;
-            if( !ObjectUtils.hasKeys( updateMap[ bookingId ] ) ) delete updateMap[ bookingId ];
-
-        } else {
+        if( !isDefault ) {
 
             if( !hasUpdateRecord ) updateMap[ bookingId ] = {};
             updateMap[ bookingId ].activeDateTime = true;
+
+        } else if( hasUpdateRecord ) {
+
+            delete updateMap[ bookingId ].activeDateTime;
+            if( !ObjectUtils.hasKeys( updateMap[ bookingId ] ) ) delete updateMap[ bookingId ];
 
         }
 
@@ -746,10 +754,10 @@ function EditPayments( { bookingId, pageData, reloadPageData }: {
         ;
         for( let clientId in clientInfoMap ) {
 
-            const serviceTransactionMap = clientInfoMap[ clientId ];
-            for( let serviceTransactionId in serviceTransactionMap ) {
+            const { serviceTransactionDataMap } = clientInfoMap[ clientId ];
+            for( let serviceTransactionId in serviceTransactionDataMap ) {
 
-                const { actualBookingDateTimeEnd } = serviceTransactionMap[ serviceTransactionId ];
+                const { actualBookingDateTimeEnd } = serviceTransactionDataMap[ serviceTransactionId ];
                 if( !actualBookingDateTimeEnd ) {
 
                     isFinished = false;
@@ -771,15 +779,73 @@ function EditPayments( { bookingId, pageData, reloadPageData }: {
             ) : !maximum,
             hasUpdateRecord: boolean = ( bookingId in updateMap )
         ;
-        if( isDefault ) {
-
-            if( hasUpdateRecord ) delete updateMap[ bookingId ].finishedDateTime;
-            if( !ObjectUtils.hasKeys( updateMap[ bookingId ] ) ) delete updateMap[ bookingId ];
-
-        } else {
+        if( !isDefault ) {
 
             if( !hasUpdateRecord ) updateMap[ bookingId ] = {};
             updateMap[ bookingId ].finishedDateTime = true;
+
+        } else if( hasUpdateRecord ) {
+
+            delete updateMap[ bookingId ].finishedDateTime;
+            if( !ObjectUtils.hasKeys( updateMap[ bookingId ] ) ) delete updateMap[ bookingId ];
+
+        }
+
+    }
+
+    async function updateBooking(): Promise< void > {
+
+        pageData.loaded = false;
+        reloadPageData();
+        if( !( await checkFormValidity() ) ) return;
+        const { bookingData, updateMap } = pageData;
+        if( bookingId && bookingId in updateMap) {
+
+            await BookingUtils.updateBooking( bookingId, bookingData );
+            pageData.bookingDefaultData = { ...bookingData };
+            delete updateMap[ bookingId ];
+
+        }
+        await updateClientList();
+        pageData.loaded = true;
+        reloadPageData();
+
+    }
+
+    async function updateClientList(): Promise< void > {
+
+        const {
+            clientDataMap, clientDefaultDataMap, clientInfoMap, serviceTransactionDefaultDataMap,
+            updateMap
+        } = pageData;
+
+        for( let clientId in clientInfoMap ) {
+
+            const
+                clientData = clientDataMap[ clientId ],
+                { serviceTransactionDataMap } = clientInfoMap[ clientId ]
+            ;
+            if( clientId in updateMap ) {
+
+                await ClientUtils.updateClient( clientId, clientData );
+                clientDefaultDataMap[ clientId ] = { ...clientData };
+                delete updateMap[ clientId ];
+
+            }
+            for( let serviceTransactionId in serviceTransactionDataMap ) {
+
+                if( !( serviceTransactionId in updateMap ) ) continue;
+                const serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ];
+                await ServiceTransactionUtils.updateServiceTransaction(
+                    serviceTransactionId, serviceTransactionData
+                );
+                serviceTransactionDefaultDataMap[ serviceTransactionId ] = {
+                    ...serviceTransactionData
+                };
+                delete updateMap[ clientId ];
+
+            }
+
 
         }
 
@@ -816,7 +882,7 @@ function EditPayments( { bookingId, pageData, reloadPageData }: {
                 if( !serviceTransactionEmployeeListKeyMap[ serviceTransactionId ] )
                     return undefined;
                 const
-                    serviceTransactionDataMap = clientInfoMap[ clientIdActive ],
+                    { serviceTransactionDataMap } = clientInfoMap[ clientIdActive ],
                     serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ],
                     {
                         service: { id: serviceId },
@@ -923,6 +989,7 @@ function EditPayments( { bookingId, pageData, reloadPageData }: {
             : undefined
         }</section>
         <button type="button">Cancel All</button>
+        <button type="button" onClick={ updateBooking }>Save</button>
         <button type="button" onClick={ nextPage }>Proceed to Payment</button>
         <button type="button" onClick={ () => console.log( pageData ) }>Log page data</button>
     </main>

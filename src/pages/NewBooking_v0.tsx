@@ -1189,7 +1189,6 @@ function Summary({ pageData, reloadPageData }: {
                     <BookingReceipt pageData={pageData} />
                 </section>
             </section>
-            <br></br>
             <h2 className="voucher-input-label">Voucher/s:</h2>
             <section className="form-section booking-summary-section">
                 <div>
