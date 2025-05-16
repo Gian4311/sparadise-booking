@@ -279,20 +279,32 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     }
 
-    function setActiveBooking( date: Date | null ): void {
+    function setActiveBooking(): void {
 
         if( !bookingId ) return;
-        const {
-            bookingData: { activeDateTime },
-            bookingData, bookingDefaultData, updateMap
-        } = pageData;
-        if( activeDateTime && date && date >= activeDateTime ) return;
-        bookingData.activeDateTime = date;
+        const
+            { clientInfoMap, bookingData, bookingDefaultData, updateMap } = pageData,
+            dateList: Date[] = []
+        ;
+        for( let clientId in clientInfoMap ) {
+
+            const serviceTransactionMap = clientInfoMap[ clientId ];
+            for( let serviceTransactionId in serviceTransactionMap ) {
+
+                const { actualBookingDateTimeStart } = serviceTransactionMap[ serviceTransactionId ];
+                if( !actualBookingDateTimeStart ) continue;
+                dateList.push( actualBookingDateTimeStart );
+
+            }
+
+        }
+        const minimum: Date | null = DateUtils.getMinimum( dateList ) || null;
+        bookingData.activeDateTime = minimum;
         const
             dateDefault = bookingDefaultData.activeDateTime,
-            isDefault: boolean = ( dateDefault && date ) ? DateUtils.areSameByMinute(
-                dateDefault, date
-            ) : !date,
+            isDefault: boolean = ( dateDefault && minimum ) ? DateUtils.areSameByMinute(
+                dateDefault, minimum
+            ) : !minimum,
             hasUpdateRecord: boolean = ( bookingId in updateMap )
         ;
         if( isDefault ) {
@@ -304,6 +316,58 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
             if( !hasUpdateRecord ) updateMap[ bookingId ] = {};
             updateMap[ bookingId ].activeDateTime = true;
+
+        }
+
+    }
+
+    function setFinishedBooking(): void {
+
+        if( !bookingId ) return;
+        const
+            { clientInfoMap, bookingData, bookingDefaultData, updateMap } = pageData,
+            dateList: Date[] = []
+        ;
+        let
+            isFinished: boolean = true,
+            maximum: Date | null = null
+        ;
+        for( let clientId in clientInfoMap ) {
+
+            const serviceTransactionMap = clientInfoMap[ clientId ];
+            for( let serviceTransactionId in serviceTransactionMap ) {
+
+                const { actualBookingDateTimeEnd } = serviceTransactionMap[ serviceTransactionId ];
+                if( !actualBookingDateTimeEnd ) {
+
+                    isFinished = false;
+                    break;
+
+                }
+                dateList.push( actualBookingDateTimeEnd );
+
+            }
+            if( !isFinished ) break;
+
+        }
+        maximum = isFinished ? ( DateUtils.getMaximum( dateList ) || null ) : null;
+        bookingData.finishedDateTime = maximum;
+        const
+            dateDefault = bookingDefaultData.finishedDateTime,
+            isDefault: boolean = ( dateDefault && maximum ) ? DateUtils.areSameByMinute(
+                dateDefault, maximum
+            ) : !maximum,
+            hasUpdateRecord: boolean = ( bookingId in updateMap )
+        ;
+        if( isDefault ) {
+
+            if( hasUpdateRecord ) delete updateMap[ bookingId ].finishedDateTime;
+            if( !ObjectUtils.hasKeys( updateMap[ bookingId ] ) ) delete updateMap[ bookingId ];
+
+        } else {
+
+            if( !hasUpdateRecord ) updateMap[ bookingId ] = {};
+            updateMap[ bookingId ].finishedDateTime = true;
 
         }
 
@@ -441,7 +505,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
                                 keyName="actualBookingDateTimeStart"
                                 readOnly={ canceled || !employee }
                                 required={ true }
-                                onChange={ date => { setActiveBooking( date ); reloadPageData() } }
+                                onChange={ date => { setActiveBooking(); reloadPageData() } }
                             />
                             <br/>
                             Actual End Time<br/>
@@ -456,7 +520,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
                                 keyName="actualBookingDateTimeEnd"
                                 readOnly={ canceled || !employee || !actualBookingDateTimeStart }
                                 required={ true }
-                                onChange={ () => reloadPageData() }
+                                onChange={ date => { setFinishedBooking(); reloadPageData() } }
                             />
                             <br/>
                             Notes<br/>

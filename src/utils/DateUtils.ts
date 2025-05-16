@@ -59,9 +59,39 @@ export default class DateUtils {
 
     }
 
+    public static getMaximum( dateList: Date[] ): Date | undefined {
+
+        const { length } = dateList;
+        if( length === 0 ) return undefined;
+        let maximum: Date = dateList[ 0 ];
+        for( let index: number = 1; index < length; index++ ) {
+
+            const date: Date = dateList[ index ];
+            if( date > maximum ) maximum = date;
+
+        }
+        return maximum;
+
+    }
+
     public static getMinDiff( date1: Date, date2: Date ): number {
 
         return ( date1.getTime() - date2.getTime() ) / 60000;
+
+    }
+
+    public static getMinimum( dateList: Date[] ): Date | undefined {
+
+        const { length } = dateList;
+        if( length === 0 ) return undefined;
+        let minimum: Date = dateList[ 0 ];
+        for( let index: number = 1; index < length; index++ ) {
+
+            const date: Date = dateList[ index ];
+            if( date < minimum ) minimum = date;
+
+        }
+        return minimum;
 
     }
 
