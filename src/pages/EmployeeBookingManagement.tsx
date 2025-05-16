@@ -59,6 +59,8 @@ import {
     useParams
 } from "react-router-dom";
 
+import "../styles/FormTimeInput.scss"
+
 interface EmployeeBookingManagementPageData extends SpaRadisePageData {
 
     accountData: AccountData,
@@ -277,6 +279,36 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     }
 
+    function setActiveBooking( date: Date | null ): void {
+
+        if( !bookingId ) return;
+        const {
+            bookingData: { activeDateTime },
+            bookingData, bookingDefaultData, updateMap
+        } = pageData;
+        if( activeDateTime && date && date >= activeDateTime ) return;
+        bookingData.activeDateTime = date;
+        const
+            dateDefault = bookingDefaultData.activeDateTime,
+            isDefault: boolean = ( dateDefault && date ) ? DateUtils.areSameByMinute(
+                dateDefault, date
+            ) : !date,
+            hasUpdateRecord: boolean = ( bookingId in updateMap )
+        ;
+        if( isDefault ) {
+
+            if( hasUpdateRecord ) delete updateMap[ bookingId ].activeDateTime;
+            if( !ObjectUtils.hasKeys( updateMap[ bookingId ] ) ) delete updateMap[ bookingId ];
+
+        } else {
+
+            if( !hasUpdateRecord ) updateMap[ bookingId ] = {};
+            updateMap[ bookingId ].activeDateTime = true;
+
+        }
+
+    }
+
     async function submit( event: FormEvent< HTMLFormElement > ): Promise<void> {
 
         event.preventDefault();
@@ -393,13 +425,14 @@ export default function EmployeeBookingManagement(): JSX.Element {
                                 keyName="employee"
                                 readOnly={ canceled }
                                 required={ true }
+                                onChange={ reloadPageData }
                             >
-                                <option value="" disabled>Assign employee</option>
+                                <option value="">Assign employee</option>
                             </FormEmployeeSelect>
                             <br/>
                             Actual Start Time<br/>
                             <FormTimeInput
-                                className="start"
+                                className={ canceled ? "na" : "start" }
                                 date={ date }
                                 documentData={ serviceTransactionData }
                                 documentDefaultData={ serviceTransactionDefaultData }
@@ -408,19 +441,22 @@ export default function EmployeeBookingManagement(): JSX.Element {
                                 keyName="actualBookingDateTimeStart"
                                 readOnly={ canceled || !employee }
                                 required={ true }
+                                onChange={ date => { setActiveBooking( date ); reloadPageData() } }
                             />
                             <br/>
                             Actual End Time<br/>
                             <FormTimeInput
-                                className="end"
+                                className={ canceled ? "na" : "end" }
                                 date={ date }
                                 documentData={ serviceTransactionData }
                                 documentDefaultData={ serviceTransactionDefaultData }
                                 documentId={ serviceTransactionId }
+                                min={ actualBookingDateTimeStart ? actualBookingDateTimeStart : undefined }
                                 pageData={ pageData }
                                 keyName="actualBookingDateTimeEnd"
                                 readOnly={ canceled || !employee || !actualBookingDateTimeStart }
                                 required={ true }
+                                onChange={ () => reloadPageData() }
                             />
                             <br/>
                             Notes<br/>
@@ -432,9 +468,8 @@ export default function EmployeeBookingManagement(): JSX.Element {
                                 pageData={ pageData }
                             />
                             {
-                                ( status === "active" ) ? `a`
-                                : ( status === "canceled" ) ? `CANCELED`
-                                : ( status === "finished" ) ? `c`
+                                ( status === "canceled" ) ? `CANCELED`
+                                : ( status === "finished" ) ? `FINISHED`
                                 : <FormMarkButton< boolean >
                                     confirmMessage="Would you like to cancel this service transaction?"
                                     documentData={ serviceTransactionData }

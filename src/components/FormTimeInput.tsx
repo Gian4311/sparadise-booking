@@ -16,7 +16,7 @@ import "../styles/FormTimeInput.scss";
 
 type main = Date;
 
-const DATETIME_FORMAT = "yyyy-mm-ddThh:mm";
+const TIME_FORMAT = "hh:mm";
 
 export default function FormTimeInput(
     {
@@ -37,8 +37,12 @@ export default function FormTimeInput(
         pageData: SpaRadisePageData,
         readOnly?: boolean,
         required?: boolean,
-        onChange?( parsedValue: main | null, unparsedValue: string, old: main | null ): Promise< void > | void,
-        validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >
+        onChange?(
+            parsedValue: main | null, unparsedValue: string, old: main | null
+        ): Promise< void > | void,
+        validate?(
+            parsedValue: main | null, unparsedValue: string, old: main | null
+        ): boolean | Promise< boolean >
     }
 ): JSX.Element {
 
@@ -52,6 +56,12 @@ export default function FormTimeInput(
             parsedValue: main | null = await parseValue( unparsedValue ),
             old = documentData[ keyName ] as main | null
         ;
+        if( parsedValue instanceof Date ) {
+
+            if( max && parsedValue > max ) return;
+            if( min && parsedValue < min ) return;
+
+        } 
         if( validate ) if( !( await validate( parsedValue, unparsedValue, old ) ) ) return;
         setUnparsedValue( unparsedValue );
         documentData[ keyName ] = parsedValue;
@@ -61,11 +71,10 @@ export default function FormTimeInput(
     }
 
     async function handleClick( event: MouseEvent< HTMLInputElement > ): Promise< void > {
-
-        const { hr, min } = DateUtils.toTimeData( new Date() );
-        if( !hr || !min ) return;
+        
+        if( unparsedValue ) return;
         await handleChange( {
-            target: { value: `${ hr }:${ min }` }
+            target: { value: await unparseValue( new Date() ) }
         } as ChangeEvent< HTMLInputElement > );
 
     }
@@ -108,7 +117,11 @@ export default function FormTimeInput(
 
     async function unparseValue( parsedValue: main | null ): Promise< string > {
 
-        return parsedValue ? DateUtils.toString( parsedValue, DATETIME_FORMAT ) : "";
+        return (
+            parsedValue instanceof Date ? DateUtils.toString( parsedValue, "hh:mm" )
+            : parsedValue ? parsedValue
+            : ""
+        );
 
     }
 
@@ -122,18 +135,21 @@ export default function FormTimeInput(
 
     } )() }, [ pageData ] );
 
-    return <input
-        className={ `actual-datetime-input ${ className }` }
-        id={ name }
-        max={ max ? DateUtils.toString( max, DATETIME_FORMAT ) : undefined }
-        min={ min ? DateUtils.toString( min, DATETIME_FORMAT ) : undefined }
-        name={ name }
-        readOnly={ readOnly }
-        required={ required }
-        type="time"
-        value={ unparsedValue }
-        onChange={ event => handleChange( event ) }
-        onClick={ event => handleClick( event ) }
-    />;
+    return <>
+        <input
+            className={ `actual-datetime-input ${ className }` }
+            id={ name }
+            max={ max ? DateUtils.toString( max, TIME_FORMAT ) : undefined }
+            min={ min ? DateUtils.toString( min, TIME_FORMAT ) : undefined }
+            name={ name }
+            readOnly={ readOnly }
+            required={ required }
+            type="time"
+            value={ unparsedValue }
+            onChange={ event => handleChange( event ) }
+            onClick={ event => handleClick( event ) }
+        />
+        <span>df</span>
+    </>;
 
 }

@@ -54,7 +54,7 @@ export default function FormEmployeeSelect(
             unparsedValue: string = event.target.value,
             parsedValue: main | null = await parseValue( unparsedValue ),
             old = documentData[ keyName ] as main | null
-        ;  
+        ;
         if( validate ) if( !( await validate( parsedValue, unparsedValue, old ) ) ) return;
         setUnparsedValue( unparsedValue );
         documentData[ keyName ] = parsedValue;
@@ -116,6 +116,7 @@ export default function FormEmployeeSelect(
 
         return (
             ( parsedValue instanceof Date ) ? DateUtils.toString( parsedValue, "yyyy-mm-ddThh:mm" )
+            : ( parsedValue instanceof DocumentReference ) ? parsedValue.id
             : ( parsedValue?.toString() ?? "" )
         );
 
@@ -153,7 +154,7 @@ export default function FormEmployeeSelect(
                     );
 
                 }
-            ).map( employeeId => <option key={ employeeId }>{
+            ).map( employeeId => <option key={ employeeId } value={ employeeId }>{
                 PersonUtils.format( employeeDataMap[ employeeId ], "f mi l" )
             }</option> )
         }
