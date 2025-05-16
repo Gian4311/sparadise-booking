@@ -90,15 +90,15 @@ export default function FormTimeInput(
             ) : !parsedValue,
             hasUpdateRecord: boolean = ( documentId in updateMap )
         ;
-        if( isDefault ) {
-
-            if( hasUpdateRecord ) delete updateMap[ documentId ][ keyName ];
-            if( !ObjectUtils.hasKeys( updateMap[ documentId ] ) ) delete updateMap[ documentId ];
-
-        } else {
+        if( !isDefault ) {
 
             if( !hasUpdateRecord ) updateMap[ documentId ] = {};
             updateMap[ documentId ][ keyName ] = true;
+
+        } else if( hasUpdateRecord ) {
+
+            delete updateMap[ documentId ][ keyName ];
+            if( !ObjectUtils.hasKeys( updateMap[ documentId ] ) ) delete updateMap[ documentId ];
 
         }
 
@@ -135,21 +135,18 @@ export default function FormTimeInput(
 
     } )() }, [ pageData ] );
 
-    return <>
-        <input
-            className={ `actual-datetime-input ${ className }` }
-            id={ name }
-            max={ max ? DateUtils.toString( max, TIME_FORMAT ) : undefined }
-            min={ min ? DateUtils.toString( min, TIME_FORMAT ) : undefined }
-            name={ name }
-            readOnly={ readOnly }
-            required={ required }
-            type="time"
-            value={ unparsedValue }
-            onChange={ event => handleChange( event ) }
-            onClick={ event => handleClick( event ) }
-        />
-        <span>df</span>
-    </>;
+    return <input
+        className={ `actual-datetime-input ${ className }` }
+        id={ name }
+        max={ max ? DateUtils.toString( max, TIME_FORMAT ) : undefined }
+        min={ min ? DateUtils.toString( min, TIME_FORMAT ) : undefined }
+        name={ name }
+        readOnly={ readOnly }
+        required={ required }
+        type="time"
+        value={ unparsedValue }
+        onChange={ event => handleChange( event ) }
+        onClick={ event => handleClick( event ) }
+    />;
 
 }

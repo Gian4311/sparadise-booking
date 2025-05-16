@@ -71,15 +71,15 @@ export default function FormEmployeeSelect(
             isDefault: boolean = ( documentDefaultData[ keyName ] === parsedValue ),
             hasUpdateRecord: boolean = ( documentId in updateMap )
         ;
-        if( isDefault ) {
-
-            if( hasUpdateRecord ) delete updateMap[ documentId ][ keyName ];
-            if( !ObjectUtils.hasKeys( updateMap[ documentId ] ) ) delete updateMap[ documentId ];
-
-        } else {
+        if( !isDefault ) {
 
             if( !hasUpdateRecord ) updateMap[ documentId ] = {};
             updateMap[ documentId ][ keyName ] = true;
+
+        } else if( hasUpdateRecord ) {
+
+            delete updateMap[ documentId ][ keyName ];
+            if( !ObjectUtils.hasKeys( updateMap[ documentId ] ) ) delete updateMap[ documentId ];
 
         }
 
@@ -103,10 +103,9 @@ export default function FormEmployeeSelect(
         return (
             isTrue ? true
             : isFalse ? false
-            : isNull ? null
+            : ( isNull || isEmpty ) ? null
             : isDateTime ? date
             : isNumber ? +unparsedValue
-            : isEmpty ? null
             : SpaRadiseFirestore.getDocumentReference( unparsedValue, SpaRadiseEnv.EMPLOYEE_COLLECTION )
         );
 
@@ -115,8 +114,8 @@ export default function FormEmployeeSelect(
     async function unparseValue( parsedValue: main | null ): Promise< string > {
 
         return (
-            ( parsedValue instanceof Date ) ? DateUtils.toString( parsedValue, "yyyy-mm-ddThh:mm" )
-            : ( parsedValue instanceof DocumentReference ) ? parsedValue.id
+            ( parsedValue instanceof DocumentReference ) ? parsedValue.id
+            : ( parsedValue instanceof Date ) ? DateUtils.toString( parsedValue, "yyyy-mm-ddThh:mm" )
             : ( parsedValue?.toString() ?? "" )
         );
 

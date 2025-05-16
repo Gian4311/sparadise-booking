@@ -158,7 +158,6 @@ export default function PackageManagement(): JSX.Element {
 
         const {
             packageData,
-            packageMaintenanceDataMap,
             packageMaintenanceDateKeyMap,
             packageMaintenanceToDeleteMap,
             packageServiceIncludedMap,

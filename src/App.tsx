@@ -36,9 +36,9 @@ function App() {
                 <Route index element={ <Homepage/> }/>
                 <Route path="/devMenu" element={ <DevMenu/> }/>
                 <Route path="dayPlanner" element={ <DayPlannner/> }/>
-
                 <Route path="management/dashboard" element={ <Dashboard/> }/>
                 <Route path="management/bookings/menu" element={ <EmployeeBookingMenu/> }/>
+                <Route path="management/bookings/menu/:date" element={ <EmployeeBookingMenu/> }/>
                 <Route path="management/bookings/:id" element={ <EmployeeBookingManagement/> }/>
                 <Route path="management/employees/menu" element={ <EmployeeMenu/> }/>
                 <Route path="management/employees/:id" element={ <EmployeeManagement/> }/>

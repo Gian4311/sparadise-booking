@@ -47,6 +47,7 @@ import JobUtils from "../firebase/JobUtils";
 import JobServiceUtils from "../firebase/JobServiceUtils";
 import PackageMaintenanceUtils from "../firebase/PackageMaintenanceUtils";
 import PackageUtils from "../firebase/PackageUtils";
+import PersonUtils from "../utils/PersonUtils";
 import PopupModal from "../components/PopupModal";
 import ServiceMaintenanceUtils from "../firebase/ServiceMaintenanceUtils";
 import ServiceTransactionUtils from "../firebase/ServiceTransactionUtils";
@@ -69,6 +70,7 @@ interface EmployeeBookingManagementPageData extends SpaRadisePageData {
     bookingDataMap: BookingDataMap,
     bookingDocumentReference?: DocumentReference,
     clientDataMap: ClientDataMap,
+    clientDefaultDataMap: ClientDataMap,
     clientIdActive: documentId,
     clientInfoMap: {
         [ clientId: string ]: ServiceTransactionDataMap
@@ -76,6 +78,7 @@ interface EmployeeBookingManagementPageData extends SpaRadisePageData {
     date: Date,
     employeeDataMap: EmployeeDataMap,
     employeeLeaveOfDayDataMap: EmployeeLeaveDataMap,
+    formIndex: number,
     jobDataMap: JobDataMap,
     jobServiceDataMap: JobServiceDataMap,
     maintenanceDataMap: { [ documentId: documentId]: PackageMaintenanceData | ServiceMaintenanceData },
@@ -102,11 +105,13 @@ export default function EmployeeBookingManagement(): JSX.Element {
             bookingDefaultData: {} as BookingData,
             bookingDataMap: {},
             clientDataMap: {},
+            clientDefaultDataMap: {},
             clientIdActive: null as unknown as string,
             clientInfoMap: {},
             date: null as unknown as Date,
             employeeDataMap: {},
             employeeLeaveOfDayDataMap: {},
+            formIndex: 0,
             jobDataMap: {},
             jobServiceDataMap: {},
             loaded: false,
@@ -130,28 +135,8 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     async function checkFormValidity(): Promise< boolean > {
     
-        // const {
-        //     jobData,
-        //     serviceIncludedMap,
-        //     jobServiceToDeleteMap
-        // } = pageData;
-        // if( jobData.name === "New Job" )
-        //     throw new Error( `Job name cannot be "New Job"!` );
-        // // check if duplicate name
-        // const noServices: number =
-        //     ObjectUtils.keyLength( serviceIncludedMap )
-        //     - ObjectUtils.keyLength( jobServiceToDeleteMap )
-        // ;
-        // if( noServices < 1 )
-        //     throw new Error( `There must be at least 1 job service.` );
+        
         return true;
-
-    }
-
-    async function handleChangeClientActive( clientId: string ): Promise< void > {
-
-        pageData.clientIdActive = clientId;
-        reloadPageData();
 
     }
 
@@ -186,6 +171,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
     async function loadClientData(): Promise< void > {
     
         pageData.clientDataMap = await ClientUtils.getClientDataMapAll();
+        pageData.clientDefaultDataMap = SpaRadiseDataMapUtils.clone( pageData.clientDataMap );
         pageData.clientIdActive =
             ObjectUtils.getFirstKeyName( pageData.clientDataMap ) ?? null as unknown as string
         ;
@@ -269,13 +255,439 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     async function previousPage(): Promise< void > {
 
-        navigate( -1 );
+        const formIndex: number = pageData.formIndex--;
+        if( formIndex === 0 ) {
+            
+            navigate( -1 );
+            return;
+
+        }
+        reloadPageData();
 
     }
 
     function reloadPageData(): void {
 
         setPageData( { ...pageData } );
+
+    }
+
+    async function submit( event: FormEvent< HTMLFormElement > ): Promise<void> {
+
+        event.preventDefault();
+
+    }
+
+    useEffect( () => { loadPageData(); }, [] );
+
+    return <>
+        <LoadingScreen loading={ !pageData.loaded }/>
+        <PopupModal pageData={ pageData } reloadPageData={ reloadPageData } />
+        <EmployeeSidebar/>
+        <form onSubmit={submit} style={ { margin: "17.5%" } }>
+            <button type="button" onClick={ previousPage }>{ "<---" }</button>
+            <p>
+                Name: { PersonUtils.format( pageData.accountData, "f mi l" ) }
+                <br/>
+                Email: { pageData.accountData.email }
+                <br/>
+                Contact Number: { pageData.accountData.contactNumber }
+                <br/>
+                Alternate Contact Number: { pageData.accountData.contactNumberAlternate ?? "N/A" }
+                <br/>
+                Booking ID: { bookingId }
+                <br/>
+                Booking Date: { pageData.date ? DateUtils.toString( pageData.date, "Mmmm dd, yyyy" ) : "" }
+                <br/>
+                Reserved At: {
+                    pageData.bookingData.reservedDateTime ? DateUtils.toString( pageData.bookingData.reservedDateTime, "Mmmm dd, yyyy - hh:mm a.m." )
+                    : "-"
+                }
+                <br/>
+                Active At: {
+                    pageData.bookingData.activeDateTime ? DateUtils.toString( pageData.bookingData.activeDateTime, "Mmmm dd, yyyy - hh:mm a.m." )
+                    : "-"
+                }
+                <br/>
+                Finished At: {
+                    pageData.bookingData.finishedDateTime ? DateUtils.toString( pageData.bookingData.finishedDateTime, "Mmmm dd, yyyy - hh:mm a.m." )
+                    : "-"
+                }
+                <br/>
+                Canceled At: {
+                    pageData.bookingData.canceledDateTime ? DateUtils.toString( pageData.bookingData.canceledDateTime, "Mmmm dd, yyyy - hh:mm a.m." )
+                    : "-"
+                }
+            </p>
+            <DayPlanner dayPlannerMode="management" pageData={ dayPlannerPageData } show={ false }/>
+            {
+                (pageData.formIndex === 0) ? <EditServiceTransactions bookingId={ bookingId } pageData={pageData} reloadPageData={reloadPageData} />
+                : (pageData.formIndex === 1) ? <EditPayments bookingId={ bookingId } pageData={pageData} reloadPageData={reloadPageData} />
+                : <button type="button" onClick={() => { pageData.formIndex--; reloadPageData(); }}>None, Go Back</button>
+            }
+
+            <button type="button" onClick={() => console.log(pageData)}>Log page data</button>
+        </form>
+    </>
+
+    
+
+}
+
+function EditServiceTransactions( { bookingId, pageData, reloadPageData }: {
+    bookingId: documentId | undefined,
+    pageData: EmployeeBookingManagementPageData,
+    reloadPageData: () => void
+} ): JSX.Element {
+
+    async function checkFormValidity(): Promise< boolean > {
+
+        return true;
+
+    }
+
+    async function handleChangeClientActive( clientId: string ): Promise< void > {
+
+        pageData.clientIdActive = clientId;
+        reloadPageData();
+
+    }
+
+    async function nextPage(): Promise<void> {
+
+        const { canceledDateTime, finishedDateTime } = pageData.bookingData;
+        if( canceledDateTime || !finishedDateTime ) return;
+        await updateBooking();
+        pageData.formIndex++;
+        reloadPageData();
+
+    }
+
+    function setActiveBooking(): void {
+
+        if( !bookingId ) return;
+        const
+            { clientInfoMap, bookingData, bookingDefaultData, updateMap } = pageData,
+            dateList: Date[] = []
+        ;
+        for( let clientId in clientInfoMap ) {
+
+            const serviceTransactionMap = clientInfoMap[ clientId ];
+            for( let serviceTransactionId in serviceTransactionMap ) {
+
+                const { actualBookingDateTimeStart } = serviceTransactionMap[ serviceTransactionId ];
+                if( !actualBookingDateTimeStart ) continue;
+                dateList.push( actualBookingDateTimeStart );
+
+            }
+
+        }
+        const minimum: Date | null = DateUtils.getMinimum( dateList ) || null;
+        bookingData.activeDateTime = minimum;
+        const
+            dateDefault = bookingDefaultData.activeDateTime,
+            isDefault: boolean = ( dateDefault && minimum ) ? DateUtils.areSameByMinute(
+                dateDefault, minimum
+            ) : !minimum,
+            hasUpdateRecord: boolean = ( bookingId in updateMap )
+        ;
+        if( !isDefault ) {
+
+            if( !hasUpdateRecord ) updateMap[ bookingId ] = {};
+            updateMap[ bookingId ].activeDateTime = true;
+
+        } else if( hasUpdateRecord ) {
+
+            delete updateMap[ bookingId ].activeDateTime;
+            if( !ObjectUtils.hasKeys( updateMap[ bookingId ] ) ) delete updateMap[ bookingId ];
+
+        }
+
+    }
+
+    function setFinishedBooking(): void {
+
+        if( !bookingId ) return;
+        const
+            { clientInfoMap, bookingData, bookingDefaultData, updateMap } = pageData,
+            dateList: Date[] = []
+        ;
+        let
+            isFinished: boolean = true,
+            maximum: Date | null = null
+        ;
+        for( let clientId in clientInfoMap ) {
+
+            const serviceTransactionMap = clientInfoMap[ clientId ];
+            for( let serviceTransactionId in serviceTransactionMap ) {
+
+                const { actualBookingDateTimeEnd } = serviceTransactionMap[ serviceTransactionId ];
+                if( !actualBookingDateTimeEnd ) {
+
+                    isFinished = false;
+                    break;
+
+                }
+                dateList.push( actualBookingDateTimeEnd );
+
+            }
+            if( !isFinished ) break;
+
+        }
+        maximum = isFinished ? ( DateUtils.getMaximum( dateList ) || null ) : null;
+        bookingData.finishedDateTime = maximum;
+        const
+            dateDefault = bookingDefaultData.finishedDateTime,
+            isDefault: boolean = ( dateDefault && maximum ) ? DateUtils.areSameByMinute(
+                dateDefault, maximum
+            ) : !maximum,
+            hasUpdateRecord: boolean = ( bookingId in updateMap )
+        ;
+        if( !isDefault ) {
+
+            if( !hasUpdateRecord ) updateMap[ bookingId ] = {};
+            updateMap[ bookingId ].finishedDateTime = true;
+
+        } else if( hasUpdateRecord ) {
+
+            delete updateMap[ bookingId ].finishedDateTime;
+            if( !ObjectUtils.hasKeys( updateMap[ bookingId ] ) ) delete updateMap[ bookingId ];
+
+        }
+
+    }
+
+    async function updateBooking(): Promise< void > {
+
+        pageData.loaded = false;
+        reloadPageData();
+        if( !( await checkFormValidity() ) ) return;
+        const { bookingData, updateMap } = pageData;
+        if( bookingId && bookingId in updateMap) {
+
+            await BookingUtils.updateBooking( bookingId, bookingData );
+            pageData.bookingDefaultData = { ...bookingData };
+            delete updateMap[ bookingId ];
+
+        }
+        await updateClientList();
+        pageData.loaded = true;
+        reloadPageData();
+
+    }
+
+    async function updateClientList(): Promise< void > {
+
+        const {
+            clientDataMap, clientDefaultDataMap, clientInfoMap, serviceTransactionDefaultDataMap,
+            updateMap
+        } = pageData;
+
+        for( let clientId in clientInfoMap ) {
+
+            const
+                clientData = clientDataMap[ clientId ],
+                serviceTransactionMap = clientInfoMap[ clientId ]
+            ;
+            if( clientId in updateMap ) {
+
+                await ClientUtils.updateClient( clientId, clientData );
+                clientDefaultDataMap[ clientId ] = { ...clientData };
+                delete updateMap[ clientId ];
+
+            }
+            for( let serviceTransactionId in serviceTransactionMap ) {
+
+                if( !( serviceTransactionId in updateMap ) ) continue;
+                const serviceTransactionData = serviceTransactionMap[ serviceTransactionId ];
+                await ServiceTransactionUtils.updateServiceTransaction(
+                    serviceTransactionId, serviceTransactionData
+                );
+                serviceTransactionDefaultDataMap[ serviceTransactionId ] = {
+                    ...serviceTransactionData
+                };
+                delete updateMap[ clientId ];
+
+            }
+
+
+        }
+
+    }
+
+    return <main className="employee-booking-management-main-content">
+        <section className="client-input">
+            <label className="client-selection">Select Client:</label>
+            <div className="clickable-bars" id="client-selection">
+                {
+                    Object.keys( pageData.clientDataMap ).map( clientId =>
+                        <div
+                            className={ `client-item ${ ( clientId === pageData.clientIdActive ) ? 'active' : '' }` }
+                            data-client={ `client${ clientId }` }
+                            key={ clientId }
+                            onClick={ () => handleChangeClientActive( clientId ) }
+                        >
+                            { pageData.clientDataMap[ clientId ].name }
+                        </div>
+                    )
+                }
+            </div>
+        </section>
+        <section className="service-scroll-container">{
+            pageData.clientIdActive ? Object.keys( pageData.clientInfoMap[ pageData.clientIdActive ] ).map( serviceTransactionId => {
+
+                const
+                    {
+                        clientIdActive, clientInfoMap, date, employeeDataMap, packageDataMap,
+                        serviceDataMap, serviceTransactionDefaultDataMap,
+                        serviceTransactionEmployeeListKeyMap
+                    } = pageData
+                ;
+                if( !serviceTransactionEmployeeListKeyMap[ serviceTransactionId ] )
+                    return undefined;
+                const
+                    serviceTransactionDataMap = clientInfoMap[ clientIdActive ],
+                    serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ],
+                    {
+                        service: { id: serviceId },
+                        actualBookingDateTimeEnd, actualBookingDateTimeStart,
+                        bookingDateTimeEnd, bookingDateTimeStart, canceled, employee
+                    } = serviceTransactionData,
+                    dateRange: DateRange = new DateRange(
+                        bookingDateTimeStart, bookingDateTimeEnd
+                    ),
+                    packageId: string | undefined = serviceTransactionData.package?.id,
+                    serviceTransactionDefaultData =
+                        serviceTransactionDefaultDataMap[ serviceTransactionId ]
+                    ,
+                    serviceTransactionEmployeeDataMap: EmployeeDataMap = ObjectUtils.filter(
+                        employeeDataMap,
+                        employeeId =>
+                            serviceTransactionEmployeeListKeyMap
+                                [ serviceTransactionId ]
+                                .includes( employeeId )
+                    ),
+                    status = (
+                        canceled ? "canceled"
+                        : actualBookingDateTimeEnd ? "finished"
+                        : actualBookingDateTimeStart ? "active"
+                        : "pending"
+                    )
+                ;
+
+                return <div className={ `service-scroll-item ${ status }` } key={ serviceTransactionId }>
+                    <div className="service-name">{ serviceDataMap[ serviceId ].name }</div>
+                    { packageId ? packageDataMap[ packageId ].name : "" }<br/>
+                    Employee Assigned<br/>
+                    { dateRange.toString( "h:mmAM-h:mmAM" ) }<br/>
+                    <FormEmployeeSelect
+                        documentData={ serviceTransactionData }
+                        documentDefaultData={ serviceTransactionDefaultData }
+                        documentId={ serviceTransactionId }
+                        employeeDataMap={ serviceTransactionEmployeeDataMap }
+                        pageData={ pageData }
+                        keyName="employee"
+                        readOnly={ canceled }
+                        required={ true }
+                        onChange={ reloadPageData }
+                    >
+                        <option value="">Assign employee</option>
+                    </FormEmployeeSelect>
+                    <br/>
+                    Actual Start Time<br/>
+                    <FormTimeInput
+                        className={ canceled ? "na" : "start" }
+                        date={ date }
+                        documentData={ serviceTransactionData }
+                        documentDefaultData={ serviceTransactionDefaultData }
+                        documentId={ serviceTransactionId }
+                        pageData={ pageData }
+                        keyName="actualBookingDateTimeStart"
+                        readOnly={ canceled || !employee }
+                        required={ true }
+                        onChange={ () => { setActiveBooking(); reloadPageData() } }
+                    />
+                    <br/>
+                    Actual End Time<br/>
+                    <FormTimeInput
+                        className={ canceled ? "na" : "end" }
+                        date={ date }
+                        documentData={ serviceTransactionData }
+                        documentDefaultData={ serviceTransactionDefaultData }
+                        documentId={ serviceTransactionId }
+                        min={ actualBookingDateTimeStart ? actualBookingDateTimeStart : undefined }
+                        pageData={ pageData }
+                        keyName="actualBookingDateTimeEnd"
+                        readOnly={ canceled || !employee || !actualBookingDateTimeStart }
+                        required={ true }
+                        onChange={ () => { setFinishedBooking(); reloadPageData() } }
+                    />
+                    <br/>
+                    Notes<br/>
+                    <FormTextArea
+                        documentData={ serviceTransactionData }
+                        documentDefaultData={ serviceTransactionDefaultData }
+                        documentId={ serviceTransactionId }
+                        keyName="notes"
+                        pageData={ pageData }
+                    />
+                    {
+                        ( status === "canceled" ) ? `CANCELED`
+                        : ( status === "finished" ) ? `FINISHED`
+                        : <FormMarkButton< boolean >
+                            confirmMessage="Would you like to cancel this service transaction?"
+                            documentData={ serviceTransactionData }
+                            documentDefaultData={ serviceTransactionDefaultData }
+                            documentId={ serviceTransactionId }
+                            keyName="canceled"
+                            noText="Back"
+                            pageData={ pageData }
+                            value={ true }
+                            reloadPageData={ reloadPageData }
+                            yesText="Yes, Cancel This"
+                        >CANCEL</FormMarkButton>
+                    }
+                </div>;
+
+            } )
+            : undefined
+        }</section>
+        <button type="button">Cancel All</button>
+        <button type="button" onClick={ updateBooking }>Save</button>
+        <button type="button" onClick={ nextPage }>Proceed to Payment</button>
+        <button type="button" onClick={ () => console.log( pageData ) }>Log page data</button>
+    </main>
+
+}
+
+function EditPayments( { bookingId, pageData, reloadPageData }: {
+    bookingId: documentId | undefined,
+    pageData: EmployeeBookingManagementPageData,
+    reloadPageData: () => void
+} ): JSX.Element {
+
+    return <>jiefjief</>;
+
+    async function checkFormValidity(): Promise< boolean > {
+
+        const { canceledDateTime, finishedDateTime } = pageData.bookingData;
+        if( canceledDateTime || !finishedDateTime ) return false;
+        return true;
+
+    }
+
+    async function handleChangeClientActive( clientId: string ): Promise< void > {
+
+        pageData.clientIdActive = clientId;
+        reloadPageData();
+
+    }
+
+    async function nextPage(): Promise<void> {
+
+        if( !( await checkFormValidity() ) ) return;
+        pageData.formIndex++;
+        reloadPageData();
 
     }
 
@@ -373,189 +785,146 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     }
 
-    async function submit( event: FormEvent< HTMLFormElement > ): Promise<void> {
-
-        event.preventDefault();
-
-    }
-
-    useEffect( () => { loadPageData(); }, [] );
-
-    return <>
-        <LoadingScreen loading={ !pageData.loaded }/>
-        <PopupModal pageData={ pageData } reloadPageData={ reloadPageData } />
-        <EmployeeSidebar/>
-        <main className="employee-booking-management-main-content">
-            <button type="button" onClick={ previousPage }>{ "<---" }</button>
-            <p>
-                Account: { pageData.accountData.email }
-                <br/>
-                Booking ID: { bookingId }
-                <br/>
-                Booking Date: { pageData.date ? DateUtils.toString( pageData.date, "Mmmm dd, yyyy" ) : "" }
-                <br/>
-                Reserved At: {
-                    pageData.bookingData.reservedDateTime ? DateUtils.toString( pageData.bookingData.reservedDateTime, "Mmmm dd, yyyy - hh:mm a.m." )
-                    : "-"
+    return <main className="employee-booking-management-main-content">
+        <section className="client-input">
+            <label className="client-selection">Select Client:</label>
+            <div className="clickable-bars" id="client-selection">
+                {
+                    Object.keys( pageData.clientDataMap ).map( clientId =>
+                        <div
+                            className={ `client-item ${ ( clientId === pageData.clientIdActive ) ? 'active' : '' }` }
+                            data-client={ `client${ clientId }` }
+                            key={ clientId }
+                            onClick={ () => handleChangeClientActive( clientId ) }
+                        >
+                            { pageData.clientDataMap[ clientId ].name }
+                        </div>
+                    )
                 }
-                <br/>
-                Active At: {
-                    pageData.bookingData.activeDateTime ? DateUtils.toString( pageData.bookingData.activeDateTime, "Mmmm dd, yyyy - hh:mm a.m." )
-                    : "-"
-                }
-                <br/>
-                Finished At: {
-                    pageData.bookingData.finishedDateTime ? DateUtils.toString( pageData.bookingData.finishedDateTime, "Mmmm dd, yyyy - hh:mm a.m." )
-                    : "-"
-                }
-                <br/>
-                Canceled At: {
-                    pageData.bookingData.canceledDateTime ? DateUtils.toString( pageData.bookingData.canceledDateTime, "Mmmm dd, yyyy - hh:mm a.m." )
-                    : "-"
-                }
-            </p>
-            <form onSubmit={ submit }>
-                <DayPlanner dayPlannerMode="management" pageData={ dayPlannerPageData } show={ false }/>
-                <section className="client-input">
-                    <label className="client-selection">Select Client:</label>
-                    <div className="clickable-bars" id="client-selection">
-                        {
-                            Object.keys( pageData.clientDataMap ).map( clientId =>
-                                <div
-                                    className={ `client-item ${ ( clientId === pageData.clientIdActive ) ? 'active' : '' }` }
-                                    data-client={ `client${ clientId }` }
-                                    key={ clientId }
-                                    onClick={ () => handleChangeClientActive( clientId ) }
-                                >
-                                    { pageData.clientDataMap[ clientId ].name }
-                                </div>
-                            )
-                        }
-                    </div>
-                </section>
-                <section className="service-scroll-container">{
-                    pageData.clientIdActive ? Object.keys( pageData.clientInfoMap[ pageData.clientIdActive ] ).map( serviceTransactionId => {
+            </div>
+        </section>
+        <section className="service-scroll-container">{
+            pageData.clientIdActive ? Object.keys( pageData.clientInfoMap[ pageData.clientIdActive ] ).map( serviceTransactionId => {
 
-                        const
-                            {
-                                clientIdActive, clientInfoMap, date, employeeDataMap, packageDataMap,
-                                serviceDataMap, serviceTransactionDefaultDataMap,
-                                serviceTransactionEmployeeListKeyMap
-                            } = pageData
-                        ;
-                        if( !serviceTransactionEmployeeListKeyMap[ serviceTransactionId ] )
-                            return undefined;
-                        const
-                            serviceTransactionDataMap = clientInfoMap[ clientIdActive ],
-                            serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ],
-                            {
-                                service: { id: serviceId },
-                                actualBookingDateTimeEnd, actualBookingDateTimeStart,
-                                bookingDateTimeEnd, bookingDateTimeStart, canceled, employee
-                            } = serviceTransactionData,
-                            dateRange: DateRange = new DateRange(
-                                bookingDateTimeStart, bookingDateTimeEnd
-                            ),
-                            packageId: string | undefined = serviceTransactionData.package?.id,
-                            serviceTransactionDefaultData =
-                                serviceTransactionDefaultDataMap[ serviceTransactionId ]
-                            ,
-                            serviceTransactionEmployeeDataMap: EmployeeDataMap = ObjectUtils.filter(
-                                employeeDataMap,
-                                employeeId =>
-                                    serviceTransactionEmployeeListKeyMap
-                                        [ serviceTransactionId ]
-                                        .includes( employeeId )
-                            ),
-                            status = (
-                                canceled ? "canceled"
-                                : actualBookingDateTimeEnd ? "finished"
-                                : actualBookingDateTimeStart ? "active"
-                                : "pending"
-                            )
-                        ;
+                const
+                    {
+                        clientIdActive, clientInfoMap, date, employeeDataMap, packageDataMap,
+                        serviceDataMap, serviceTransactionDefaultDataMap,
+                        serviceTransactionEmployeeListKeyMap
+                    } = pageData
+                ;
+                if( !serviceTransactionEmployeeListKeyMap[ serviceTransactionId ] )
+                    return undefined;
+                const
+                    serviceTransactionDataMap = clientInfoMap[ clientIdActive ],
+                    serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ],
+                    {
+                        service: { id: serviceId },
+                        actualBookingDateTimeEnd, actualBookingDateTimeStart,
+                        bookingDateTimeEnd, bookingDateTimeStart, canceled, employee
+                    } = serviceTransactionData,
+                    dateRange: DateRange = new DateRange(
+                        bookingDateTimeStart, bookingDateTimeEnd
+                    ),
+                    packageId: string | undefined = serviceTransactionData.package?.id,
+                    serviceTransactionDefaultData =
+                        serviceTransactionDefaultDataMap[ serviceTransactionId ]
+                    ,
+                    serviceTransactionEmployeeDataMap: EmployeeDataMap = ObjectUtils.filter(
+                        employeeDataMap,
+                        employeeId =>
+                            serviceTransactionEmployeeListKeyMap
+                                [ serviceTransactionId ]
+                                .includes( employeeId )
+                    ),
+                    status = (
+                        canceled ? "canceled"
+                        : actualBookingDateTimeEnd ? "finished"
+                        : actualBookingDateTimeStart ? "active"
+                        : "pending"
+                    )
+                ;
 
-                        return <div className={ `service-scroll-item ${ status }` } key={ serviceTransactionId }>
-                            <div className="service-name">{ serviceDataMap[ serviceId ].name }</div>
-                            { packageId ? packageDataMap[ packageId ].name : "" }<br/>
-                            Employee Assigned<br/>
-                            { dateRange.toString( "h:mmAM-h:mmAM" ) }<br/>
-                            <FormEmployeeSelect
-                                documentData={ serviceTransactionData }
-                                documentDefaultData={ serviceTransactionDefaultData }
-                                documentId={ serviceTransactionId }
-                                employeeDataMap={ serviceTransactionEmployeeDataMap }
-                                pageData={ pageData }
-                                keyName="employee"
-                                readOnly={ canceled }
-                                required={ true }
-                                onChange={ reloadPageData }
-                            >
-                                <option value="">Assign employee</option>
-                            </FormEmployeeSelect>
-                            <br/>
-                            Actual Start Time<br/>
-                            <FormTimeInput
-                                className={ canceled ? "na" : "start" }
-                                date={ date }
-                                documentData={ serviceTransactionData }
-                                documentDefaultData={ serviceTransactionDefaultData }
-                                documentId={ serviceTransactionId }
-                                pageData={ pageData }
-                                keyName="actualBookingDateTimeStart"
-                                readOnly={ canceled || !employee }
-                                required={ true }
-                                onChange={ date => { setActiveBooking(); reloadPageData() } }
-                            />
-                            <br/>
-                            Actual End Time<br/>
-                            <FormTimeInput
-                                className={ canceled ? "na" : "end" }
-                                date={ date }
-                                documentData={ serviceTransactionData }
-                                documentDefaultData={ serviceTransactionDefaultData }
-                                documentId={ serviceTransactionId }
-                                min={ actualBookingDateTimeStart ? actualBookingDateTimeStart : undefined }
-                                pageData={ pageData }
-                                keyName="actualBookingDateTimeEnd"
-                                readOnly={ canceled || !employee || !actualBookingDateTimeStart }
-                                required={ true }
-                                onChange={ date => { setFinishedBooking(); reloadPageData() } }
-                            />
-                            <br/>
-                            Notes<br/>
-                            <FormTextArea
-                                documentData={ serviceTransactionData }
-                                documentDefaultData={ serviceTransactionDefaultData }
-                                documentId={ serviceTransactionId }
-                                keyName="notes"
-                                pageData={ pageData }
-                            />
-                            {
-                                ( status === "canceled" ) ? `CANCELED`
-                                : ( status === "finished" ) ? `FINISHED`
-                                : <FormMarkButton< boolean >
-                                    confirmMessage="Would you like to cancel this service transaction?"
-                                    documentData={ serviceTransactionData }
-                                    documentDefaultData={ serviceTransactionDefaultData }
-                                    documentId={ serviceTransactionId }
-                                    keyName="canceled"
-                                    noText="Back"
-                                    pageData={ pageData }
-                                    value={ true }
-                                    reloadPageData={ reloadPageData }
-                                    yesText="Yes, Cancel This"
-                                >CANCEL</FormMarkButton>
-                            }
-                        </div>;
+                return <div className={ `service-scroll-item ${ status }` } key={ serviceTransactionId }>
+                    <div className="service-name">{ serviceDataMap[ serviceId ].name }</div>
+                    { packageId ? packageDataMap[ packageId ].name : "" }<br/>
+                    Employee Assigned<br/>
+                    { dateRange.toString( "h:mmAM-h:mmAM" ) }<br/>
+                    <FormEmployeeSelect
+                        documentData={ serviceTransactionData }
+                        documentDefaultData={ serviceTransactionDefaultData }
+                        documentId={ serviceTransactionId }
+                        employeeDataMap={ serviceTransactionEmployeeDataMap }
+                        pageData={ pageData }
+                        keyName="employee"
+                        readOnly={ canceled }
+                        required={ true }
+                        onChange={ reloadPageData }
+                    >
+                        <option value="">Assign employee</option>
+                    </FormEmployeeSelect>
+                    <br/>
+                    Actual Start Time<br/>
+                    <FormTimeInput
+                        className={ canceled ? "na" : "start" }
+                        date={ date }
+                        documentData={ serviceTransactionData }
+                        documentDefaultData={ serviceTransactionDefaultData }
+                        documentId={ serviceTransactionId }
+                        pageData={ pageData }
+                        keyName="actualBookingDateTimeStart"
+                        readOnly={ canceled || !employee }
+                        required={ true }
+                        onChange={ () => { setActiveBooking(); reloadPageData() } }
+                    />
+                    <br/>
+                    Actual End Time<br/>
+                    <FormTimeInput
+                        className={ canceled ? "na" : "end" }
+                        date={ date }
+                        documentData={ serviceTransactionData }
+                        documentDefaultData={ serviceTransactionDefaultData }
+                        documentId={ serviceTransactionId }
+                        min={ actualBookingDateTimeStart ? actualBookingDateTimeStart : undefined }
+                        pageData={ pageData }
+                        keyName="actualBookingDateTimeEnd"
+                        readOnly={ canceled || !employee || !actualBookingDateTimeStart }
+                        required={ true }
+                        onChange={ () => { setFinishedBooking(); reloadPageData() } }
+                    />
+                    <br/>
+                    Notes<br/>
+                    <FormTextArea
+                        documentData={ serviceTransactionData }
+                        documentDefaultData={ serviceTransactionDefaultData }
+                        documentId={ serviceTransactionId }
+                        keyName="notes"
+                        pageData={ pageData }
+                    />
+                    {
+                        ( status === "canceled" ) ? `CANCELED`
+                        : ( status === "finished" ) ? `FINISHED`
+                        : <FormMarkButton< boolean >
+                            confirmMessage="Would you like to cancel this service transaction?"
+                            documentData={ serviceTransactionData }
+                            documentDefaultData={ serviceTransactionDefaultData }
+                            documentId={ serviceTransactionId }
+                            keyName="canceled"
+                            noText="Back"
+                            pageData={ pageData }
+                            value={ true }
+                            reloadPageData={ reloadPageData }
+                            yesText="Yes, Cancel This"
+                        >CANCEL</FormMarkButton>
+                    }
+                </div>;
 
-                    } )
-                    : undefined
-                }</section>
-                
-                <button type="button" onClick={ () => console.log( pageData ) }>Log page data</button>
-            </form>
-        </main>
-    </>
+            } )
+            : undefined
+        }</section>
+        <button type="button">Cancel All</button>
+        <button type="button" onClick={ nextPage }>Proceed to Payment</button>
+        <button type="button" onClick={ () => console.log( pageData ) }>Log page data</button>
+    </main>
 
 }

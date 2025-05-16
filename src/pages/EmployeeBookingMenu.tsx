@@ -33,6 +33,7 @@ import {
     useEffect,
     useState
 } from "react";
+import { useParams } from "react-router-dom";
 
 import "../styles/BookingCalendar.scss";
 import "../styles/EmployeeBookingMenu.scss";
@@ -58,11 +59,12 @@ interface EmployeeBookingMenuPageData extends SpaRadisePageData {
 export default function EmployeeBookingMenu(): JSX.Element {
 
     const
+        dateParam = useParams().date,
         [ pageData, setPageData ] = useState< EmployeeBookingMenuPageData >( {
             bookingDataMap: {},
             bookingIdActive: undefined,
             clientDataMap: {},
-            date: new Date( "05-10-2025" ),
+            date: dateParam ? new Date( dateParam ) : new Date(),
             employeeDataMap: {},
             employeeLeaveOfDayDataMap: {},
             jobDataMap: {},
