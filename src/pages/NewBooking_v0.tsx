@@ -80,7 +80,7 @@ import NavBar from "../components/ClientNavBar";
 import LoadingScreen from "../components/LoadingScreen";
 import "../styles/NewBooking_v0.css"
 import DateRange from "../utils/DateRange";
-
+import QuickPopup from "../components/quickPopupMessage";
 export interface NewBookingPageData extends SpaRadisePageData {
 
     accountData: AccountData,
@@ -94,16 +94,16 @@ export interface NewBookingPageData extends SpaRadisePageData {
     clientInfoMap: {
         [clientId: string]: {
             packageIncludedMap: { [packageId: documentId]: boolean },
-            packageServiceTransactionDataMap: { [ packageId: documentId ]: ServiceTransactionDataMap },
-            packageVoucherTransactionKeyMap: { [ packageId: documentId ]: documentId | undefined },
+            packageServiceTransactionDataMap: { [packageId: documentId]: ServiceTransactionDataMap },
+            packageVoucherTransactionKeyMap: { [packageId: documentId]: documentId | undefined },
             serviceIncludedMap: { [serviceId: documentId]: documentId },
-            serviceServiceTransactionKeyMap: { [ serviceId: documentId ]: documentId },
+            serviceServiceTransactionKeyMap: { [serviceId: documentId]: documentId },
             serviceTransactionDataMap: ServiceTransactionDataMap,
             serviceTransactionIndex: number,
             showPackages: boolean,
             showServices: boolean,
             singleServiceIncludedMap: { [serviceId: documentId]: boolean },
-            singleServiceVoucherTransactionKeyMap: { [ serviceId: documentId ]: documentId | undefined }
+            singleServiceVoucherTransactionKeyMap: { [serviceId: documentId]: documentId | undefined }
         }
     },
     date: Date,
@@ -139,6 +139,8 @@ export interface NewBookingPageData extends SpaRadisePageData {
 }
 
 export default function NewBooking(): JSX.Element {
+
+    const [popupMessage, setPopupMessage] = useState("");
 
     const
         [pageData, setPageData] = useState<NewBookingPageData>({
@@ -197,6 +199,8 @@ export default function NewBooking(): JSX.Element {
 
     }
 
+    <QuickPopup message={popupMessage} clearPopup={() => setPopupMessage("")} />
+    
     async function checkFormValidity(): Promise<boolean> {
 
         // const {
@@ -343,7 +347,7 @@ export default function NewBooking(): JSX.Element {
             await ServiceTransactionUtils.getServiceTransactionDataMapByDay(
                 date, true, clientDefaultDataMap
             )
-        ;
+            ;
         await loadVoucherDataOfDayData();
 
     }
@@ -389,7 +393,7 @@ export default function NewBooking(): JSX.Element {
             clientId: string = getClientId(-1)
             ;
         pageData.clientDataMap[clientId] = {
-            booking: SpaRadiseFirestore.getDocumentReference( "new", SpaRadiseEnv.BOOKING_COLLECTION ),
+            booking: SpaRadiseFirestore.getDocumentReference("new", SpaRadiseEnv.BOOKING_COLLECTION),
             name: PersonUtils.toString(accountData, "f mi l"),
             birthDate,
             notes: null
@@ -475,7 +479,7 @@ export default function NewBooking(): JSX.Element {
             await ServiceTransactionUtils.getServiceTransactionDataMapByClientDataMap(
                 pageData.clientDataMap
             )
-        ;
+            ;
         pageData.serviceTransactionDefaultDataMap = SpaRadiseDataMapUtils.clone(
             pageData.serviceTransactionDefaultDataMap
         );
@@ -628,7 +632,7 @@ function ChooseClients({ pageData, reloadPageData }: {
             clientId: string = getClientId(clientIndex)
             ;
         clientDataMap[clientId] = {
-            booking: SpaRadiseFirestore.getDocumentReference( "new", SpaRadiseEnv.BOOKING_COLLECTION ),
+            booking: SpaRadiseFirestore.getDocumentReference("new", SpaRadiseEnv.BOOKING_COLLECTION),
             name: null as unknown as string,
             birthDate: null as unknown as Date,
             notes: null
@@ -821,28 +825,24 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
     }
 
     async function checkFormValidity(): Promise<boolean> {
+        const { MIN_AGE_LIMIT } = SpaRadiseEnv;
+        const { clientDataMap, date } = pageData;
 
-        const
-            { MIN_AGE_LIMIT } = SpaRadiseEnv,
-            { clientDataMap, date } = pageData
-            ;
         if (!date)
-            throw new Error("No booking date given! ");
-        const isSunday: boolean = (date.getDay() === 0);
+            throw new Error("No booking date given!");
+        const isSunday: boolean = date.getDay() === 0;
         if (isSunday)
             throw new Error("Booking date cannot be on a Sunday!");
-        for (let clientId in clientDataMap) {
 
+        for (let clientId in clientDataMap) {
             const { name, birthDate } = clientDataMap[clientId];
             if (!name) throw new Error(`Client names cannot be empty!`);
-            // check for duplicate names
             if (!birthDate) throw new Error(`Birth dates cannot be empty!`);
             if (DateUtils.getYearAge(birthDate) < MIN_AGE_LIMIT)
                 throw new Error(`The age limit is ${MIN_AGE_LIMIT} years old!`);
-
         }
-        return true;
 
+        return true;
     }
 
     async function deletePackage(packageId: documentId): Promise<void> {
@@ -1057,14 +1057,14 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
             serviceTransactionDefaultDataMap: serviceTransactionOfDayDataMap,
             serviceTransactionToAddDataMap: {} as ServiceTransactionDataMap
         }
-    ;
+        ;
 
-    for( let clientId in clientInfoMap ) {
+    for (let clientId in clientInfoMap) {
 
-        const { serviceTransactionDataMap } = clientInfoMap[ clientId ];
-        for( let serviceTransactionId in serviceTransactionDataMap )
-            dayPlannerPageData.serviceTransactionToAddDataMap[ serviceTransactionId ] =
-                serviceTransactionDataMap[ serviceTransactionId ];
+        const { serviceTransactionDataMap } = clientInfoMap[clientId];
+        for (let serviceTransactionId in serviceTransactionDataMap)
+            dayPlannerPageData.serviceTransactionToAddDataMap[serviceTransactionId] =
+                serviceTransactionDataMap[serviceTransactionId];
 
     }
 
@@ -1096,7 +1096,7 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
             <section className="form-section client-date-section">
                 <div className="time-slot-date">{DateUtils.toString(date, "Mmmm dd, yyyy")}</div>
             </section>
-            <DayPlanner dayPlannerMode="newBooking" pageData={ dayPlannerPageData }/>
+            <DayPlanner dayPlannerMode="newBooking" pageData={dayPlannerPageData} />
             <section className="action-buttons">
                 <button className="back-btn" type="button" onClick={previousPage}>Back</button>
                 <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (3/4)</button>
@@ -1199,7 +1199,7 @@ function Summary({ pageData, reloadPageData }: {
                 </section>
                 <h2 className="summary-label">Booking Summary</h2>
                 <section className="form-section booking-summary-section">
-                    <BookingReceipt pageData={pageData} showActualTime={ false } reloadPageData={ reloadPageData }/>
+                    <BookingReceipt pageData={pageData} showActualTime={false} reloadPageData={reloadPageData} />
                 </section>
             </section>
             <h2 className="voucher-input-label">Voucher/s:</h2>
