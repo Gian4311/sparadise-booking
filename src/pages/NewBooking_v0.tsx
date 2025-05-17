@@ -22,7 +22,8 @@ import {
     VoucherPackageDataMap,
     VoucherServiceDataMap,
     VoucherTransactionData,
-    VoucherTransactionDataMap
+    VoucherTransactionDataMap,
+    VoucherTransactionNotIncludedMap
 } from "../firebase/SpaRadiseTypes";
 import "../styles/ClientIndex.css";
 import "../styles/ClientBookingCreation.css";
@@ -93,12 +94,16 @@ export interface NewBookingPageData extends SpaRadisePageData {
     clientInfoMap: {
         [clientId: string]: {
             packageIncludedMap: { [packageId: documentId]: boolean },
+            packageServiceTransactionDataMap: { [ packageId: documentId ]: ServiceTransactionDataMap },
+            packageVoucherTransactionKeyMap: { [ packageId: documentId ]: documentId | undefined },
             serviceIncludedMap: { [serviceId: documentId]: documentId },
+            serviceServiceTransactionKeyMap: { [ serviceId: documentId ]: documentId },
             serviceTransactionDataMap: ServiceTransactionDataMap,
             serviceTransactionIndex: number,
             showPackages: boolean,
             showServices: boolean,
-            singleServiceIncludedMap: { [serviceId: documentId]: boolean }
+            singleServiceIncludedMap: { [serviceId: documentId]: boolean },
+            singleServiceVoucherTransactionKeyMap: { [ serviceId: documentId ]: documentId | undefined }
         }
     },
     date: Date,
@@ -129,7 +134,8 @@ export interface NewBookingPageData extends SpaRadisePageData {
     voucherServiceMap: VoucherServiceDataMap,
     voucherTransactionDataMap: VoucherTransactionDataMap,
     voucherTransactionDefaultDataMap: VoucherTransactionDataMap,
-    voucherTransactionIndex: number
+    voucherTransactionIndex: number,
+    voucherTransactionNotIncludedMap: VoucherTransactionNotIncludedMap
 }
 
 export default function NewBooking(): JSX.Element {
@@ -174,7 +180,8 @@ export default function NewBooking(): JSX.Element {
             voucherServiceKeyMap: {},
             voucherTransactionDataMap: {},
             voucherTransactionDefaultDataMap: {},
-            voucherTransactionIndex: 0
+            voucherTransactionIndex: 0,
+            voucherTransactionNotIncludedMap: {}
         }),
         accountId: string | undefined = useParams().accountId,
         bookingId: string | undefined = useParams().bookingId,
@@ -383,18 +390,22 @@ export default function NewBooking(): JSX.Element {
             ;
         pageData.clientDataMap[clientId] = {
             booking: SpaRadiseFirestore.getDocumentReference( "new", SpaRadiseEnv.BOOKING_COLLECTION ),
-            name: PersonUtils.format(accountData, "f mi l"),
+            name: PersonUtils.toString(accountData, "f mi l"),
             birthDate,
             notes: null
         };
         pageData.clientInfoMap[clientId] = {
             packageIncludedMap: {},
+            packageServiceTransactionDataMap: {},
+            packageVoucherTransactionKeyMap: {},
             serviceIncludedMap: {},
+            serviceServiceTransactionKeyMap: {},
             serviceTransactionDataMap: {},
             serviceTransactionIndex: 0,
             showPackages: true,
             showServices: false,
-            singleServiceIncludedMap: {}
+            singleServiceIncludedMap: {},
+            singleServiceVoucherTransactionKeyMap: {}
         };
 
     }
@@ -624,12 +635,16 @@ function ChooseClients({ pageData, reloadPageData }: {
         };
         clientInfoMap[clientId] = {
             packageIncludedMap: {},
+            packageServiceTransactionDataMap: {},
+            packageVoucherTransactionKeyMap: {},
             serviceIncludedMap: {},
+            serviceServiceTransactionKeyMap: {},
             serviceTransactionDataMap: {},
             serviceTransactionIndex: 0,
             showPackages: true,
             showServices: false,
-            singleServiceIncludedMap: {}
+            singleServiceIncludedMap: {},
+            singleServiceVoucherTransactionKeyMap: {}
         };
         pageData.clientIndex++;
         reloadPageData();
@@ -782,7 +797,6 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
                 packageId, SpaRadiseEnv.PACKAGE_COLLECTION
             ) : null,
             canceled: false,
-            free: false,
             bookingDateTimeStart: null as unknown as Date,
             bookingDateTimeEnd: null as unknown as Date,
             actualBookingDateTimeStart: null,
@@ -1185,8 +1199,7 @@ function Summary({ pageData, reloadPageData }: {
                 </section>
                 <h2 className="summary-label">Booking Summary</h2>
                 <section className="form-section booking-summary-section">
-                    {/* <Receipt pageData={pageData} reloadPageData={reloadPageData} /> */}
-                    {/* <BookingReceipt pageData={pageData} /> */}
+                    <BookingReceipt pageData={pageData} showActualTime={ false } reloadPageData={ reloadPageData }/>
                 </section>
             </section>
             <h2 className="voucher-input-label">Voucher/s:</h2>

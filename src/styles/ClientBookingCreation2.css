@@ -433,6 +433,12 @@ body {
   text-align: center;
 }
 
+.booking-summary-tables tr td:nth-child(2) {
+
+  text-align: left;
+
+}
+
 .booking-summary-tables th {
   background-color: #f9f9f9;
 }

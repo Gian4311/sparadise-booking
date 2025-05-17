@@ -154,7 +154,7 @@ export default function FormEmployeeSelect(
 
                 }
             ).map( employeeId => <option key={ employeeId } value={ employeeId }>{
-                PersonUtils.format( employeeDataMap[ employeeId ], "f mi l" )
+                PersonUtils.toString( employeeDataMap[ employeeId ], "f mi l" )
             }</option> )
         }
     </select>;

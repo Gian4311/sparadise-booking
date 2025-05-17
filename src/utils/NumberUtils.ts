@@ -36,4 +36,22 @@ export default class NumberUtils {
 
     }
 
+    public static round( number: number, decimalPlaces: number ): number {
+
+        return Math.round( number * 10**decimalPlaces ) / 10**decimalPlaces;
+
+    }
+
+    public static toString( number: number, format: numberFormat ): string {
+
+        switch( format ) {
+
+            case "n.00":
+                const [ int, decimal = "" ] = NumberUtils.round( number, 2 ).toString().split( "." );
+                return `${ int }.${ decimal.padEnd( 2, "0" ) }`;
+
+        }
+
+    }
+
 }

@@ -47,7 +47,8 @@ export default function MyAccount(): JSX.Element {
                 birthDate: null as unknown as Date,
                 email: null as unknown as string,
                 contactNumber: null as unknown as string,
-                contactNumberAlternate: null
+                contactNumberAlternate: null,
+                accountType: null as unknown as accountType
             },
             accountDefaultData: {} as AccountData,
             loaded: false,

@@ -11,23 +11,6 @@ interface PersonData {
 
 export default class PersonUtils {
 
-    public static format(
-        personData: PersonData,
-        format: nameFormat
-    ): string {
-
-        const { lastName, firstName, middleName } = personData;
-        let middleInitial: string | null;
-        switch( format ) {
-
-            case "f mi l":
-                middleInitial = PersonUtils.getMiddleInitial( middleName );
-                return `${ firstName } ` + ( middleInitial ? `${ middleInitial }. `: `` ) + lastName;
-
-        }
-
-    }
-
     public static compare(
         personData1: PersonData, personData2: PersonData,
         orderBy: orderByElement[] = [ "lastName", "firstName", "middleName" ],
@@ -72,6 +55,23 @@ export default class PersonUtils {
     public static getMiddleInitial( middleName: string | null ): string | null {
 
         return middleName ? middleName[ 0 ] : null;
+
+    }
+
+    public static toString(
+        personData: PersonData,
+        format: nameFormat
+    ): string {
+
+        const { lastName, firstName, middleName } = personData;
+        let middleInitial: string | null;
+        switch( format ) {
+
+            case "f mi l":
+                middleInitial = PersonUtils.getMiddleInitial( middleName );
+                return `${ firstName } ` + ( middleInitial ? `${ middleInitial }. `: `` ) + lastName;
+
+        }
 
     }
 

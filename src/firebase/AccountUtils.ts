@@ -119,7 +119,8 @@ export default class AccountUtils {
             birthDate: SpaRadiseFirestore.getDateFromSnapshot( snapshot, "birthDate" ),
             email: data.email,
             contactNumber: data.contactNumber,
-            contactNumberAlternate: data.contactNumberAlternate
+            contactNumberAlternate: data.contactNumberAlternate,
+            accountType: data.accountType
         };
 
     }

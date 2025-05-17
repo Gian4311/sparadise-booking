@@ -162,7 +162,7 @@ export default function EmployeeManagement(): JSX.Element {
         );
         pageData.employeeData = await EmployeeUtils.getEmployeeData(documentId);
         pageData.employeeDefaultData = { ...pageData.employeeData };
-        pageData.employeeName = PersonUtils.format(pageData.employeeDefaultData, "f mi l");
+        pageData.employeeName = PersonUtils.toString(pageData.employeeDefaultData, "f mi l");
 
     }
 
@@ -201,7 +201,7 @@ export default function EmployeeManagement(): JSX.Element {
 
             await EmployeeUtils.updateEmployee(documentId, employeeData);
             pageData.employeeDefaultData = { ...pageData.employeeData };
-            pageData.employeeName = PersonUtils.format(pageData.employeeDefaultData, "f mi l");
+            pageData.employeeName = PersonUtils.toString(pageData.employeeDefaultData, "f mi l");
 
         }
         delete updateMap[documentId];
@@ -217,7 +217,7 @@ export default function EmployeeManagement(): JSX.Element {
         <EmployeeSidebar />
         <form onSubmit={submit}>
             <div className="employee-main-content">
-                <label htmlFor="employee-main-content" className="employee-management-location">Employees - {PersonUtils.format(pageData.employeeDefaultData, "f mi l")}</label>
+                <label htmlFor="employee-main-content" className="employee-management-location">Employees - {PersonUtils.toString(pageData.employeeDefaultData, "f mi l")}</label>
                 <div className="employee-form-section">
                     <div className="employee-header">
                         <a href="javascript:history.back()" className="service-back-arrow" aria-label="Back">

@@ -9,7 +9,8 @@ export interface AccountData extends SpaRadiseDocumentData {
     birthDate: Date,
     email: string,
     contactNumber: string,
-    contactNumberAlternate: string | null
+    contactNumberAlternate: string | null,
+    accountType: accountType
 
 }
 
@@ -213,7 +214,6 @@ export interface ServiceTransactionData extends SpaRadiseDocumentData {
     service: DocumentReference,
     package: DocumentReference | null,
     canceled: boolean,
-    free: boolean,
     bookingDateTimeStart: Date,
     bookingDateTimeEnd: Date,
     actualBookingDateTimeStart: Date | null,
@@ -324,5 +324,11 @@ export interface VoucherTransactionData extends SpaRadiseDocumentData {
 export interface VoucherTransactionDataMap extends SpaRadiseDataMap< VoucherTransactionData > {
 
     [ voucherTransactioneId: string ]: VoucherTransactionData
+
+}
+
+export interface VoucherTransactionNotIncludedMap {
+
+    [ voucherTransactionId: documentId ]: boolean
 
 }

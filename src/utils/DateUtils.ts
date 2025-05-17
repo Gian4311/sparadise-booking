@@ -59,6 +59,13 @@ export default class DateUtils {
 
     }
 
+    public static compare( date1: Date, date2: Date, ascending: boolean = true ): number {
+
+        const sign: number = ascending ? 1 : -1;
+        return sign * ( ( date1 > date2 ) ? 1 : -1 );
+
+    }
+
     public static getMaximum( dateList: Date[] ): Date | undefined {
 
         const { length } = dateList;

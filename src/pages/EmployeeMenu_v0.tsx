@@ -113,7 +113,7 @@ export default function EmployeeMenu(): JSX.Element {
 
                     const employeeData = pageData.employeeDataMap[employeeId];
                     return <Link key={index} to={"/management/employees/" + employeeId}>
-                        <h1>{PersonUtils.format( employeeData.firstName, employeeData.middleName, employeeData.lastName, "f mi l" )}</h1>
+                        <h1>{PersonUtils.toString( employeeData.firstName, employeeData.middleName, employeeData.lastName, "f mi l" )}</h1>
                     </Link>
 
                 }) : undefined
@@ -135,15 +135,15 @@ export default function EmployeeMenu(): JSX.Element {
                                 </tr></thead>
                                 <tbody>{
                                     Object.keys(employeeDataMap).sort((documentId1, documentId2) => StringUtils.compare(
-                                        PersonUtils.format(employeeDataMap[documentId1], "f mi l"),
-                                        PersonUtils.format(employeeDataMap[documentId2], "f mi l"),
+                                        PersonUtils.toString(employeeDataMap[documentId1], "f mi l"),
+                                        PersonUtils.toString(employeeDataMap[documentId2], "f mi l"),
                                         (sortMode === "ascending")
                                     )).map((documentId, index) => {
 
                                         const
                                             count: string = (index + 1).toString(),
                                             { hireDate, job: { id: jobId } } = employeeDataMap[documentId],
-                                            name: string = PersonUtils.format(employeeDataMap[documentId], "f mi l"),
+                                            name: string = PersonUtils.toString(employeeDataMap[documentId], "f mi l"),
                                             { name: jobName } = jobDataMap[jobId],
                                             hireDateText = DateUtils.toString(hireDate, "dd Mmmm yyyy"),
                                             show: boolean = (

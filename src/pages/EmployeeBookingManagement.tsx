@@ -291,7 +291,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
         <form onSubmit={submit} style={ { margin: "17.5%" } }>
             <button type="button" onClick={ previousPage }>{ "<---" }</button>
             <p>
-                Name: { PersonUtils.format( pageData.accountData, "f mi l" ) }
+                Name: { PersonUtils.toString( pageData.accountData, "f mi l" ) }
                 <br/>
                 Email: { pageData.accountData.email }
                 <br/>

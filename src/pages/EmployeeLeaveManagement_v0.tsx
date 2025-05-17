@@ -228,7 +228,7 @@ export default function EmployeeLeaveManagement(): JSX.Element {
                 <div className="employee-form-section">
 
                     <label>Employee: </label>
-                    <FormEntitySelect< EmployeeData > collectionName={ SpaRadiseEnv.EMPLOYEE_COLLECTION } documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="employee" optionDataMap={ pageData.employeeDataMap } pageData={pageData} readOnly={ canceled } required={true} getDocumentName={ employeeData => PersonUtils.format( employeeData, "f mi l" ) }>
+                    <FormEntitySelect< EmployeeData > collectionName={ SpaRadiseEnv.EMPLOYEE_COLLECTION } documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="employee" optionDataMap={ pageData.employeeDataMap } pageData={pageData} readOnly={ canceled } required={true} getDocumentName={ employeeData => PersonUtils.toString( employeeData, "f mi l" ) }>
                         <option value="" disabled>Select employee</option>
                     </FormEntitySelect>
                     <label>From Date Time: </label>

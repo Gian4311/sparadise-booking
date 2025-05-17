@@ -26,8 +26,8 @@ const Dashboard: React.FC = () => {
             const jobDataMap: JobDataMap = await JobUtils.getJobDataMapAll();
 
             const sortedEmployeeIds = Object.keys(employeeDataMap).sort((a, b) =>
-                PersonUtils.format(employeeDataMap[a], "f mi l").localeCompare(
-                    PersonUtils.format(employeeDataMap[b], "f mi l")
+                PersonUtils.toString(employeeDataMap[a], "f mi l").localeCompare(
+                    PersonUtils.toString(employeeDataMap[b], "f mi l")
                 )
             );
 
@@ -36,7 +36,7 @@ const Dashboard: React.FC = () => {
                 const job = jobDataMap[employee.job.id]?.name ?? "Unknown";
 
                 return {
-                    name: PersonUtils.format(employee, "f mi l"),
+                    name: PersonUtils.toString(employee, "f mi l"),
                     job: job
                 };
             });

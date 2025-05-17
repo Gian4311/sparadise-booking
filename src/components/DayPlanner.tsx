@@ -64,12 +64,6 @@ interface DayPlannerPageData extends SpaRadisePageData {
 
 }
 
-interface EmployeeAssignedIndexMap {
-
-    [ employeeId: documentId ]: number
-
-}
-
 interface JobServiceKeyMap{
     
     [ jobId: documentId ]: { [ serviceId: documentId ]: documentId }
@@ -1495,7 +1489,7 @@ function TimeSlot( {
     const
         isNewBookingMode: boolean = ( dayPlannerMode === "newBooking" ),
         employeeName: string =
-        employeeData ? PersonUtils.format( employeeData, "f mi l" )
+        employeeData ? PersonUtils.toString( employeeData, "f mi l" )
         : "(Unassigned)"
     ;
     className = `time-slot ${ className }`;

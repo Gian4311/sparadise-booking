@@ -96,7 +96,7 @@ export default function EmployeeLeaveMenu(): JSX.Element {
                         ;
                     return <Link key={index} to={"/management/employeeLeaves/" + employeeLeaveId}>
                         <div>
-                            {PersonUtils.format(employeeDataMap[employeeId], "f mi l")}
+                            {PersonUtils.toString(employeeDataMap[employeeId], "f mi l")}
                             {` | `}
                             {DateUtils.toString(dateTimeStart, "Mmmm dd, yyyy - hh:mm")}
                             {` | `}
