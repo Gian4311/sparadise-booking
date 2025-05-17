@@ -5,6 +5,7 @@ type dateFormat =
 type dateRangeFormat =
     "h:mmAM-h:mmAM" | "hh:mm-hh:mm"
 ;
+type discountType = "amount" | "percentage";
 type documentId = string;
 type employeeStatus = "active" | "inactive";
 type jobStatus = "active" | "inactive";

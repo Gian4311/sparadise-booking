@@ -1,75 +1,52 @@
 import {
+    BookingData,
     ClientDataMap,
     PackageDataMap,
     PackageMaintenanceData,
     ServiceDataMap,
     ServiceMaintenanceData,
     ServiceTransactionData,
-    ServiceTransactionDataMap
+    ServiceTransactionDataMap,
+    VoucherDataMap,
+    VoucherTransactionDataMap
 } from "../firebase/SpaRadiseTypes";
 import DateRange from "../utils/DateRange";
+import Discount from "../utils/Discount";
 import { Fragment } from "react/jsx-runtime";
 import ObjectUtils from "../utils/ObjectUtils";
 import StringUtils from "../utils/StringUtils";
+import { useEffect } from "react";
 
 import "../styles/ClientBookingCreation2.css";
 import "../styles/BookingReceipt.scss";
 
 interface BookingReceiptPageData {
 
+    bookingData: BookingData,
     clientDataMap: ClientDataMap,
     clientInfoMap: {
-        [clientIndex: number]: {
-            packageIncludedMap: { [packageId: documentId]: boolean },
-            serviceIncludedMap: { [serviceId: documentId]: string },
-            serviceTransactionDataMap: { [serviceTransactionId: string]: ServiceTransactionData },
-            serviceTransactionIndex: number,
-            showPackages: boolean,
-            showServices: boolean,
-            singleServiceIncludedMap: { [serviceId: documentId]: boolean }
+        [ clientId: string ]: {
+            packageDiscountMap: { [ packageId: documentId ]: Discount | undefined },
+            serviceTransactionDataMap: ServiceTransactionDataMap,
+            singleServiceDiscountMap: { [ serviceId: documentId ]: Discount | undefined }
         }
     },
     date: Date,
-    maintenanceDataMap: { [documentId: documentId]: PackageMaintenanceData | ServiceMaintenanceData },
+    maintenanceDataMap: { [ documentId: documentId ]: PackageMaintenanceData | ServiceMaintenanceData },
     packageDataMap: PackageDataMap,
     packageServiceKeyMap: {
-        [packageId: documentId]: { [serviceId: documentId]: documentId }
+        [ packageId: documentId ]: { [ serviceId: documentId ]: documentId }
+    }
+    serviceDataMap: ServiceDataMap,
+    serviceTransactionDataMap: ServiceTransactionDataMap,
+    voucherDataMap: VoucherDataMap,
+    voucherPackageKeyMap: {
+        [ voucherId: documentId ]: { [ pakageId: documentId ]: documentId }
     },
-    serviceDataMap: ServiceDataMap
-}
-
-interface BookingReceiptComponentData {
-
-    clientInfoMap: {
-        [clientId: documentId]: {
-
-            packageMap: {
-                [packageId: documentId]: {
-                    [serviceTransactionId: documentId]: ServiceTransactionPriceData
-                }
-            },
-            singleServiceMap: {
-                [serviceTransactionId: documentId]: ServiceTransactionPriceData
-            }
-
-        }
+    voucherServiceKeyMap: {
+        [ voucherId: documentId ]: { [ serviceId: documentId ]: documentId }
     },
-    totalPrice: number
-
-}
-
-interface PackageServiceTransactionListKeyMap {
-
-    [packageId: documentId]: documentId[]
-
-}
-
-interface ServiceTransactionPriceData {
-
-    serviceTransactionData: ServiceTransactionData,
-    included: boolean,
-    price: number
-
+    voucherTransactionDataMap: VoucherTransactionDataMap
 }
 
 const DATE_TIME_FORMAT = "h:mmAM-h:mmAM";
@@ -78,71 +55,132 @@ export default function BookingReceipt(
     { pageData }: { pageData: BookingReceiptPageData }
 ): JSX.Element {
 
-    const
-        { clientDataMap, maintenanceDataMap, packageDataMap, serviceDataMap } = pageData,
-        componentData: BookingReceiptComponentData = {
-            clientInfoMap: {},
-            totalPrice: 0
-        }
-        ;
-    let rowCount = 0;
+    const {
+        clientDataMap, clientInfoMap, maintenanceDataMap, packageDataMap, serviceDataMap
+    } = pageData;
 
-    function loadComponentData(): void {
+    // function loadComponentData(): void {
 
-        const { clientInfoMap } = componentData;
-        let totalPrice = 0;
-        for (let clientId in pageData.clientInfoMap) {
+    //     const { clientInfoMap } = componentData;
+    //     let totalPrice = 0;
+    //     for (let clientId in pageData.clientInfoMap) {
 
-            const { serviceTransactionDataMap } = pageData.clientInfoMap[clientId];
-            clientInfoMap[clientId] = {
-                packageMap: {},
-                singleServiceMap: {}
-            };
-            const { packageMap, singleServiceMap } = clientInfoMap[clientId];
-            for (let serviceTransactionId in serviceTransactionDataMap) {
+    //         const { serviceTransactionDataMap } = pageData.clientInfoMap[clientId];
+    //         clientInfoMap[clientId] = {
+    //             packageMap: {},
+    //             singleServiceMap: {}
+    //         };
+    //         const { packageMap, singleServiceMap } = clientInfoMap[clientId];
+    //         for (let serviceTransactionId in serviceTransactionDataMap) {
+
+    //             const
+    //                 serviceTransactionData = serviceTransactionDataMap[serviceTransactionId],
+    //                 { canceled, free, service: { id: serviceId } } = serviceTransactionData,
+    //                 packageId = serviceTransactionData.package?.id,
+    //                 included: boolean = (!canceled || !free),
+    //                 price: number = free ? 0 : maintenanceDataMap[serviceId].price,
+    //                 serviceTransactionPriceData: ServiceTransactionPriceData = {
+    //                     serviceTransactionData, included, price
+    //                 }
+    //                 ;
+    //             if (packageId) {
+
+    //                 if (!(packageId in packageMap)) packageMap[packageId] = {};
+    //                 packageMap[packageId][serviceTransactionId] = serviceTransactionPriceData;
+
+    //             } else singleServiceMap[serviceTransactionId] = serviceTransactionPriceData;
+    //             totalPrice += price;
+
+    //         }
+
+    //     }
+    //     componentData.totalPrice = totalPrice;
+
+    // }
+
+    // loadComponentData();
+
+    async function loadComponentData(): Promise< void > {
+
+        await loadDiscountData();
+
+    }
+
+    async function loadDiscountData(): Promise< void > {
+
+        for( let clientId in clientInfoMap ) {
+
+            const {
+                packageDiscountMap, serviceTransactionDataMap, singleServiceDiscountMap
+            } = clientInfoMap[ clientId ];
+            ObjectUtils.clear( packageDiscountMap );
+            ObjectUtils.clear( singleServiceDiscountMap );
+            for( let serviceTransactionId in serviceTransactionDataMap ) {
 
                 const
-                    serviceTransactionData = serviceTransactionDataMap[serviceTransactionId],
-                    { canceled, free, service: { id: serviceId } } = serviceTransactionData,
-                    packageId = serviceTransactionData.package?.id,
-                    included: boolean = (!canceled || !free),
-                    price: number = free ? 0 : maintenanceDataMap[serviceId].price,
-                    serviceTransactionPriceData: ServiceTransactionPriceData = {
-                        serviceTransactionData, included, price
-                    }
-                    ;
-                if (packageId) {
-
-                    if (!(packageId in packageMap)) packageMap[packageId] = {};
-                    packageMap[packageId][serviceTransactionId] = serviceTransactionPriceData;
-
-                } else singleServiceMap[serviceTransactionId] = serviceTransactionPriceData;
-                totalPrice += price;
+                    serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ],
+                    { service: { id: serviceId } } = serviceTransactionData,
+                    packageId = serviceTransactionData.package?.id
+                ;
+                if( packageId )
+                    packageDiscountMap[ packageId ] = undefined;
+                else
+                    singleServiceDiscountMap[ serviceId ] = undefined;
 
             }
 
         }
-        componentData.totalPrice = totalPrice;
 
     }
 
-    loadComponentData();
+    useEffect( () => { loadComponentData(); }, [] );
 
     return <>
         <section className="booking-summary-tables">
-            {
-                Object.keys(componentData.clientInfoMap)
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Services</th>
+                        <th>Time</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>{
+                    Object.keys( clientInfoMap )
+                        .sort( ( clientId1, clientId2 ) => StringUtils.compare(
+                            clientDataMap[ clientId1 ].name,
+                            clientDataMap[ clientId2 ].name
+                        ) )
+                        .map( clientId => {
+
+                            const
+                                {
+                                    packageDiscountMap, singleServiceDiscountMap
+                                } = clientInfoMap[ clientId ],
+                                { name } = clientDataMap[ clientId ]
+                            ;
+                            return <Fragment key={ clientId }>
+                                <tr className="client-name-summary"><th colSpan={4} >{ name }</th></tr>
+                                
+                            </Fragment>
+
+                        } )
+                }</tbody>
+                <tfoot></tfoot>
+            </table>
+            {/* {
+                Object.keys(clientInfoMap)
                     .sort((clientId1, clientId2) => StringUtils.compare(
                         clientDataMap[clientId1].name,
                         clientDataMap[clientId2].name
                     ))
                     .map(clientId => {
 
-                        const {
-                            packageMap,
-                            singleServiceMap
-                        } = componentData.clientInfoMap[clientId];
-                        const { name } = clientDataMap[clientId];
+                        const
+                            { packageDiscountMap, singleServiceDiscountMap } = clientInfoMap[clientId],
+                            { name } = clientDataMap[clientId]
+                        ;
 
                         let clientTotal = 0;
                         let rowCount = 1;
@@ -243,11 +281,11 @@ export default function BookingReceipt(
                                     <br></br>
                                     <tr className="voucher-discount">
                                         <td colSpan={3}>Voucher Discount</td>
-                                        <td>₱{/* Replace with actual discount value here */}0</td>
+                                        <td>₱{ Replace with actual discount value here }0</td>
                                     </tr>
                                     <tr className="client-total">
                                         <td colSpan={3}>Total After Discount</td>
-                                        <td>₱{clientTotal /* replace with discounted total if applicable */}</td>
+                                        <td>₱{clientTotal replace with discounted total if applicable }</td>
                                     </tr>
 
                                 </tbody>
@@ -263,7 +301,7 @@ export default function BookingReceipt(
                         <td colSpan={2} className="total-price" >₱{componentData.totalPrice}</td>
                     </tr>
                 </tbody>
-            </table>
+            </table> */}
         </section>
     </>;
 

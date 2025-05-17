@@ -156,7 +156,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
         let clientId: documentId = "";
         for( clientId in clientDataMap )
             if( clientDataMap[ clientId ].booking.id === bookingId )
-                clientInfoMap[ clientId ].serviceTransactionDataMap = {};
+                clientInfoMap[ clientId ] = { serviceTransactionDataMap: {} };
         const
             serviceTransactionOfClientDataMap: ServiceTransactionDataMap =
                 await ServiceTransactionUtils.getServiceTransactionDataMapByClient( clientId )
@@ -540,7 +540,7 @@ function EditServiceTransactions( { bookingId, pageData, reloadPageData }: {
             </div>
         </section>
         <section className="service-scroll-container">{
-            pageData.clientIdActive ? Object.keys( pageData.clientInfoMap[ pageData.clientIdActive ] ).map( serviceTransactionId => {
+            pageData.clientIdActive ? Object.keys( pageData.clientInfoMap[ pageData.clientIdActive ].serviceTransactionDataMap ).map( serviceTransactionId => {
 
                 const
                     {

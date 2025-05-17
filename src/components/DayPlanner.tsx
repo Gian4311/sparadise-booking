@@ -90,6 +90,12 @@ interface TimeSlotData {
 
 }
 
+interface TimeSlotEmployeeAssignedMap {
+
+    [ timeSlotId: string ]: { [ employeeId: documentId ]: number }
+
+}
+
 interface TimeSlotServiceEmployeeListKeyMap {
 
     [ timeSlotId: string ]: ServiceEmployeeListKeyMap
@@ -258,15 +264,12 @@ export default function DayPlanner( {
         timeSlotDataList.push( ...( await getTimeSlotDataConflictingList(
             timeSlotIdRange, [ serviceTransactionId ]
         ) ) );
-        timeSlotDataList = timeSlotDataList.filter(
-            ( { rowPosition } ) => ( rowPosition !== "up" )
-        );
-        const serviceTransactionEmployeeListKeyMap: ServiceTransactionEmployeeListKeyMap =
-            await getTimeSlotServiceTransactionEmployeeListKeyMap( timeSlotDataList )
-        ;
         const
+            serviceTransactionEmployeeListKeyMap: ServiceTransactionEmployeeListKeyMap =
+                await getTimeSlotServiceTransactionEmployeeListKeyMap( timeSlotDataList )
+            ,
             employeeAssignedIdList: number[] = timeSlotDataList.map( () => 0 ),
-            employeeAssignedIndexMap: EmployeeAssignedIndexMap = {}
+            timeSlotEmployeeAssignedIndexMap: TimeSlotEmployeeAssignedMap = {}
         ;
         for(
             let timeSlotIndex: number = 0;
@@ -276,13 +279,20 @@ export default function DayPlanner( {
 
             const
                 {
-                    serviceTransactionData: { employee },
-                    serviceTransactionId
-                } = timeSlotDataList[ timeSlotIndex ],
+                    serviceTransactionData: { bookingDateTimeEnd, bookingDateTimeStart, employee },
+                    serviceTransactionId, rowPosition
+                } = timeSlotDataList[ timeSlotIndex ]
+            ;
+            if( rowPosition === "up" ) continue;
+            const
+                dateRange: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
+                timeSlotIdList: string[] = [ dateRange.toString( DATE_RANGE_FORMAT ) ],
                 serviceEmployeeList =
                     !employee ? serviceTransactionEmployeeListKeyMap[ serviceTransactionId ]
                     : [ employee.id ]
             ;
+            if( rowPosition === "down" )
+                timeSlotIdList.push( getTimeSlotIdAbove( timeSlotIdList[ 0 ] ) as string );
             let
                 oldEmployeeIndex: number = employeeAssignedIdList[ timeSlotIndex ],
                 oldEmployeeId: string = serviceEmployeeList[ oldEmployeeIndex ],
@@ -292,10 +302,24 @@ export default function DayPlanner( {
             for( ; employeeIndex < serviceEmployeeList.length; employeeIndex++ ) {
 
                 employeeId = serviceEmployeeList[ employeeIndex ];
-                if( !( employeeId in employeeAssignedIndexMap ) ) {
+                let isFreeEmployee: boolean = true;
+                for( let timeSlotId of timeSlotIdList ) {
 
-                    delete employeeAssignedIndexMap[ oldEmployeeId ];
-                    employeeAssignedIndexMap[ employeeId ] = timeSlotIndex;
+                    if( !( timeSlotId in timeSlotEmployeeAssignedIndexMap ) )
+                        timeSlotEmployeeAssignedIndexMap[ timeSlotId ] = {};
+                    isFreeEmployee = !(
+                        employeeId in timeSlotEmployeeAssignedIndexMap[ timeSlotId ]
+                    );
+
+                }  
+                if( isFreeEmployee ) {
+
+                    for( let timeSlotId of timeSlotIdList ) {
+                
+                        delete timeSlotEmployeeAssignedIndexMap[ timeSlotId ][ oldEmployeeId ];
+                        timeSlotEmployeeAssignedIndexMap[ timeSlotId ][ employeeId ] = timeSlotIndex;
+                
+                    }
                     break;
 
                 }
@@ -304,14 +328,20 @@ export default function DayPlanner( {
             if( employeeIndex >= serviceEmployeeList.length ) {
 
                 employeeAssignedIdList[ timeSlotIndex ] = 0;
-                timeSlotIndex -= 2;
+                timeSlotIndex--;
+                while( timeSlotIndex >= 0 && timeSlotDataList[ timeSlotIndex ].rowPosition === "up" )
+                    timeSlotIndex--;
+                timeSlotIndex--;
 
             }
 
         }
-        return (
-            timeSlotDataList.length === ObjectUtils.keyLength( employeeAssignedIndexMap )
-        );
+        const timeSlotAssignedLength: number =
+            Object.keys( timeSlotEmployeeAssignedIndexMap ).reduce< number >( ( sum, timeSlotId ) => (
+                sum + ObjectUtils.keyLength( timeSlotEmployeeAssignedIndexMap[ timeSlotId ] )
+            ), 0 )
+        ;
+        return ( timeSlotDataList.length === timeSlotAssignedLength );
 
     }
 
