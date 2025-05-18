@@ -150,9 +150,19 @@ table.serviceTransactionManager button.inactive:active {
 }
 
 /* On keyboard focus */
-table.serviceTransactionManager button.inactive:focus {
+table.serviceTransactionManager button.inactive:hover {
   background-color: #552B59;
   color: white;
   outline: none;
+}
+
+table.serviceTransactionManager button.active {
+  background-color: #D8271A;
+  color: white;
+}
+
+table.serviceTransactionManager button.active:active {
+  background-color: #b41d12;
+  color: white;
 }
 

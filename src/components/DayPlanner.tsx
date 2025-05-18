@@ -132,7 +132,7 @@ export default function DayPlanner({
 
         if (!rowPosition) {
 
-            const serviceTransactionDataList = await preprocessServiceTransactionData(
+            const serviceTransactionDataList = preprocessServiceTransactionData(
                 serviceTransactionData
             );
             switch (serviceTransactionDataList.length) {
@@ -193,7 +193,7 @@ export default function DayPlanner({
         // preprocessing
         if (!rowPosition) {
 
-            const serviceTransactionDataList = await preprocessServiceTransactionData(
+            const serviceTransactionDataList = preprocessServiceTransactionData(
                 serviceTransactionData
             );
             switch (serviceTransactionDataList.length) {
@@ -740,6 +740,19 @@ export default function DayPlanner({
 
     }
 
+    async function handleDeleteServiceTransaction(
+        serviceTransactionId: documentId
+    ): Promise<void> {
+
+        const serviceTransactionData =
+            pageData.serviceTransactionToAddDataMap[ serviceTransactionId ]
+        ;
+        serviceTransactionData.bookingDateTimeEnd = null as unknown as Date;
+        serviceTransactionData.bookingDateTimeStart = null as unknown as Date;
+        loadComponentData();
+
+    }
+
     async function hasAvailableRoomType(
         serviceTransactionData: ServiceTransactionData,
         serviceTransactionId: documentId
@@ -795,19 +808,19 @@ export default function DayPlanner({
 
     }
 
-    async function hasServiceTransaction(
+    function hasServiceTransaction(
         serviceTransactionData: ServiceTransactionData,
         serviceTransactionId: documentId
-    ): Promise<boolean> {
+    ): boolean {
 
-        const serviceTransactionDataList = await preprocessServiceTransactionData(
+        const serviceTransactionDataList = preprocessServiceTransactionData(
             serviceTransactionData
         );
         switch (serviceTransactionDataList.length) {
 
             case 2: return (
-                await hasServiceTransaction(serviceTransactionDataList[1], serviceTransactionId)
-                && await hasServiceTransaction(serviceTransactionDataList[0], serviceTransactionId)
+                hasServiceTransaction(serviceTransactionDataList[1], serviceTransactionId)
+                && hasServiceTransaction(serviceTransactionDataList[0], serviceTransactionId)
             );
 
             case 0: return false;
@@ -1123,9 +1136,9 @@ export default function DayPlanner({
 
     }
 
-    async function preprocessServiceTransactionData(
+    function preprocessServiceTransactionData(
         serviceTransactionData: ServiceTransactionData
-    ): Promise<ServiceTransactionData[]> {
+    ): ServiceTransactionData[] {
 
         let { bookingDateTimeStart, bookingDateTimeEnd } = serviceTransactionData;
         bookingDateTimeStart = DateUtils.toFloorByMin(bookingDateTimeStart, 30);
@@ -1221,19 +1234,21 @@ export default function DayPlanner({
 
                                         const
                                             { serviceDataMap } = pageData,
-                                            { id: serviceId } = pageData.serviceTransactionToAddDataMap[
+                                            serviceTransactionData = pageData.serviceTransactionToAddDataMap[
                                                 serviceTransactionId
-                                            ].service,
-                                            { name } = serviceDataMap[serviceId]
-                                            ;
+                                            ],
+                                            { id: serviceId } = serviceTransactionData.service,
+                                            { name } = serviceDataMap[serviceId],
+                                            added: boolean = hasServiceTransaction( serviceTransactionData, serviceTransactionId )
+                                        ;
                                         return <button
-                                            className="inactive"
+                                            className={ !added ? "inactive" : "active" }
                                             key={serviceTransactionId}
                                             type="button"
-                                            onClick={() => handleChangeServiceTransactionIdActive(
+                                            onClick={ () => !added ? handleChangeServiceTransactionIdActive(
                                                 serviceTransactionId
-                                            )}
-                                        >{name}</button>
+                                            ) : handleDeleteServiceTransaction( serviceTransactionId ) }
+                                        >{name}{ " " }{ !added ? "+" : "×" }</button>
 
                                     })
                             }</td>
@@ -1253,7 +1268,7 @@ export default function DayPlanner({
                         !isNewBookingMode ? <>
                             <td colSpan={roomColumns + 1}>ROOMS</td>
                             <td colSpan={chairColumns + 1}>CHAIRS</td>
-                        </> : <>                        </>
+                        </> : undefined
                     }
                 </tr></thead>
                 <tbody>{
