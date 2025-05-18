@@ -207,7 +207,6 @@ export default function NewBooking(): JSX.Element {
 
     }
 
-    <QuickPopup message={popupMessage} clearPopup={() => setPopupMessage("")} />
     
     async function checkFormValidity(): Promise<boolean> {
 
@@ -1169,10 +1168,10 @@ function Summary({ pageData, reloadPageData }: {
         <NavBar></NavBar>
         <main className="booking-container">
             <section className="form-section booking-summary-section">
+                <h2 className="summary-label">Booking Summary</h2>
                 <section className="form-section client-date-section">
                     <div className="time-slot-date">{DateUtils.toString(date, "Mmmm dd, yyyy")}</div>
                 </section>
-                <h2 className="summary-label">Booking Summary</h2>
                 <section className="form-section booking-summary-section">
                     <BookingReceipt pageData={pageData} showActualTime={ false } addVoucher={ addVoucher } deleteVoucher={ deleteVoucher } reloadPageData={ reloadPageData }/>
                 </section>
@@ -1252,9 +1251,12 @@ function Finished({ pageData, reloadPageData }: {
     return <>
         <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
         <NavBar></NavBar>
-        <main className="booking-container">
-            <button type="button" onClick={previousPage}>Previous</button>
-            <button type="submit">Finish</button>
+        <main className="booking-container-last">
+            <div className="confirmation-message">Confirm Booking</div>
+                <section className="last-action-buttons">
+                    <button className="back-btn-confirm" type="button" onClick={previousPage}>Back</button>
+                    <button className="proceed-btn-confirm" type="submit" onClick={nextPage}>Complete Booking</button>
+                </section>
         </main>
     </>;
 

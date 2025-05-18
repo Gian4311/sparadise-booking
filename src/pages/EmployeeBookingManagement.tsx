@@ -330,7 +330,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
                 : <button type="button" onClick={() => { pageData.formIndex--; reloadPageData(); }}>None, Go Back</button>
             }
 
-            <button type="button" onClick={() => console.log(pageData)}>Log page data</button>
+            <button type="button" onClick={() => console.log(pageData)}>Log pasge data</button>
         </form>
     </>
 

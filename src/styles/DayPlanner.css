@@ -134,20 +134,27 @@ table.dayPlanner td.not-available {
   background-color: rgb(189, 189, 189);
 }
 
+.rooms-label{
+  background-color: #552B59;
+  padding:1%;
+  color: white;
+  font-size: 1.2rem;
+}
+
 /* Room/chair info */
 table.dayPlanner td.room-info {
-  background-color: #555;
+  background-color: rgb(189, 189, 189);
   color: black;
   font-size: 13px;
   padding: 0.5em;
 }
 
 /* Buttons in serviceTransactionManager */
-/* On click (during press) */
-table.serviceTransactionManager button.inactive:active {
-  background-color: #2a9d8f;
-  color: white;
+
+.serviceTransactionManager{
+  margin-top: 10px;
 }
+
 
 /* On keyboard focus */
 table.serviceTransactionManager button.inactive:hover {
@@ -166,3 +173,36 @@ table.serviceTransactionManager button.active:active {
   color: white;
 }
 
+table.serviceTransactionManager button.selecting {
+  background-color: #552B59; /* Amber-500 */
+  color: white;
+}
+
+table.serviceTransactionManager button.selecting:hover {
+  background-color: #431647; /* Amber-600 */
+}
+
+table.serviceTransactionManager button{
+  margin-right: 10px;
+}
+
+
+table.serviceTransactionManager .serviceTransactionManager-client{
+  color: black;
+  font-size: 1.3rem;
+}
+
+.booking-management-date-input input{
+
+  font-size: 1.5rem;
+  padding: 10px;
+  border-radius: 5px;
+
+
+}
+
+.booking-management-date-input label {
+  margin-right: 10px;
+  font-weight: bold;
+  font-size: 2rem;
+}

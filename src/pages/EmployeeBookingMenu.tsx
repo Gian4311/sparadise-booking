@@ -37,6 +37,7 @@ import { useParams } from "react-router-dom";
 
 import "../styles/BookingCalendar.scss";
 import "../styles/EmployeeBookingMenu.scss";
+import "../styles/EmployeeServiceMenu.css";
 
 interface EmployeeBookingMenuPageData extends SpaRadisePageData {
 
@@ -60,11 +61,11 @@ export default function EmployeeBookingMenu(): JSX.Element {
 
     const
         dateParam = useParams().date,
-        [ pageData, setPageData ] = useState< EmployeeBookingMenuPageData >( {
+        [pageData, setPageData] = useState<EmployeeBookingMenuPageData>({
             bookingDataMap: {},
             bookingIdActive: undefined,
             clientDataMap: {},
-            date: dateParam ? new Date( dateParam ) : new Date(),
+            date: dateParam ? new Date(dateParam) : new Date(),
             employeeDataMap: {},
             employeeLeaveOfDayDataMap: {},
             jobDataMap: {},
@@ -76,70 +77,70 @@ export default function EmployeeBookingMenu(): JSX.Element {
             serviceTransactionEmployeeListKeyMap: {},
             serviceTransactionOfDayDataMap: {},
             updateMap: {}
-        } ),
+        }),
         dayPlannerPageData = {
             ...pageData,
             employeeLeaveDataMap: pageData.employeeLeaveOfDayDataMap,
             serviceTransactionDefaultDataMap: pageData.serviceTransactionOfDayDataMap,
             serviceTransactionToAddDataMap: {} as ServiceTransactionDataMap
         }
-    ;
+        ;
 
-    async function handleChangeDate(): Promise< void > {
+    async function handleChangeDate(): Promise<void> {
 
         await loadMaintenanceData();
         await loadEmployeeData();
         pageData.serviceTransactionOfDayDataMap =
-            await ServiceTransactionUtils.getServiceTransactionDataMapByDay( pageData.date, false )
-        ;
+            await ServiceTransactionUtils.getServiceTransactionDataMapByDay(pageData.date, false)
+            ;
 
     }
 
-    async function loadBookingData(): Promise< void > {
+    async function loadBookingData(): Promise<void> {
 
         pageData.bookingDataMap = await BookingUtils.getBookingDataMapAll();
 
     }
 
-    async function loadClientData(): Promise< void > {
+    async function loadClientData(): Promise<void> {
 
         pageData.clientDataMap = await ClientUtils.getClientDataMapAll();
 
     }
 
     async function loadEmployeeData(): Promise<void> {
-    
+
         const { date } = pageData;
         pageData.employeeDataMap = await EmployeeUtils.getEmployeeDataMapAll();
         pageData.employeeLeaveOfDayDataMap =
             await EmployeeLeaveUtils.getApprovedEmployeeLeaveDataMapByDay(date)
-        ;
+            ;
 
     }
 
-    async function loadJobData(): Promise< void > {
-    
+    async function loadJobData(): Promise<void> {
+
         pageData.jobDataMap = await JobUtils.getJobDataMapAll();
         pageData.jobServiceDataMap = await JobServiceUtils.getJobServiceDataMapAll();
 
     }
 
     async function loadMaintenanceData(): Promise<void> {
-    
+
         const
             { date } = pageData,
             packageMaintenanceDataMap =
-                await PackageMaintenanceUtils.getPackageMaintenanceDataMapByDate( date )
+                await PackageMaintenanceUtils.getPackageMaintenanceDataMapByDate(date)
             ,
             serviceMaintenanceDataMap =
-                await ServiceMaintenanceUtils.getServiceMaintenanceDataMapByDate( date )
-        ;
+                await ServiceMaintenanceUtils.getServiceMaintenanceDataMapByDate(date)
+            ;
         pageData.maintenanceDataMap = { ...packageMaintenanceDataMap, ...serviceMaintenanceDataMap };
 
     }
 
-    async function loadPageData(): Promise< void > {
-        
+    async function loadPageData(): Promise<void> {
+
         await loadServiceData();
         await loadJobData();
         await loadBookingData();
@@ -151,7 +152,7 @@ export default function EmployeeBookingMenu(): JSX.Element {
     }
 
     async function loadServiceData(): Promise<void> {
-    
+
         pageData.serviceDataMap = await ServiceUtils.getServiceDataMapAll();
         pageData.packageDataMap = await PackageUtils.getPackageDataMapAll();
 
@@ -163,24 +164,30 @@ export default function EmployeeBookingMenu(): JSX.Element {
 
     }
 
-    useEffect( () => { loadPageData(); }, [] );
+    useEffect(() => { loadPageData(); }, []);
 
     return <>
-        <LoadingScreen loading={ !pageData.loaded }/>
-        <EmployeeSidebar/>
+        <LoadingScreen loading={!pageData.loaded} />
+        <EmployeeSidebar />
+        <div className="service-menu-main-content">
+            <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">Bookings</label>
+            <div className="service-menu-form-section">
+                <div className="booking-management-date-input">
+                    <label className="booking-management-date-input-label">Select date:</label> <BookingDateInput pageData={pageData} onChange={handleChangeDate} reloadPageData={reloadPageData} /></div>
+                <DayPlanner dayPlannerMode="management" pageData={dayPlannerPageData} />
+                <button onClick={() => console.log(pageData)}>Log page data</button>
+            </div>
+        </div>
         <main className="employee-booking-management-main-content">
-            <BookingDateInput pageData={ pageData } onChange={ handleChangeDate } reloadPageData={ reloadPageData }/>
-            <DayPlanner dayPlannerMode="management" pageData={ dayPlannerPageData }/>
-            <button onClick={ () => console.log( pageData ) }>Log page data</button>
         </main>
     </>;
 
 }
 
-function BookingManagement( { pageData, reloadPageData }: {
+function BookingManagement({ pageData, reloadPageData }: {
     pageData: EmployeeBookingMenuPageData,
     reloadPageData: () => void
-} ): JSX.Element {
+}): JSX.Element {
 
     const
         {
@@ -188,18 +195,18 @@ function BookingManagement( { pageData, reloadPageData }: {
             serviceTransactionOfDayDataMap
         } = pageData,
         clientDataMap = { ...pageData.clientDataMap }
-    ;
-    for( let clientId in clientDataMap )
-        if( clientDataMap[ clientId ].booking.id !== bookingIdActive )
-            delete clientDataMap[ clientId ];
+        ;
+    for (let clientId in clientDataMap)
+        if (clientDataMap[clientId].booking.id !== bookingIdActive)
+            delete clientDataMap[clientId];
     const
-        clientKeyArray = Object.keys( clientDataMap ),
-        [ clientIdActive, setClientIdActive ] = useState< documentId >( clientKeyArray[ 0 ] )
-    ;
+        clientKeyArray = Object.keys(clientDataMap),
+        [clientIdActive, setClientIdActive] = useState<documentId>(clientKeyArray[0])
+        ;
 
-    async function handleChangeClientActive( clientId: string ): Promise<void> {
+    async function handleChangeClientActive(clientId: string): Promise<void> {
 
-        setClientIdActive( clientId );
+        setClientIdActive(clientId);
         reloadPageData();
 
     }
@@ -223,36 +230,36 @@ function BookingManagement( { pageData, reloadPageData }: {
             </div>
             <div>
                 {
-                    Object.keys( serviceTransactionOfDayDataMap )
-                        .filter( serviceTransactionId =>
-                            serviceTransactionOfDayDataMap[ serviceTransactionId ].client.id
+                    Object.keys(serviceTransactionOfDayDataMap)
+                        .filter(serviceTransactionId =>
+                            serviceTransactionOfDayDataMap[serviceTransactionId].client.id
                             in clientDataMap
                         )
-                        .map( serviceTransactionId => {
+                        .map(serviceTransactionId => {
 
                             const
                                 {
                                     bookingDateTimeEnd,
                                     bookingDateTimeStart,
                                     service: { id: serviceId }
-                                } = serviceTransactionOfDayDataMap[ serviceTransactionId ],
+                                } = serviceTransactionOfDayDataMap[serviceTransactionId],
                                 packageId: string | undefined =
-                                    serviceTransactionOfDayDataMap[ serviceTransactionId ].package?.id
+                                    serviceTransactionOfDayDataMap[serviceTransactionId].package?.id
                                 ,
                                 dateRange: DateRange = new DateRange(
                                     bookingDateTimeStart, bookingDateTimeEnd
                                 ),
                                 { name, description } = serviceDataMap[serviceId],
                                 { price, status } = maintenanceDataMap[serviceId]
-                            ;
+                                ;
                             if (status === "inactive") return undefined;
 
                             return (
                                 <div className="service-scroll-item" key={serviceId}>
                                     <div className="service-price">₱{price}</div>
                                     <div className="service-name">{name}</div>
-                                    <div>{ packageId ? packageDataMap[ packageId ].name : "" }</div>
-                                    
+                                    <div>{packageId ? packageDataMap[packageId].name : ""}</div>
+
                                 </div>
                             );
                         }

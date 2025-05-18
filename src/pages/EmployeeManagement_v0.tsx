@@ -192,6 +192,7 @@ export default function EmployeeManagement(): JSX.Element {
 
     }
 
+    
     async function updateEmployee(): Promise<void> {
 
         if (!isEditMode || !documentId) return;
@@ -206,7 +207,6 @@ export default function EmployeeManagement(): JSX.Element {
         }
         delete updateMap[documentId];
         reloadPageData();
-        alert(`Updated!`); // note: remove later
 
     }
 
@@ -220,9 +220,7 @@ export default function EmployeeManagement(): JSX.Element {
                 <label htmlFor="employee-main-content" className="employee-management-location">Employees - {PersonUtils.toString(pageData.employeeDefaultData, "f mi l")}</label>
                 <div className="employee-form-section">
                     <div className="employee-header">
-                        <a href="javascript:history.back()" className="service-back-arrow" aria-label="Back">
-                            <img src={BackButton} alt="Back" className="back-icon" />
-                        </a>
+                        <button onClick={() => navigate(-1)} className="service-back-arrow" aria-label="Back" style={{ background: "none", border: "none", padding: 0 }}><img src={BackButton} alt="Back" className="back-icon" /></button>
                         <h1>{pageData.employeeName}</h1>
                     </div>
                     <div className="employee-form-row-group">

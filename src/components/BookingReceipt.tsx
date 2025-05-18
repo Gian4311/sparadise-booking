@@ -590,7 +590,7 @@ export default function BookingReceipt( {
 
                             })}
                             <tr>
-                                <td colSpan={ 4 }></td>
+                                <td colSpan={ 5 }></td>
                                 <td><button className="add-voucher-btn" type="button" onClick={addVoucher}>
                                     Add
                                 </button></td>

@@ -43,6 +43,11 @@ body {
   font-size: 1.5rem;
 }
 
+.client-item.active{
+  background-color: #552B59;
+  color: white;
+}
+
 .client-item:hover {
   background-color: #e1bee7;
 }
@@ -378,6 +383,10 @@ body {
   width: auto;
 }
 
+.back-btn-confirm:hover {
+  background-color: #8B7D7E;
+}
+
 .back-btn:hover {
   background-color: #8B7D7E;
 }
@@ -398,6 +407,10 @@ body {
 }
 
 .proceed-btn:hover {
+  background-color: #7E3B7A;
+}
+
+.proceed-btn-confirm:hover {
   background-color: #7E3B7A;
 }
 
@@ -519,6 +532,7 @@ body {
 
 .add-voucher-btn{
   flex: 1;
+  float: left;
   padding: 10px;
   font-size: .8;
   font-weight: bold;
@@ -529,7 +543,7 @@ body {
   cursor: pointer;
   transition: background-color 0.3s ease;
   border-radius: 30px;
-  width: 50%;
+  width: 100%;
   margin-top: 1%;
 }
 
@@ -545,7 +559,7 @@ body {
   cursor: pointer;
   transition: background-color 0.3s ease;
   border-radius: 30px;
-  width: 50%;
+  width: 100%;
   margin-top: 1%;
 }
 
@@ -586,4 +600,56 @@ body {
 .voucher-discount td {
   font-style: italic;
   color: #d00;
+}
+
+.confirmation-message {
+  font-size: 5rem;
+  text-align: center;
+  font-weight: bold;
+}
+
+.booking-container-last{
+  margin: 50px auto;
+  padding: 50px;
+  width: 30%;
+  background-color: #FBE3EB;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  color: black;
+}
+
+.back-btn-confirm {
+  padding: 20px;
+  font-size: 1.4em;
+  font-weight: bold;
+  background-color: #A89396;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-radius: 30px;
+  width: 100%;
+}
+
+.proceed-btn-confirm {
+  padding: 20px;
+  font-size: 1.4em;
+  font-weight: bold;
+  background-color: #552B59;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-radius: 30px;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.last-action-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 40%;
 }

@@ -7,6 +7,7 @@ import {
     useEffect,
     useState
 } from "react";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import FormMoneyInput from "../components/FormMoneyInput";
 import FormSelect from "../components/FormSelect";
@@ -79,7 +80,9 @@ export default function PackageManagement(): JSX.Element {
         }),
         documentId: string | undefined = useParams().id,
         isNewMode: boolean = (documentId === "new"),
-        isEditMode: boolean = (documentId !== undefined && !isNewMode)
+        isEditMode: boolean = (documentId !== undefined && !isNewMode),
+        navigate = useNavigate()
+
         ;
 
     async function addPackageMaintenance(): Promise<void> {
@@ -496,7 +499,6 @@ export default function PackageManagement(): JSX.Element {
         await updatePackageMaintenanceList();
         await updatePackageServiceList();
         reloadPageData();
-        alert(`Updated!`); // note: remove later
 
     }
 
@@ -556,9 +558,8 @@ export default function PackageManagement(): JSX.Element {
                 <label htmlFor="service-main-content" className="service-management-location">Services & Packages - {pageData.packageName}</label>
                 <div className="service-form-section">
                     <div className="service-header">
-                        <a href="#" className="service-back-arrow" aria-label="Back">
-                            <img src={BackButton} alt="Back" className="back-icon" />
-                        </a>
+                        <button onClick={() => navigate(-1)} className="service-back-arrow" aria-label="Back" style={{ background: "none", border: "none", padding: 0 }}><img src={BackButton} alt="Back" className="back-icon" /></button>
+
                         <h1>{pageData.packageName}</h1>
                     </div>
                     <div className="service-form-row-group">
@@ -588,7 +589,7 @@ export default function PackageManagement(): JSX.Element {
                                                     {service.name}</div>
                                                 <div className="service-description" key={key}>
                                                     {service.description}</div>
-                                                    
+
                                                 {
                                                     !(serviceId in pageData.packageServiceIncludedMap) ||
                                                         packageServiceId in pageData.packageServiceToDeleteMap ? (

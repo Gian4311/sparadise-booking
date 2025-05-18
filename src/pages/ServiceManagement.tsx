@@ -7,6 +7,7 @@ import {
     useEffect,
     useState
 } from "react";
+import { useNavigate } from "react-router-dom";
 import FormMoneyInput from "../components/FormMoneyInput";
 import FormNaturalNumberInput from "../components/FormNaturalNumberInput";
 import FormPercentageInput from "../components/FormPercentageInput";
@@ -74,10 +75,12 @@ export default function ServiceManagement(): JSX.Element {
         }),
         documentId: string | undefined = useParams().id,
         isNewMode: boolean = (documentId === "new"),
-        isEditMode: boolean = (documentId !== undefined && !isNewMode)
+        isEditMode: boolean = (documentId !== undefined && !isNewMode),
+        navigate = useNavigate()
+
         ;
 
-        
+
     const [quickPopupMessage, setQuickPopupMessage] = useState("");
 
     async function addServiceMaintenance(): Promise<void> {
@@ -146,22 +149,22 @@ export default function ServiceManagement(): JSX.Element {
     async function createService(): Promise<void> {
         if (!isNewMode || !documentId) return;
         await checkFormValidity();
-    
+
         const documentReference: DocumentReference = await ServiceUtils.createService(
             pageData.serviceData
         );
-    
+
         pageData.serviceDocumentReference = documentReference;
         await updateServiceMaintenanceList();
         delete pageData.updateMap["new"];
-    
+
         setQuickPopupMessage("Successfully Created");
-    
+
         setTimeout(() => {
             window.open(`/management/services/${documentReference.id}`, `_self`);
         }, 2000);
     }
-    
+
 
     async function createServiceMaintenanceList(): Promise<void> {
 
@@ -411,17 +414,7 @@ export default function ServiceManagement(): JSX.Element {
                     <label htmlFor="service-main-content" className="service-management-location">Services & Packages - {pageData.serviceName}</label>
                     <div className="service-form-section">
                         <div className="service-header">
-                            <a
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    window.history.back();
-                                }}
-                                className="service-back-arrow"
-                                aria-label="Back"
-                            >
-                                <img src={BackButton} alt="Back" className="back-icon" />
-                            </a>
+                            <button onClick={() => navigate(-1)} className="service-back-arrow" aria-label="Back" style={{ background: "none", border: "none", padding: 0 }}><img src={BackButton} alt="Back" className="back-icon" /></button>
                             <h1>{pageData.serviceName}</h1>
                         </div>
 

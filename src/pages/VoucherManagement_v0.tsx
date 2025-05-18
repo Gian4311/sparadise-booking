@@ -1,5 +1,6 @@
 import { DocumentReference } from "firebase/firestore/lite";
 import FormDateInput from "../components/FormDateInput";
+import { useNavigate } from "react-router-dom";
 import {
     FormEvent,
     useEffect,
@@ -82,7 +83,7 @@ export default function VoucherManagement(): JSX.Element {
                 serviceType: null as unknown as serviceType,
                 roomType: null as unknown as roomType,
                 ageLimit: null as unknown as number,
-                durationMin: null as unknown as ( 30 | 60 )
+                durationMin: null as unknown as (30 | 60)
             },
             packageData: {
                 name: null as unknown as string,
@@ -91,7 +92,9 @@ export default function VoucherManagement(): JSX.Element {
         }),
         documentId: string | undefined = useParams().id,
         isNewMode: boolean = (documentId === "new"),
-        isEditMode: boolean = (documentId !== undefined && !isNewMode)
+        isEditMode: boolean = (documentId !== undefined && !isNewMode),
+        navigate = useNavigate()
+
         ;
 
     async function addVoucherPackage(packageId: string): Promise<void> {
@@ -456,7 +459,6 @@ export default function VoucherManagement(): JSX.Element {
         await updateVoucherPackageList();
         await updateVoucherServiceList();
         reloadPageData();
-        alert(`Updated!`); // note: remove later
 
     }
 
@@ -483,9 +485,7 @@ export default function VoucherManagement(): JSX.Element {
                 <label htmlFor="service-main-content" className="service-management-location"> Vouchers - {pageData.voucherData.name}</label>
                 <div className="service-form-section">
                     <div className="service-header">
-                        <a href="#" className="service-back-arrow" aria-label="Back">
-                            <img src={BackButton} alt="Back" className="back-icon" />
-                        </a>
+                        <button onClick={() => navigate(-1)} className="service-back-arrow" aria-label="Back" style={{ background: "none", border: "none", padding: 0 }}><img src={BackButton} alt="Back" className="back-icon" /></button>
                         <h1>{pageData.voucherData.name}</h1>
                     </div>
                     <div className="service-form-row-group">
@@ -528,7 +528,7 @@ export default function VoucherManagement(): JSX.Element {
                                         const packageServiceId: string | number = pageData.voucherServiceIncludedMap[serviceId];
 
                                         return (
-                                            <div className="service-scroll-item" key={ serviceId }>
+                                            <div className="service-scroll-item" key={serviceId}>
                                                 <div className="service-name">
                                                     {service.name}</div>
                                                 <div className="service-description">

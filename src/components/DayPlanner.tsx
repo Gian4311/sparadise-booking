@@ -745,8 +745,8 @@ export default function DayPlanner({
     ): Promise<void> {
 
         const serviceTransactionData =
-            pageData.serviceTransactionToAddDataMap[ serviceTransactionId ]
-        ;
+            pageData.serviceTransactionToAddDataMap[serviceTransactionId]
+            ;
         serviceTransactionData.bookingDateTimeEnd = null as unknown as Date;
         serviceTransactionData.bookingDateTimeStart = null as unknown as Date;
         loadComponentData();
@@ -1209,49 +1209,55 @@ export default function DayPlanner({
                     ).map(clientId => {
 
                         return <tr key={clientId}>
-                            <td>
+                            <td className="serviceTransactionManager-client">
                                 {pageData.clientDataMap[clientId].name}
                             </td>
                             <td>{
-                                Object
-                                    .keys(clientServiceTransactionAddedMap[clientId])
-                                    .sort((serviceTransactionId1, serviceTransactionId2) => {
+                                Object.keys(clientServiceTransactionAddedMap[clientId])
+                                    .sort((id1, id2) => {
+                                        const { serviceDataMap, serviceTransactionToAddDataMap } = pageData;
 
-                                        const
-                                            { serviceDataMap } = pageData,
-                                            { id: serviceId1 } = pageData.serviceTransactionToAddDataMap[
-                                                serviceTransactionId1
-                                            ].service,
-                                            { id: serviceId2 } = pageData.serviceTransactionToAddDataMap[
-                                                serviceTransactionId2
-                                            ].service,
-                                            { name: name1 } = serviceDataMap[serviceId1],
-                                            { name: name2 } = serviceDataMap[serviceId2]
-                                            ;
+                                        const service1 = serviceTransactionToAddDataMap[id1].service;
+                                        const service2 = serviceTransactionToAddDataMap[id2].service;
+
+                                        const name1 = serviceDataMap[service1.id].name;
+                                        const name2 = serviceDataMap[service2.id].name;
+
                                         return StringUtils.compare(name1, name2);
-
-                                    }).map(serviceTransactionId => {
-
-                                        const
-                                            { serviceDataMap } = pageData,
-                                            serviceTransactionData = pageData.serviceTransactionToAddDataMap[
-                                                serviceTransactionId
-                                            ],
-                                            { id: serviceId } = serviceTransactionData.service,
-                                            { name } = serviceDataMap[serviceId],
-                                            added: boolean = hasServiceTransaction( serviceTransactionData, serviceTransactionId )
-                                        ;
-                                        return <button
-                                            className={ !added ? "inactive" : "active" }
-                                            key={serviceTransactionId}
-                                            type="button"
-                                            onClick={ () => !added ? handleChangeServiceTransactionIdActive(
-                                                serviceTransactionId
-                                            ) : handleDeleteServiceTransaction( serviceTransactionId ) }
-                                        >{name}{ " " }{ !added ? "+" : "×" }</button>
-
                                     })
-                            }</td>
+                                    .map(serviceTransactionId => {
+                                        const { serviceDataMap, serviceTransactionToAddDataMap } = pageData;
+                                        const serviceTransactionData = serviceTransactionToAddDataMap[serviceTransactionId];
+                                        const serviceId = serviceTransactionData.service.id;
+                                        const serviceName = serviceDataMap[serviceId].name;
+
+                                        const added = hasServiceTransaction(serviceTransactionData, serviceTransactionId);
+                                        const isSelecting = serviceTransactionId === serviceTransactionIdActive;
+
+                                        const className = added
+                                            ? "active"
+                                            : isSelecting
+                                                ? "inactive selecting"
+                                                : "inactive";
+
+                                        const handleClick = () =>
+                                            added
+                                                ? handleDeleteServiceTransaction(serviceTransactionId)
+                                                : handleChangeServiceTransactionIdActive(serviceTransactionId);
+
+                                        return (
+                                            <button
+                                                key={serviceTransactionId}
+                                                className={className}
+                                                type="button"
+                                                onClick={handleClick}
+                                            >
+                                                {serviceName} {added ? "×" : "+"}
+                                            </button>
+                                        );
+                                    })
+                            }
+                            </td>
                         </tr>;
 
                     })
@@ -1266,8 +1272,8 @@ export default function DayPlanner({
                     <td></td>
                     {
                         !isNewBookingMode ? <>
-                            <td colSpan={roomColumns + 1}>ROOMS</td>
-                            <td colSpan={chairColumns + 1}>CHAIRS</td>
+                            <td className="rooms-label" colSpan={roomColumns + 1}>Rooms</td>
+                            <td className="rooms-label" colSpan={chairColumns + 1}>Chairs</td>
                         </> : undefined
                     }
                 </tr></thead>
@@ -1525,7 +1531,7 @@ function TimeSlot({
         rowSpan={(rowPosition === "up") ? 2 : undefined}
         onClick={event => handleTimeSlotClick(event)}
     >
-                <div className="timeSlot-service">{serviceData.name}</div>
+        <div className="timeSlot-service">{serviceData.name}</div>
         <div className="timeSlot-client">{clientData.name}</div>
         {
             !isNewBookingMode ? <div>{employeeName}</div> : undefined
