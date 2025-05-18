@@ -21,9 +21,9 @@ import {
     VoucherDataMap,
     VoucherPackageDataMap,
     VoucherServiceDataMap,
+    VoucherTransactionApplicationMap,
     VoucherTransactionData,
-    VoucherTransactionDataMap,
-    VoucherTransactionNotIncludedMap
+    VoucherTransactionDataMap
 } from "../firebase/SpaRadiseTypes";
 import "../styles/ClientIndex.css";
 import "../styles/ClientBookingCreation.css";
@@ -113,6 +113,7 @@ export interface NewBookingPageData extends SpaRadisePageData {
     jobDataMap: JobDataMap,
     jobServiceDataMap: JobServiceDataMap,
     maintenanceDataMap: { [documentId: documentId]: PackageMaintenanceData | ServiceMaintenanceData },
+    initialPrice: number,
     packageDataMap: PackageDataMap,
     packageServiceDataMap: PackageServiceDataMap,
     packageServiceKeyMap: {
@@ -124,6 +125,7 @@ export interface NewBookingPageData extends SpaRadisePageData {
     serviceTransactionOfDayDataMap: ServiceTransactionDataMap,
     voucherDataMap: VoucherDataMap,
     voucherDataOfDayMap: VoucherDataMap,
+    voucherDiscount: number,
     voucherPackageKeyMap: {
         [voucherId: documentId]: { [packageId: documentId]: documentId }
     },
@@ -132,15 +134,16 @@ export interface NewBookingPageData extends SpaRadisePageData {
         [voucherId: documentId]: { [serviceId: documentId]: documentId }
     },
     voucherServiceMap: VoucherServiceDataMap,
+    voucherTransactionApplicationMap: VoucherTransactionApplicationMap,
     voucherTransactionDataMap: VoucherTransactionDataMap,
     voucherTransactionDefaultDataMap: VoucherTransactionDataMap,
-    voucherTransactionIndex: number,
-    voucherTransactionNotIncludedMap: VoucherTransactionNotIncludedMap
+    voucherTransactionIndex: number
 }
 
 export default function NewBooking(): JSX.Element {
 
     const
+        currentDate: Date = DateUtils.toFloorByDay( new Date() ),
         [pageData, setPageData] = useState<NewBookingPageData>({
             accountData: {} as AccountData,
             bookingDefaultData: {} as BookingData,
@@ -156,7 +159,10 @@ export default function NewBooking(): JSX.Element {
             clientIndex: 0,
             clientIdActive: null as unknown as string,
             clientInfoMap: {},
-            date: DateUtils.toFloorByDay(DateUtils.addTime(new Date(), { day: 14 })),
+            date: DateUtils.addTime(
+                currentDate,
+                { day: 14 + ( DateUtils.isSunday( currentDate ) ? 1 : 0 ) }
+            ),
             employeeDataMap: {},
             employeeLeaveOfDayDataMap: {},
             formIndex: 0,
@@ -164,6 +170,7 @@ export default function NewBooking(): JSX.Element {
             jobServiceDataMap: {},
             loaded: false,
             maintenanceDataMap: {},
+            initialPrice: 0,
             packageDataMap: {},
             packageServiceDataMap: {},
             packageServiceKeyMap: {},
@@ -174,14 +181,15 @@ export default function NewBooking(): JSX.Element {
             updateMap: {},
             voucherDataMap: {},
             voucherDataOfDayMap: {},
+            voucherDiscount: 0,
             voucherPackageKeyMap: {},
             voucherPackageMap: {},
             voucherServiceMap: {},
             voucherServiceKeyMap: {},
+            voucherTransactionApplicationMap: {},
             voucherTransactionDataMap: {},
             voucherTransactionDefaultDataMap: {},
-            voucherTransactionIndex: 0,
-            voucherTransactionNotIncludedMap: {}
+            voucherTransactionIndex: 0
         }),
         accountId: string | undefined = useParams().accountId,
         bookingId: string | undefined = useParams().bookingId,
@@ -1111,11 +1119,9 @@ function Summary({ pageData, reloadPageData }: {
     reloadPageData: () => void
 }): JSX.Element {
 
-    const
-        { date, voucherDataOfDayMap, voucherTransactionDataMap } = pageData
-        ;
+    const { date, voucherTransactionDataMap } = pageData;
 
-    async function addVoucherTransaction(): Promise<void> {
+    async function addVoucher(): Promise<void> {
 
         const
             { voucherTransactionIndex } = pageData,
@@ -1144,41 +1150,10 @@ function Summary({ pageData, reloadPageData }: {
 
     }
 
-    function handleChangeVoucherCode(voucherTransactionId: string, code: string | null): void {
-
-        const voucherId: documentId | null = getVoucherIdByCode(code);
-        voucherTransactionDataMap[voucherTransactionId].voucher =
-            voucherId ? SpaRadiseFirestore.getDocumentReference(
-                voucherId, SpaRadiseEnv.VOUCHER_COLLECTION
-            ) : (null as unknown as DocumentReference)
-            ;
-
-    }
-
-    function getVoucherIdByCode(code: string | null): documentId | null {
-
-        if (!code) return null;
-        for (let voucherId in voucherDataOfDayMap) {
-
-            const voucherData = voucherDataOfDayMap[voucherId];
-            if (code === voucherData.code) return voucherId;
-
-        }
-        return null;
-
-    }
-
     async function nextPage(): Promise<void> {
 
         pageData.formIndex++;
         reloadPageData();
-
-    }
-
-    async function preprocessVoucherInput(code: string): Promise<string> {
-
-        code = code.trim();
-        return code;
 
     }
 
@@ -1199,54 +1174,10 @@ function Summary({ pageData, reloadPageData }: {
                 </section>
                 <h2 className="summary-label">Booking Summary</h2>
                 <section className="form-section booking-summary-section">
-                    <BookingReceipt pageData={pageData} showActualTime={ false } reloadPageData={ reloadPageData }/>
+                    <BookingReceipt pageData={pageData} showActualTime={ false } addVoucher={ addVoucher } deleteVoucher={ deleteVoucher } reloadPageData={ reloadPageData }/>
                 </section>
             </section>
-            <h2 className="voucher-input-label">Voucher/s:</h2>
             <section className="form-section booking-summary-section">
-                <div>
-                    <section className="booking-summary-tables">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Code</th>
-                                    <th>Discount</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {Object.keys(voucherTransactionDataMap).map((voucherTransactionId, index, array) => (
-                                    <tr key={voucherTransactionId}>
-                                        <td>{index + 1}</td>
-                                        <td>
-                                            <FormVoucherInput
-                                                className="voucher-input"
-                                                pageData={pageData}
-                                                preprocess={preprocessVoucherInput}
-                                                onChange={code => handleChangeVoucherCode(voucherTransactionId, code)}
-                                            />
-                                        </td>
-                                        <td>-</td>
-                                        <td>
-                                            {index === array.length - 1 ? (
-                                                <button className="add-voucher-btn" type="button" onClick={addVoucherTransaction}>
-                                                    Add
-                                                </button>
-                                            ) : (
-                                                <button className="delete-voucher-btn" type="button" onClick={() => deleteVoucher(voucherTransactionId)}>
-                                                    Delete
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-
-                    </section>
-
-                </div>
                 <section className="action-buttons">
                     <button className="back-btn" type="button" onClick={previousPage}>Back</button>
                     <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (4/4)</button>

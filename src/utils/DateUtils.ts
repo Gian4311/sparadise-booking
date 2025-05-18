@@ -119,6 +119,12 @@ export default class DateUtils {
 
     }
 
+    public static isSunday( date: Date ): boolean {
+
+        return ( date.getDay() === 0 );
+
+    }
+
     public static setTime( date: Date, timeData: TimeData ): Date {
 
         const

@@ -8,14 +8,18 @@ import {
     ServiceMaintenanceData,
     ServiceTransactionData,
     ServiceTransactionDataMap,
+    SpaRadisePageData,
+    VoucherData,
     VoucherDataMap,
-    VoucherTransactionDataMap,
-    VoucherTransactionNotIncludedMap
+    VoucherTransactionApplicationMap,
+    VoucherTransactionDataMap
 } from "../firebase/SpaRadiseTypes";
 import DateRange from "../utils/DateRange";
 import DateUtils from "../utils/DateUtils";
 import Discount from "../utils/Discount";
+import FormVoucherInput from "./FormVoucherInput";
 import { Fragment } from "react/jsx-runtime";
+import MoneyUtils from "../firebase/MoneyUtils";
 import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
 import StringUtils from "../utils/StringUtils";
@@ -23,11 +27,12 @@ import {
     useEffect,
     useState
 } from "react";
+import VoucherUtils from "../firebase/VoucherUtils";
 
 import "../styles/ClientBookingCreation2.css";
 import "../styles/BookingReceipt.scss";
 
-interface BookingReceiptPageData {
+interface BookingReceiptPageData extends SpaRadisePageData {
 
     bookingData: BookingData,
     clientDataMap: ClientDataMap,
@@ -47,108 +52,60 @@ interface BookingReceiptPageData {
         [ packageId: documentId ]: { [ serviceId: documentId ]: documentId }
     }
     serviceDataMap: ServiceDataMap,
+    initialPrice: number,
     voucherDataMap: VoucherDataMap,
+    voucherDiscount: number,
     voucherPackageKeyMap: {
         [ voucherId: documentId ]: { [ pakageId: documentId ]: documentId }
     },
     voucherServiceKeyMap: {
         [ voucherId: documentId ]: { [ serviceId: documentId ]: documentId }
     },
-    voucherTransactionDataMap: VoucherTransactionDataMap,
-    voucherTransactionNotIncludedMap: VoucherTransactionNotIncludedMap
+    voucherTransactionApplicationMap: VoucherTransactionApplicationMap,
+    voucherTransactionDataMap: VoucherTransactionDataMap
+
+}
+
+interface PriceRow {
+
+    clientId: documentId,
+    packageId?: documentId,
+    price: number,
+    serviceId?: documentId
 
 }
 
 const DATE_TIME_FORMAT = "h:mmAM-h:mmAM";
 
-export default function BookingReceipt( { pageData, showActualTime, reloadPageData }: {
+export default function BookingReceipt( {
+    pageData, showActualTime,
+    addVoucher, deleteVoucher, reloadPageData
+}: {
     pageData: BookingReceiptPageData,
     showActualTime: boolean,
+    addVoucher(): Promise< void > | void,
+    deleteVoucher( voucherTransactionId: documentId ): Promise< void > | void,
     reloadPageData(): void
 } ): JSX.Element {
 
     const
         {
             clientDataMap, clientInfoMap, maintenanceDataMap, packageDataMap, serviceDataMap,
-            voucherPackageKeyMap, voucherServiceKeyMap, voucherTransactionDataMap
-        } = pageData
+            voucherDataMap,
+            voucherPackageKeyMap, voucherServiceKeyMap, voucherTransactionApplicationMap,
+            voucherTransactionDataMap
+        } = pageData,
+        [ reload, setReload ] = useState< boolean >( false )
     ;
     let priceRowCount = 0;
 
-    // function loadComponentData(): void {
-
-    //     const { clientInfoMap } = componentData;
-    //     let totalPrice = 0;
-    //     for (let clientId in pageData.clientInfoMap) {
-
-    //         const { serviceTransactionDataMap } = pageData.clientInfoMap[clientId];
-    //         clientInfoMap[clientId] = {
-    //             packageMap: {},
-    //             singleServiceMap: {}
-    //         };
-    //         const { packageMap, singleServiceMap } = clientInfoMap[clientId];
-    //         for (let serviceTransactionId in serviceTransactionDataMap) {
-
-    //             const
-    //                 serviceTransactionData = serviceTransactionDataMap[serviceTransactionId],
-    //                 { canceled, free, service: { id: serviceId } } = serviceTransactionData,
-    //                 packageId = serviceTransactionData.package?.id,
-    //                 included: boolean = (!canceled || !free),
-    //                 price: number = free ? 0 : maintenanceDataMap[serviceId].price,
-    //                 serviceTransactionPriceData: ServiceTransactionPriceData = {
-    //                     serviceTransactionData, included, price
-    //                 }
-    //                 ;
-    //             if (packageId) {
-
-    //                 if (!(packageId in packageMap)) packageMap[packageId] = {};
-    //                 packageMap[packageId][serviceTransactionId] = serviceTransactionPriceData;
-
-    //             } else singleServiceMap[serviceTransactionId] = serviceTransactionPriceData;
-    //             totalPrice += price;
-
-    //         }
-
-    //     }
-    //     componentData.totalPrice = totalPrice;
-
-    // }
-
-    // loadComponentData();
+    
 
     async function loadComponentData(): Promise< void > {
 
         await loadServiceServiceTransactionData();
-        await loadDiscountData();
-        await loadVoucerData();
-        reloadPageData();
-
-    }
-
-    async function loadDiscountData(): Promise< void > {
-
-        for( let clientId in clientInfoMap ) {
-
-            const {
-                packageVoucherTransactionKeyMap, serviceTransactionDataMap, singleServiceVoucherTransactionKeyMap
-            } = clientInfoMap[ clientId ];
-            ObjectUtils.clear( packageVoucherTransactionKeyMap );
-            ObjectUtils.clear( singleServiceVoucherTransactionKeyMap );
-            for( let serviceTransactionId in serviceTransactionDataMap ) {
-
-                const
-                    serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ],
-                    { service: { id: serviceId } } = serviceTransactionData,
-                    packageId = serviceTransactionData.package?.id
-                ;
-                if( packageId )
-                    packageVoucherTransactionKeyMap[ packageId ] = undefined;
-                else
-                    singleServiceVoucherTransactionKeyMap[ serviceId ] = undefined;
-
-            }
-
-        }
+        await loadPriceData();
+        setReload( !reload );
 
     }
 
@@ -181,72 +138,252 @@ export default function BookingReceipt( { pageData, showActualTime, reloadPageDa
 
     }
 
-    async function loadVoucerData(): Promise< void > {
+    async function loadPriceData(): Promise< void > {
 
-        const
-            voucherTransactionNotIncludedMap: VoucherTransactionNotIncludedMap = {},
-            priceList = Object.keys( clientInfoMap ).reduce< {
-                clientId: documentId,
-                packageId?: documentId,
-                price: number,
-                serviceId?: documentId
-            }[] >( ( priceList, clientId ) => {
+        pageData.initialPrice = 0;
+        pageData.voucherDiscount = 0;
+        for( let clientId in clientInfoMap ) {
 
-                const { packageVoucherTransactionKeyMap, singleServiceVoucherTransactionKeyMap } = clientInfoMap[ clientId ];
-                priceList.push(...ArrayUtils.union(
-                    Object.keys( packageVoucherTransactionKeyMap ), Object.keys( singleServiceVoucherTransactionKeyMap )
-                ).map( documentId => ( {
-                    clientId,
-                    packageId: ( documentId in packageVoucherTransactionKeyMap ) ? documentId : undefined,
-                    price: maintenanceDataMap[ documentId ].price,
-                    serviceId: ( documentId in singleServiceVoucherTransactionKeyMap ) ? documentId : undefined
-                } ) ) );
-                return priceList;
+            const {
+                packageVoucherTransactionKeyMap, serviceTransactionDataMap,
+                singleServiceVoucherTransactionKeyMap
+            } = clientInfoMap[ clientId ];
+            ObjectUtils.clear( packageVoucherTransactionKeyMap );
+            ObjectUtils.clear( singleServiceVoucherTransactionKeyMap );
+            for( let serviceTransactionId in serviceTransactionDataMap ) {
 
-            } , [] ).sort( ( { price: price1 }, { price: price2 } ) => ( price1 - price2 ) )
-        ;
-        for( let voucherTransactionId in voucherTransactionDataMap )
-            voucherTransactionNotIncludedMap[ voucherTransactionId ] = true;
-        for( let { clientId, packageId, serviceId } of priceList ) {
-
-            for( let voucherTransactionId in voucherTransactionNotIncludedMap ) {
-
-                const {
-                    voucher: { id: voucherId }
-                } = voucherTransactionDataMap[ voucherTransactionId ];
-                if(
-                    packageId && voucherPackageKeyMap[ voucherId ]
-                    && packageId in voucherPackageKeyMap[ voucherId ]
-                ) {
-
-                    delete voucherTransactionNotIncludedMap[ voucherTransactionId ];
-                    clientInfoMap[ clientId ].packageVoucherTransactionKeyMap[ packageId ] =
-                        voucherTransactionId
-                    ;
-                    break;
-
-                } else if(
-                    serviceId && voucherServiceKeyMap[ voucherId ]
-                    && serviceId in voucherServiceKeyMap[ voucherId ]
-                ) {
-
-                    delete voucherTransactionNotIncludedMap[ voucherTransactionId ];
-                    clientInfoMap[ clientId ].singleServiceVoucherTransactionKeyMap[ serviceId ] =
-                        voucherTransactionId
-                    ;
-                    break;
-
-                }
+                const
+                    serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ],
+                    { service: { id: serviceId } } = serviceTransactionData,
+                    packageId = serviceTransactionData.package?.id
+                ;
+                if( packageId )
+                    packageVoucherTransactionKeyMap[ packageId ] = undefined;
+                else
+                    singleServiceVoucherTransactionKeyMap[ serviceId ] = undefined;
 
             }
 
         }
-        ObjectUtils.clear( pageData.voucherTransactionNotIncludedMap );
-        ObjectUtils.fill( pageData.voucherTransactionNotIncludedMap, voucherTransactionNotIncludedMap );
+
+        const
+            priceTable: PriceRow[] = Object.keys( clientInfoMap ).reduce< PriceRow[] >(
+                ( priceList, clientId ) => {
+
+                    const {
+                        packageVoucherTransactionKeyMap, singleServiceVoucherTransactionKeyMap
+                    } = clientInfoMap[ clientId ];
+                    priceList.push(...ArrayUtils.union(
+                        Object.keys( packageVoucherTransactionKeyMap ),
+                        Object.keys( singleServiceVoucherTransactionKeyMap )
+                    ).map( documentId => ( {
+                        clientId,
+                        packageId:
+                            ( documentId in packageVoucherTransactionKeyMap ) ? documentId
+                            : undefined
+                        ,
+                        price: maintenanceDataMap[ documentId ].price,
+                        serviceId:
+                            ( documentId in packageVoucherTransactionKeyMap ) ? undefined
+                            : ( documentId in singleServiceVoucherTransactionKeyMap ) ? documentId
+                            : undefined
+                    } ) ) );
+                    return priceList;
+
+                } , []
+            ),
+            voucherTransactionPriceTableMap: {
+                [ voucherTransactionId: documentId ]: ( PriceRow | undefined )[]
+            } = {}
+        ;
+
+        for( let { price } of priceTable ) pageData.initialPrice += price;
+
+        for( let voucherTransactionId in voucherTransactionDataMap ) {
+
+            const voucherId = voucherTransactionDataMap[ voucherTransactionId ].voucher?.id;
+            if( !voucherId ) continue;
+            voucherTransactionPriceTableMap[ voucherTransactionId ] = [];
+            const
+                packageKeyMap = voucherPackageKeyMap[ voucherId ],
+                serviceKeyMap = voucherServiceKeyMap[ voucherId ],
+                voucherTransactionPriceTable =
+                    voucherTransactionPriceTableMap[ voucherTransactionId ]
+            ;
+            for( let priceRow of priceTable ) {
+
+                const { packageId, serviceId } = priceRow;
+                if(
+                    ( packageId && packageKeyMap && packageId in packageKeyMap )
+                    || ( serviceId && serviceKeyMap && serviceId in serviceKeyMap )
+                ) voucherTransactionPriceTable.push( priceRow );
+
+            }
+            const { length } = voucherTransactionPriceTable;
+            if( !length ) {
+
+                delete voucherTransactionPriceTableMap[ voucherTransactionId ];
+                continue;
+
+            }
+            voucherTransactionPriceTable.push( undefined );
+
+        }
+
+        const voucherTransactionIdList: documentId[] = Object.keys( voucherTransactionPriceTableMap );
+        let maxSavings: number = 0, maxPriceRowAssignedList: number[] = [];
+
+        function checkPriceRowAssignedList( priceRowAssignedList: number[] ): void {
+
+            const
+                endIndex: number = priceRowAssignedList.length - 1,
+                priceRow = getPriceRow( endIndex, priceRowAssignedList ),
+                assigned: boolean = isAssigned( priceRow, endIndex, priceRowAssignedList )
+            ;
+            if( assigned ) return;
+            if( priceRowAssignedList.length < voucherTransactionIdList.length )
+                for(
+                    let priceRowIndex: number = 0;
+                    priceRowIndex < getPriceTableLength( endIndex );
+                    priceRowIndex++
+                ) checkPriceRowAssignedList( [ ...priceRowAssignedList, priceRowIndex ] );
+            else
+                checkSavings( priceRowAssignedList );
+
+        }
+
+        function checkSavings( priceRowAssignedList: number[] ) {
+
+            let savings: number = 0;
+            for(
+                let voucherTransactionIndex: number = 0;
+                voucherTransactionIndex < priceRowAssignedList.length;
+                voucherTransactionIndex++
+            ) {
+
+                const priceRow: PriceRow | undefined =
+                    getPriceRow( voucherTransactionIndex, priceRowAssignedList )
+                ;
+                if( !priceRow ) continue;
+                const
+                    { price } = priceRow,
+                    discount: Discount = getDiscount( voucherTransactionIndex )
+                ;
+                savings = MoneyUtils.add( savings, discount.getDiscount( price ) );
+
+            }
+            if( savings > maxSavings ) {
+
+                maxSavings = savings;
+                maxPriceRowAssignedList = priceRowAssignedList;
+
+            }
+
+        }
+
+        function getDiscount( voucherTransactionIndex: number ): Discount {
+
+            const
+                voucherTransactionId: documentId = getVoucherTransactionId( voucherTransactionIndex ),
+                voucherId: documentId = voucherTransactionDataMap[ voucherTransactionId ].voucher.id
+            ;
+            return VoucherUtils.getDiscount( voucherDataMap[ voucherId ] )
+
+        }
+
+        function getPriceRow(
+            voucherTransactionIndex: number, priceRowAssignedList: number[]
+        ): PriceRow | undefined {
+
+            const
+                voucherTransactionId: documentId = getVoucherTransactionId( voucherTransactionIndex ),
+                priceTable = voucherTransactionPriceTableMap[ voucherTransactionId ],
+                priceRowIndex: number = priceRowAssignedList[ voucherTransactionIndex ],
+                priceRow = priceTable[ priceRowIndex ]
+            ;
+            return priceRow;
+
+        }
+
+        function getPriceTableLength( voucherTransactionIndex: number ): number {
+
+            const
+                voucherTransactionId: documentId = getVoucherTransactionId( voucherTransactionIndex ),
+                priceTable = voucherTransactionPriceTableMap[ voucherTransactionId ]
+            ;
+            return priceTable.length;
+
+        }
+
+        function getVoucherTransactionId( voucherTransactionIndex: number ): string {
+
+            return voucherTransactionIdList[ voucherTransactionIndex ];
+
+        }
+
+        function isAssigned(
+            priceRow: PriceRow | undefined, endIndex: number, priceRowAssignedList: number[]
+        ): boolean {
+
+            if( !priceRow ) return false;
+            let isAssigned: boolean = false;
+            for(
+                let voucherTransactionIndex: number = endIndex - 1;
+                voucherTransactionIndex >= 0 && !isAssigned;
+                voucherTransactionIndex--
+            ) {
+
+                const priceRowCompare = getPriceRow( voucherTransactionIndex, priceRowAssignedList );
+                if( !priceRowCompare ) continue;
+                isAssigned = ( priceRow === priceRowCompare );
+
+            }
+            return isAssigned;
+
+        }
+
+        ObjectUtils.clear( voucherTransactionApplicationMap );
+        if( voucherTransactionIdList.length >= 1 ) for(
+            let priceRowIndex: number = 0;
+            priceRowIndex < getPriceTableLength( 0 );
+            priceRowIndex++
+        ) checkPriceRowAssignedList( [ priceRowIndex ] );
+
+        for(
+            let voucherTransactionIndex: number = 0;
+            voucherTransactionIndex < maxPriceRowAssignedList.length;
+            voucherTransactionIndex++
+        ) {
+
+            const priceRow: PriceRow | undefined = getPriceRow(
+                voucherTransactionIndex, maxPriceRowAssignedList
+            );
+            if( !priceRow ) continue;
+            const
+                { clientId, packageId, serviceId } = priceRow,
+                {
+                    packageVoucherTransactionKeyMap, singleServiceVoucherTransactionKeyMap
+                } = clientInfoMap[ clientId ],
+                voucherTransactionId: documentId = getVoucherTransactionId( voucherTransactionIndex )
+            ;
+            if( packageId && packageId in packageVoucherTransactionKeyMap ) {
+
+                packageVoucherTransactionKeyMap[ packageId ] = voucherTransactionId;
+                voucherTransactionApplicationMap[ voucherTransactionId ] = packageId;
+
+            } else if( serviceId && serviceId in singleServiceVoucherTransactionKeyMap ) {
+
+                singleServiceVoucherTransactionKeyMap[ serviceId ] = voucherTransactionId;
+                voucherTransactionApplicationMap[ voucherTransactionId ] = serviceId;
+
+            }
+
+        }
+        pageData.voucherDiscount = maxSavings;
 
     }
 
-    useEffect( () => { loadComponentData(); }, [] );
+    useEffect( () => { loadComponentData(); }, [ pageData ] );
 
     return <>
         <section className="booking-summary-tables">
@@ -273,7 +410,6 @@ export default function BookingReceipt( { pageData, showActualTime, reloadPageDa
                             const
                                 {
                                     packageServiceTransactionDataMap,
-                                    packageVoucherTransactionKeyMap,
                                     serviceServiceTransactionKeyMap,
                                     serviceTransactionDataMap,
                                     singleServiceVoucherTransactionKeyMap
@@ -289,7 +425,8 @@ export default function BookingReceipt( { pageData, showActualTime, reloadPageDa
                                         ( serviceTransactionId1, serviceTransactionId2 ) =>
                                             compareServiceTransactionData(
                                                 serviceTransactionDataMap[ serviceTransactionId1 ],
-                                                serviceTransactionDataMap[ serviceTransactionId2 ]
+                                                serviceTransactionDataMap[ serviceTransactionId2 ],
+                                                serviceDataMap
                                             )
                                     ).reduce< documentId[] >(
                                         ( documentIdList, serviceTransactionId ) => {
@@ -312,6 +449,7 @@ export default function BookingReceipt( { pageData, showActualTime, reloadPageDa
                                         priceRowCount++;
                                         if( documentId in singleServiceVoucherTransactionKeyMap )
                                             return <SingleServiceRow
+                                                key={ documentId }
                                                 price={ maintenanceDataMap[ documentId ].price }
                                                 priceRowCount={ priceRowCount }
                                                 serviceName={ serviceDataMap[ documentId ].name }
@@ -335,7 +473,8 @@ export default function BookingReceipt( { pageData, showActualTime, reloadPageDa
                                                         ( serviceTransactionId1, serviceTransactionId2 ) =>
                                                             compareServiceTransactionData(
                                                                 serviceTransactionDataMap[ serviceTransactionId1 ],
-                                                                serviceTransactionDataMap[ serviceTransactionId2 ]
+                                                                serviceTransactionDataMap[ serviceTransactionId2 ],
+                                                                serviceDataMap
                                                             )
                                                     ).map( serviceTransactionId => {
 
@@ -364,18 +503,102 @@ export default function BookingReceipt( { pageData, showActualTime, reloadPageDa
                         } )
                 }</tbody>
                 <tfoot>
+                    <tr><td colSpan={ showActualTime ? 5 : 4 }><hr/></td></tr>
+                    <tr className="initial-price">
+                        <td></td>
+                        <td colSpan={ showActualTime ? 3 : 2 }>Initial Price</td>
+                        <td>₱{ NumberUtils.toString( pageData.initialPrice, "n.00" ) }</td>
+                    </tr>
                     <tr className="voucher-discount">
                         <td></td>
                         <td colSpan={ showActualTime ? 3 : 2 }>Voucher Discount</td>
-                        <td>-₱0</td>
+                        <td>-₱{ NumberUtils.toString( pageData.voucherDiscount, "n.00" ) }</td>
                     </tr>
                     <tr className="client-total">
                         <td></td>
-                        <td colSpan={ showActualTime ? 3 : 2 }>Total After Discount</td>
-                        <td>₱0</td>
+                        <td colSpan={ showActualTime ? 3 : 2 }>Total Price</td>
+                        <td>₱{ NumberUtils.toString( MoneyUtils.add(
+                            pageData.initialPrice,
+                            -pageData.voucherDiscount
+                        ), "n.00" ) }</td>
                     </tr>
                 </tfoot>
             </table>
+        </section>
+        <h2 className="voucher-input-label">Voucher/s:</h2>
+        <section className="form-section booking-summary-section">
+            <div>
+                <section className="booking-summary-tables">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Applied to</th>
+                                <th>Discount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {Object.keys(voucherTransactionDataMap).map((voucherTransactionId, index) => {
+                                
+                                const
+                                    { packageDataMap, serviceDataMap, voucherTransactionApplicationMap } = pageData,
+                                    documentId = voucherTransactionApplicationMap[ voucherTransactionId ],
+                                    voucherId: string | undefined =
+                                        documentId ? voucherTransactionDataMap[ voucherTransactionId ].voucher?.id
+                                        : undefined
+                                ;
+                                return <tr key={voucherTransactionId}>
+                                    <td>{index + 1}</td>
+                                    <td>
+                                        <FormVoucherInput
+                                            className="voucher-input"
+                                            documentData={ voucherTransactionDataMap[ voucherTransactionId ] }
+                                            documentId={ voucherTransactionId }
+                                            keyName="voucher"
+                                            pageData={pageData}
+                                            voucherDataMap={ pageData.voucherDataMap }
+                                            onChange={ () => reloadPageData() }
+                                        />
+                                    </td>
+                                    <td>{
+                                        ( !documentId || !voucherId ) ? "-"
+                                        : voucherDataMap[ voucherId ].name
+                                    }</td>
+                                    <td>{
+                                        !documentId ? "-"
+                                        : (
+                                            ( documentId in packageDataMap ) ? packageDataMap
+                                            : serviceDataMap
+                                        )[ documentId ].name
+                                    }</td>
+                                    <td>{
+                                        ( !documentId || !voucherId ) ? "-"
+                                        : "₱" + NumberUtils.toString(
+                                            VoucherUtils.getDiscount( voucherDataMap[ voucherId ] ).getDiscount(
+                                                maintenanceDataMap[ documentId ].price
+                                            ),
+                                            "n.00"
+                                        )
+                                    }</td>
+                                    <td><button className="delete-voucher-btn" type="button" onClick={() => deleteVoucher(voucherTransactionId)}>
+                                        Delete
+                                    </button></td>
+                                </tr>;
+
+                            })}
+                            <tr>
+                                <td colSpan={ 4 }></td>
+                                <td><button className="add-voucher-btn" type="button" onClick={addVoucher}>
+                                    Add
+                                </button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+            </div>
         </section>
     </>;
 
@@ -397,7 +620,9 @@ function PackageRow( { packageName, price, priceRowCount, showActualTime }: {
 
 }
 
-function SingleServiceRow( { price, priceRowCount, serviceName, serviceTransactionData, showActualTime }: {
+function SingleServiceRow( {
+    price, priceRowCount, serviceName, serviceTransactionData, showActualTime
+}: {
     price?: number,
     priceRowCount?: number,
     serviceName: string,
@@ -431,26 +656,30 @@ function SingleServiceRow( { price, priceRowCount, serviceName, serviceTransacti
 }
 
 function compareServiceTransactionData(
-    serviceTransactionData1: ServiceTransactionData, serviceTransactionData2: ServiceTransactionData
+    serviceTransactionData1: ServiceTransactionData, serviceTransactionData2: ServiceTransactionData,
+    serviceDataMap: ServiceDataMap
 ): number {
 
     const
         {
+            service: { id: serviceId1 },
             bookingDateTimeEnd: bookingDateTimeEnd1,
             bookingDateTimeStart: bookingDateTimeStart1
         } = serviceTransactionData1,
         {
+            service: { id: serviceId2 },
             bookingDateTimeEnd: bookingDateTimeEnd2,
             bookingDateTimeStart: bookingDateTimeStart2
         } = serviceTransactionData2,
         hasSameStart: boolean = DateUtils.areSameByMinute(
             bookingDateTimeStart1, bookingDateTimeStart2
+        ),
+        hasSameEnd: boolean = DateUtils.areSameByMinute(
+            bookingDateTimeEnd1, bookingDateTimeEnd2
         )
     ;
-    return hasSameStart ? DateUtils.compare(
-        bookingDateTimeEnd1, bookingDateTimeEnd2
-    ) : DateUtils.compare(
-        bookingDateTimeStart1, bookingDateTimeStart2
-    );
+    if( !hasSameStart ) return DateUtils.compare( bookingDateTimeStart1, bookingDateTimeStart2 );
+    if( !hasSameEnd ) return DateUtils.compare( bookingDateTimeEnd1, bookingDateTimeEnd2 );
+    return StringUtils.compare( serviceDataMap[ serviceId1 ].name, serviceDataMap[ serviceId2 ].name );
 
 }

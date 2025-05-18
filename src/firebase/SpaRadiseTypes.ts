@@ -313,6 +313,12 @@ export interface VoucherServiceDataMap extends SpaRadiseDataMap< VoucherServiceD
 
 }
 
+export interface VoucherTransactionApplicationMap {
+
+    [ voucherTransactionId: documentId ]: documentId | undefined
+
+}
+
 export interface VoucherTransactionData extends SpaRadiseDocumentData {
 
     voucher: DocumentReference,
@@ -324,11 +330,5 @@ export interface VoucherTransactionData extends SpaRadiseDocumentData {
 export interface VoucherTransactionDataMap extends SpaRadiseDataMap< VoucherTransactionData > {
 
     [ voucherTransactioneId: string ]: VoucherTransactionData
-
-}
-
-export interface VoucherTransactionNotIncludedMap {
-
-    [ voucherTransactionId: documentId ]: boolean
 
 }

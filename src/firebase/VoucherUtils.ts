@@ -15,6 +15,7 @@ import {
     WithFieldValue
 } from "firebase/firestore/lite";
 import DateUtils from "../utils/DateUtils";
+import Discount from "../utils/Discount";
 import {
     VoucherData,
     VoucherDataMap
@@ -102,6 +103,19 @@ export default class VoucherUtils {
 
         }
 
+
+    }
+
+    public static getDiscount( voucherData: VoucherData ): Discount {
+
+        const
+            { amount, percentage } = voucherData,
+            isAmount: boolean = ( amount !== null )
+        ;
+        return new Discount(
+            ( isAmount ? amount : percentage ) ?? 0,
+            isAmount ? "amount" : "percentage"
+        )
 
     }
 
