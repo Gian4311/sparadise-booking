@@ -126,7 +126,7 @@ export default function ServiceManagement(): JSX.Element {
 
     async function cancelServiceForm(): Promise<void> {
 
-        window.open(`/management/servicesAndPackages/menu`, `_self`);
+        navigate(`/management/servicesAndPackages/menu`);
 
     }
 
@@ -154,6 +154,8 @@ export default function ServiceManagement(): JSX.Element {
         if (!isNewMode || !documentId) return;
         await checkFormValidity();
 
+        pageData.loaded = false;
+        reloadPageData();
         const documentReference: DocumentReference = await ServiceUtils.createService(
             pageData.serviceData
         );
@@ -161,12 +163,7 @@ export default function ServiceManagement(): JSX.Element {
         pageData.serviceDocumentReference = documentReference;
         await updateServiceMaintenanceList();
         delete pageData.updateMap["new"];
-
-        setQuickPopupMessage("Successfully Created");
-
-        setTimeout(() => {
-            window.open(`/management/services/${documentReference.id}`, `_self`);
-        }, 2000);
+        navigate(`/management/services/${documentReference.id}`);
     }
 
 
@@ -209,8 +206,7 @@ export default function ServiceManagement(): JSX.Element {
             await deleteServiceMaintenance(serviceMaintenanceId);
         await updateServiceMaintenanceList();
         await ServiceUtils.deleteService(documentId);
-        alert(`Deleted!`); // note: remove later
-        window.open(`/management/services/menu`, `_self`);
+        navigate(`/management/services/menu`);
 
     }
 

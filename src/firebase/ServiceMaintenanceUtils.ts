@@ -142,7 +142,6 @@ export default class ServiceMaintenanceUtils {
         return serviceMaintenanceDataMap;
 
     }
-    
 
     public static async getServiceMaintenanceDataMapByService(
         by: documentId | DocumentReference | DocumentSnapshot

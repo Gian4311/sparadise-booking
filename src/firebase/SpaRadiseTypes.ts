@@ -36,6 +36,20 @@ export interface BookingDataMap extends SpaRadiseDataMap< BookingData > {
 
 }
 
+export interface CapacityData extends SpaRadiseDocumentData {
+
+    roomCount: number,
+    chairCount: number,
+    datetime: Date
+
+}
+
+export interface CapacityDataMap extends SpaRadiseDataMap< CapacityData > {
+
+    [ capacityId: string ]: CapacityData
+
+}
+
 export interface ClientData extends SpaRadiseDocumentData {
 
     booking: DocumentReference,

@@ -132,7 +132,7 @@ export default function JobManagement(): JSX.Element {
         await updateJobServiceList();
         delete pageData.updateMap["new"];
         alert(`Created!`); // note: remove later
-        window.open(`/management/jobs/${documentReference.id}`, `_self`);
+        navigate(`/management/jobs/${documentReference.id}`);
 
     }
 
@@ -170,7 +170,7 @@ export default function JobManagement(): JSX.Element {
         if (!isEditMode || !documentId) return;
         await JobUtils.deleteJob(documentId, pageData.jobServiceDataMap);
         alert(`Deleted!`); // note: remove later
-        window.open(`/management/jobs/menu`, `_self`);
+        navigate(`/management/jobs/menu`);
 
     }
 

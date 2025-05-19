@@ -4,6 +4,7 @@ export default class SpaRadiseEnv {
 
     public static ACCOUNT_COLLECTION = "accounts";
     public static BOOKING_COLLECTION = "bookings";
+    public static CAPACITY_COLLECTION = "capacities";
     public static CLIENT_COLLECTION = "clients";
     public static CONTACT_NUMBER_REGEX =
         `(^09[0-9]{9}$)`

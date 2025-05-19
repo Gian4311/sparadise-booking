@@ -130,9 +130,9 @@ export default function EmployeeSidebar( { pageData, reloadPageData }: {
                 </li>
                 <li>
                     <NavLink 
-                        to="/management/roomsAndChairs" 
+                        to="/management/capacities/menu" 
                         className={({ isActive }) =>
-                            window.location.pathname.startsWith("/management/roomsAndChairs") ? "active" : ""
+                            window.location.pathname.startsWith("/management/capacities/menu") ? "active" : ""
                         }
                     >
                         Rooms & Chairs

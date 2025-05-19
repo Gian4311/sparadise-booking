@@ -1,5 +1,6 @@
 import NewBooking from "./pages/NewBooking_v0";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import CapacityMenu from "./pages/CapacityMenu";
 import DevMenu from "./pages/DevMenu";
 import EmployeeBookingManagement from "./pages/EmployeeBookingManagement";
 import EmployeeBookingMenu from "./pages/EmployeeBookingMenu";
@@ -31,6 +32,7 @@ import RoomMaintenance from "./pages/RoomMaintenance";
 import NewHomepage from "./pages/NewClientIndex";
 import RoomMaintenanceManagement from "./pages/RoomManagement";
 import { onAuthStateChanged } from "firebase/auth";
+import CapacityManagement from "./pages/CapacityManagement";
 function App() {
 
     const [ isManager, setIsManager ] = useState< boolean >();
@@ -79,6 +81,9 @@ function App() {
                         <Route path="management/clients" element={ <ClientManagement/> }/>
                         <Route path="management/clients/menu" element={<ClientMenu/>}/>
                         <Route path="management/roomsAndChairs" element={ <RoomMaintenance/> }/>
+                        <Route path="management/capacities/menu" element={ <CapacityMenu/> }/>
+                        <Route path="management/capacities/:id" element={ <CapacityManagement/> }/>
+                        {/* <Route path="management/roomsAndChairs" element={ <RoomMaintenance/> }/> */}
                     </> : <Route path="management/*" element={ <Unauthorized/> }/>
                 }
             </Routes>
