@@ -130,6 +130,16 @@ export default function EmployeeSidebar( { pageData, reloadPageData }: {
                 </li>
                 <li>
                     <NavLink 
+                        to="/management/employeeLeaves/menu" 
+                        className={({ isActive }) =>
+                            window.location.pathname.startsWith("/management/employeeLeaves") ? "active" : ""
+                        }
+                    >
+                        Leaves
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink 
                         to="/management/capacities/menu" 
                         className={({ isActive }) =>
                             window.location.pathname.startsWith("/management/capacities/menu") ? "active" : ""

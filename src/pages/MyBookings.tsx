@@ -16,6 +16,7 @@ import ClientUtils from "../firebase/ClientUtils";
 import ServiceTransactionUtils from "../firebase/ServiceTransactionUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
 import DateUtils from "../utils/DateUtils";
+import ClientNavBar from "../components/ClientNavBar";
 
 type sortMode = "ascending" | "descending";
 
@@ -154,7 +155,7 @@ export default function MyBookings(): JSX.Element {
     useEffect(() => { loadPageData(); }, [ pageData.accountId ]);
 
     return <>
-        <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
+        <ClientNavBar pageData={ pageData } reloadPageData={ reloadPageData }/>
         <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
         <div>
             
