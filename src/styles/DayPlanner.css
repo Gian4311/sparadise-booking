@@ -74,8 +74,9 @@ table.dayPlanner td.active {
   color: white;
 }
 table.dayPlanner td.finished {
-  background: #264653;
+  background: #41005f;
   color: white;
+  padding: 10px;
 }
 table.dayPlanner td.canceled {
   background: #e63946;
@@ -89,7 +90,8 @@ table.dayPlanner td.move {
   height: 40px;
 }
 table.dayPlanner td.booking-selected {
-  color: #EDE848;
+  color: white;
+  background-color: #95559b;
 }
 
 table.dayPlanner td.reserved {
