@@ -619,11 +619,13 @@ export default function BookingReceipt( {
                         <td colSpan={ showActualTime ? 3 : 2 }>Vouchers</td>
                         <td>-₱{ NumberUtils.toString( pageData.voucherDiscount, "n.00" ) }</td>
                     </tr>
-                    <tr className="voucher-discount">
-                        <td></td>
-                        <td colSpan={ showActualTime ? 3 : 2 }>Discounts</td>
-                        <td>-₱{ NumberUtils.toString( pageData.discountTotal, "n.00" ) }</td>
-                    </tr>
+                    {
+                        bookingReceiptMode !== "newBooking" ? <tr className="voucher-discount">
+                            <td></td>
+                            <td colSpan={ showActualTime ? 3 : 2 }>Discounts</td>
+                            <td>-₱{ NumberUtils.toString( pageData.discountTotal, "n.00" ) }</td>
+                        </tr> : undefined
+                    }
                     <tr className="client-total">
                         <td></td>
                         <td colSpan={ showActualTime ? 3 : 2 }>Total Price</td>
