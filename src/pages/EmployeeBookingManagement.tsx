@@ -882,8 +882,8 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
     return (
         <main className="employee-booking-management-main-content">
             <section className="client-input">
-                <label className="client-selection">Select Client:</label>
-                <div className="clickable-bars" id="client-selection">
+                <label className="client-selection-booking">Select Client:</label>
+                <div className="clickable-bars" id="client-selection-booking">
                     {Object.keys(pageData.clientDataMap).map((clientId) => (
                         <div
                             className={`client-item ${clientId === pageData.clientIdActive ? 'active' : ''}`}
@@ -1014,6 +1014,7 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
                                         <div className="form-group">
                                             <label>Notes</label>
                                             <FormTextArea
+                                                className="booking-notes"
                                                 documentData={serviceTransactionData}
                                                 documentDefaultData={serviceTransactionDefaultData}
                                                 documentId={serviceTransactionId}

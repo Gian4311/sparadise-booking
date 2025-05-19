@@ -1,7 +1,7 @@
 /* Layout container */
 
 /* Client selection */
-.client-selection {
+.client-selection-booking {
   font-weight: bold;
   display: block;
   margin-bottom: 0.5rem;
@@ -195,13 +195,13 @@
 }
 
 /* Form components that should be styled by external component libraries can inherit styling here if needed */
-select,
-textarea,
-input {
+.client-selection-notes,
+.booking-notes,
+.cancelled.na, .cancelled.start {
   border-radius: 10px;
   padding: 0.4rem;
   border: 1px solid #ccc;
-  width: 100%;
+  width: 20%;
   font-size: 1.3rem;
 }
 

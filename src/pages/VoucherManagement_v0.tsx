@@ -483,7 +483,7 @@ export default function VoucherManagement(): JSX.Element {
     useEffect(() => { loadPageData() }, []);
 
     return <>
-        <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
+        <EmployeeSidebar pageData={pageData} reloadPageData={reloadPageData} />
         <form onSubmit={submit}>
             <div className="service-main-content">
                 <label htmlFor="service-main-content" className="service-management-location"> Vouchers - {pageData.voucherData.name}</label>
@@ -587,35 +587,14 @@ export default function VoucherManagement(): JSX.Element {
                             </div>
                         </div>
                     </div>
-                    {
-                        Object.keys(pageData.packageDataMap).map((packageId, key) => {
 
-                            const
-                                package_ = pageData.packageDataMap[packageId],
-                                voucherPackageId: string | number = pageData.voucherPackageIncludedMap[packageId]
-                                ;
-                            return <div key={key}>
-                                {package_.name}
-                                {
-                                    (
-                                        !(packageId in pageData.voucherPackageIncludedMap)
-                                        || (voucherPackageId in pageData.voucherPackageToDeleteMap)
-                                    ) ? (
-                                        <button type="button" onClick={() => addVoucherPackage(packageId)}>Add</button>
-                                    ) : (
-                                        <button type="button" onClick={() => deleteVoucherPackage(packageId)}>Remove</button>
-                                    )
-                                }
+                    <div className="service-form-actions">
+                        <button className="service-delete-btn" type="button" onClick={deleteVoucher}>Delete</button>
+                        <button className="service-cancel-btn" type="button">Cancel</button>
+                        <button className="service-save-btn" type="submit">Submit</button>
+                    </div>
 
-                            </div>;
 
-                        })
-                    }
-
-                    <button type="button" onClick={() => console.log(pageData)}>Log page data</button>
-                    <button className="service-delete-btn" type="button" onClick={deleteVoucher}>Delete</button>
-                    <button className="service-cancel-btn" type="button">Cancel</button>
-                    <button className="service-save-btn" type="submit">Submit</button>
                 </div>
             </div>
         </form>
