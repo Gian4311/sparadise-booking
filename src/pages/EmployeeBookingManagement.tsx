@@ -641,15 +641,15 @@ function EditServiceTransactions( { bookingId, pageData, reloadPageData }: {
                     {
                         ( status === "canceled" ) ? `CANCELED`
                         : ( status === "finished" ) ? `FINISHED`
-                        : <FormMarkButton< boolean >
+                        : <FormMarkButton< serviceTransactionStatus >
                             confirmMessage="Would you like to cancel this service transaction?"
                             documentData={ serviceTransactionData }
                             documentDefaultData={ serviceTransactionDefaultData }
                             documentId={ serviceTransactionId }
-                            keyName="canceled"
+                            keyName="status"
                             noText="Back"
                             pageData={ pageData }
-                            value={ true }
+                            value={ "canceled" }
                             reloadPageData={ reloadPageData }
                             yesText="Yes, Cancel This"
                         >CANCEL</FormMarkButton>
