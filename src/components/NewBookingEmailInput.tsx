@@ -6,28 +6,30 @@ import {
 } from "react";
 import ObjectUtils from "../utils/ObjectUtils";
 import {
+    AccountData,
     SpaRadiseDocumentData,
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
 
 type main = string;
 
+interface NewBookingEmailInputPageData extends SpaRadisePageData {
+
+    customerInOrder?: AccountData
+
+}
+
 const EMAIL_REGEX = "/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/";
 
-export default function FormEmailInput(
+export default function NewBookingEmailInput(
     {
-        className, documentData, documentDefaultData, documentId, keyName,
-        name = keyName.toString(),
+        className, name,
         pageData, placeholder, readOnly, required,
         onChange, validate
     }: {
         className?: string,
-        documentData: SpaRadiseDocumentData,
-        documentDefaultData?: SpaRadiseDocumentData,
-        documentId?: string,
-        keyName: string,
         name?: string,
-        pageData: SpaRadisePageData,
+        pageData: NewBookingEmailInputPageData,
         placeholder?: string,
         readOnly?: boolean,
         required?: boolean,
@@ -46,11 +48,12 @@ export default function FormEmailInput(
         const
             { selectionStart, value: unparsedValue } = event.target,
             parsedValue: main | null = await parseValue( unparsedValue ),
-            old = documentData[ keyName ] as main | null
+            old = null
         ;
         if( validate ) if( !( await validate( parsedValue, unparsedValue, old ) ) ) return;
         setUnparsedValue( unparsedValue );
-        documentData[ keyName ] = parsedValue;
+        if( pageData.customerInOrder && parsedValue )
+            pageData.customerInOrder.email = parsedValue;
         await handleDefault( parsedValue );
         if( onChange ) await onChange( parsedValue, unparsedValue, old );
         if( ref.current ) {
@@ -64,23 +67,23 @@ export default function FormEmailInput(
 
     async function handleDefault( parsedValue: main | null ): Promise< void > {
 
-        if( !documentDefaultData || !documentId ) return;
-        const
-            { updateMap } = pageData,
-            isDefault: boolean = ( documentDefaultData[ keyName ] === parsedValue ),
-            hasUpdateRecord: boolean = ( documentId in updateMap )
-        ;
-        if( !isDefault ) {
+        // if( !documentDefaultData || !documentId ) return;
+        // const
+        //     { updateMap } = pageData,
+        //     isDefault: boolean = ( documentDefaultData[ keyName ] === parsedValue ),
+        //     hasUpdateRecord: boolean = ( documentId in updateMap )
+        // ;
+        // if( !isDefault ) {
 
-            if( !hasUpdateRecord ) updateMap[ documentId ] = {};
-            updateMap[ documentId ][ keyName ] = true;
+        //     if( !hasUpdateRecord ) updateMap[ documentId ] = {};
+        //     updateMap[ documentId ][ keyName ] = true;
 
-        } else if( hasUpdateRecord ) {
+        // } else if( hasUpdateRecord ) {
 
-            delete updateMap[ documentId ][ keyName ];
-            if( !ObjectUtils.hasKeys( updateMap[ documentId ] ) ) delete updateMap[ documentId ];
+        //     delete updateMap[ documentId ][ keyName ];
+        //     if( !ObjectUtils.hasKeys( updateMap[ documentId ] ) ) delete updateMap[ documentId ];
 
-        }
+        // }
 
     }
 
@@ -98,15 +101,9 @@ export default function FormEmailInput(
 
     useEffect( () => { ( async() => {
 
-        if( !documentData ) return;
-        if( documentData[ keyName ] === undefined )
-            throw new Error( `Key name "${ keyName }" does not exist.` );
-        if( documentData[ keyName ] ) {
-
-            const parsedValue: main = documentData[ keyName ] as main;
-            setUnparsedValue( await unparseValue( parsedValue ) );
-
-        }
+        if( !pageData.customerInOrder ) return;
+        const parsedValue: main = pageData.customerInOrder.email as main;
+        setUnparsedValue( await unparseValue( parsedValue ) );
 
     } )() }, [ pageData ] );
 

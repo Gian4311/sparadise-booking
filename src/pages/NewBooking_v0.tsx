@@ -82,6 +82,7 @@ import NavBar from "../components/ClientNavBar";
 import LoadingScreen from "../components/LoadingScreen";
 import "../styles/NewBooking_v0.css"
 import DateRange from "../utils/DateRange";
+import NewBookingEmailInput from "../components/NewBookingEmailInput";
 
 export interface NewBookingPageData extends SpaRadisePageData {
 
@@ -108,6 +109,7 @@ export interface NewBookingPageData extends SpaRadisePageData {
             singleServiceVoucherTransactionKeyMap: { [serviceId: documentId]: documentId | undefined }
         }
     },
+    customerInOrder?: AccountData,
     date: Date,
     discountDataMap: DiscountDataMap,
     discountDefaultDataMap: DiscountDataMap,
@@ -236,9 +238,27 @@ export default function NewBooking(): JSX.Element {
 
     async function createBooking(): Promise<void> {
 
-        if (!isNewMode || !bookingId) return;
+        if (!isNewMode || !bookingId || !accountId) return;
         await checkFormValidity();
         pageData.bookingData.reservedDateTime = new Date();
+
+        const { customerInOrder } = pageData;
+        if( !customerInOrder )
+            pageData.bookingData.account = SpaRadiseFirestore.getDocumentReference(
+                accountId, SpaRadiseEnv.ACCOUNT_COLLECTION
+            );
+        else {
+
+            const
+                { email } = customerInOrder,
+                accountDataMap = await AccountUtils.getAccountDataByEmail( email )
+            ;
+            let accountData: AccountData | undefined = undefined;
+            for( let accountId in accountDataMap ) accountData = accountDataMap[ accountId ];
+            if( !accountData )
+                pageData.bookingData.account = await AccountUtils.createAccount( customerInOrder );
+
+        }
         const documentReference: DocumentReference = await BookingUtils.createBooking(
             pageData.bookingData
         );
@@ -416,7 +436,7 @@ export default function NewBooking(): JSX.Element {
         const
             { accountData, accountData: { birthDate } } = pageData,
             clientId: string = getClientId(-1)
-            ;
+        ;
         pageData.clientDataMap[clientId] = {
             booking: SpaRadiseFirestore.getDocumentReference("new", SpaRadiseEnv.BOOKING_COLLECTION),
             name: PersonUtils.toString(accountData, "f mi l"),
@@ -464,11 +484,21 @@ export default function NewBooking(): JSX.Element {
 
         if (!accountId) return;
         pageData.accountData = await AccountUtils.getAccountData(accountId);
-        pageData.bookingData.account = SpaRadiseFirestore.getDocumentReference(
-            accountId, SpaRadiseEnv.ACCOUNT_COLLECTION
-        );
+        const { accountType } = pageData.accountData;
+        if( accountType === "management" )
+            pageData.customerInOrder = {
+                lastName: null as unknown as string,
+                firstName: null as unknown as string,
+                middleName: null,
+                sex: null as unknown as sex,
+                birthDate: null as unknown as Date,
+                email: null as unknown as string,
+                contactNumber: null as unknown as string,
+                contactNumberAlternate: null,
+                accountType: "customer"
+            };
         if (isNewMode)
-            await loadFirstClient();
+            if( pageData.customerInOrder !== undefined ) await loadFirstClient();
         else if (isEditMode)
             await loadBooking();
         await loadServiceData();
@@ -694,18 +724,68 @@ function ChooseClients({ pageData, reloadPageData }: {
 
         const
             { MIN_AGE_LIMIT } = SpaRadiseEnv,
-            { clientDataMap } = pageData
+            { clientDataMap, customerInOrder } = pageData,
+            emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
             ;
-        if (!ObjectUtils.hasKeys(clientDataMap))
-            throw new Error(`There must be at least 1 client!`);
+        if( customerInOrder && !emailRegex.test( customerInOrder.email ) ) {
+
+            pageData.popupData = {
+                children: `Invalid email`,
+                popupMode: `yesOnly`,
+                yesText: `OK`
+            };
+            reloadPageData();
+            return false;
+
+        }
+        if (!ObjectUtils.hasKeys(clientDataMap)) {
+
+            pageData.popupData = {
+                children: `There must be at least 1 client.`,
+                popupMode: `yesOnly`,
+                yesText: `OK`
+            };
+            reloadPageData();
+            return false;
+
+        }
         for (let clientId in clientDataMap) {
 
             const { name, birthDate } = clientDataMap[clientId];
-            if (!name) throw new Error(`Client names cannot be empty!`);
+            if (!name) {
+
+                pageData.popupData = {
+                    children: `Client names cannot be empty!`,
+                    popupMode: `yesOnly`,
+                    yesText: `OK`
+                };
+                reloadPageData();
+                return false;
+
+            }
             // check for duplicate names
-            if (!birthDate) throw new Error(`Birth dates cannot be empty!`);
-            if (DateUtils.getYearAge(birthDate) < MIN_AGE_LIMIT)
-                throw new Error(`The age limit is ${MIN_AGE_LIMIT} years old!`);
+            if (!birthDate) {
+
+                pageData.popupData = {
+                    children: `Birth dates cannot be empty.`,
+                    popupMode: `yesOnly`,
+                    yesText: `OK`
+                };
+                reloadPageData();
+                return false;
+
+            }
+            if (DateUtils.getYearAge(birthDate) < MIN_AGE_LIMIT) {
+
+                pageData.popupData = {
+                    children: `The minimum age limit is ${ MIN_AGE_LIMIT } years old.`,
+                    popupMode: `yesOnly`,
+                    yesText: `OK`
+                };
+                reloadPageData();
+                return false;
+
+            }
 
         }
         return true;
@@ -735,7 +815,7 @@ function ChooseClients({ pageData, reloadPageData }: {
 
     async function nextPage(): Promise<void> {
 
-        await checkFormValidity();
+        if( !( await checkFormValidity() ) ) return;
         pageData.formIndex++;
         loadClientIdActive();
         reloadPageData();
@@ -752,6 +832,12 @@ function ChooseClients({ pageData, reloadPageData }: {
         <main className="booking-container">
             <section className="booking-form">
                 <h1 className="booking-title">Who are the Clients?</h1>
+                {
+                    ( pageData.customerInOrder !== undefined ) ? <>
+                        <label className="account-email" >Account Email</label>
+                        <NewBookingEmailInput name="account-email" pageData={ pageData } required={ true }/>
+                    </> : undefined
+                }
                 {
                     Object.keys(clientDataMap).sort().map(clientId => {
                         const clientData: ClientData = clientDataMap[clientId];
