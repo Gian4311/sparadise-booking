@@ -42,7 +42,7 @@ export default class SpaRadiseEnv {
     ];
     public static SERVICE_TRANSACTION_COLLECTION = "serviceTransactions";
     public static SERVICE_TRANSACTION_STATUS_LIST: serviceTransactionStatus[] = [
-        "canceled", "uncanceled"
+        "serviceActive", "serviceCanceled", "serviceWaived"
     ];
     public static SERVICE_TYPE_LIST: serviceType[] = [
         "body", "browsAndLashes", "facial", "handsAndFeet", "health", "wax"

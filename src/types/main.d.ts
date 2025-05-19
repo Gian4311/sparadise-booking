@@ -14,7 +14,7 @@ type region =
     | "XII" | "XIII" | "CAR" | "BARMM"
 ;
 type roomType = "room" | "chair";
-type serviceTransactionStatus = "canceled" | "uncanceled";
+type serviceTransactionStatus = "serviceActive" | "serviceCanceled" | "serviceWaived";
 type serviceType = "body" | "browsAndLashes" | "facial" | "handsAndFeet" | "health" | "wax";
 type serviceMaintenanceStatus = packageMaintenanceStatus;
 type sex = "female" | "male" | "others";

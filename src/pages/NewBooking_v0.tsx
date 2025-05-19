@@ -839,7 +839,7 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
             actualBookingDateTimeEnd: null,
             employee: null,
             notes: null,
-            status: "uncanceled"
+            status: "serviceActive"
         };
         serviceIncludedMap[serviceId] = getServiceTransactionId(
             clientIdActive, serviceTransactionIndex
@@ -1007,10 +1007,13 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
                                     {serviceKeyList.sort((serviceId1, serviceId2) =>
                                         StringUtils.compare(serviceDataMap[serviceId1].name, serviceDataMap[serviceId2].name)
                                     ).map(serviceId => {
-                                        const { name } = serviceDataMap[serviceId];
+                                        const
+                                            { name } = serviceDataMap[serviceId],
+                                            isConflicting = isConflictingService(serviceId)
+                                        ;
                                         return (
-                                            <div className={isConflictingService(serviceId) ? "included" : ""} key={serviceId}>
-                                                {name} </div>
+                                            <div className={ isConflicting ? "included" : ""} key={serviceId}>
+                                                {name} { isConflicting ? "(Already Added)" : ""}</div>
                                         );
                                     })}
                                 </div>

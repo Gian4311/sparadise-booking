@@ -39,9 +39,8 @@ function App() {
 
         onAuthStateChanged( SpaRadiseAuth.getAuth(), async() => {
 
-            const a = await SpaRadiseAuth.isManager()
-            setIsManager( a );
-            console.log( a )
+            const isManager = await SpaRadiseAuth.isManager()
+            setIsManager( isManager );
 
         } );
 

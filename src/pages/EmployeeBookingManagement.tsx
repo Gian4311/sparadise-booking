@@ -873,6 +873,8 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
 
     }
 
+    console.log( pageData.clientInfoMap )
+
     return (
         <main className="employee-booking-management-main-content">
             <section className="client-input">
@@ -892,7 +894,7 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
             </section>
 
             <section className="service-scroll-container">
-                {pageData.clientIdActive &&
+                {pageData.clientInfoMap[pageData.clientIdActive]?.serviceTransactionDataMap ?
                     Object.keys(pageData.clientInfoMap[pageData.clientIdActive].serviceTransactionDataMap).map(
                         (serviceTransactionId) => {
                             const {
@@ -931,13 +933,12 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
                             );
 
                             const status =
-                                serviceTransactionData.status === 'canceled'
-                                    ? 'canceled'
-                                    : actualBookingDateTimeEnd
-                                        ? 'finished'
-                                        : actualBookingDateTimeStart
-                                            ? 'active'
-                                            : 'pending';
+                                serviceTransactionData.status === "serviceWaived" ? 'waived'
+                                : serviceTransactionData.status === "serviceCanceled" ? 'canceled'
+                                : actualBookingDateTimeEnd ? 'finished'
+                                : actualBookingDateTimeStart ? 'active'
+                                : 'pending'
+                            ;
 
                             const canceled = status === 'canceled';
 
@@ -1019,8 +1020,25 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
                                     </div>
 
                                     <div className="service-card-footer">
-                                        {status === 'canceled' ? (
-                                            <span className="status-text canceled">CANCELLED</span>
+                                        {
+                                        status === 'waived' ? (
+                                            <span className="status-text canceled">WAIVED</span>
+                                        ) : status === 'canceled' ? (
+                                            <FormMarkButton<serviceTransactionStatus>
+                                                confirmMessage="Would you like to waive this service transaction?"
+                                                documentData={serviceTransactionData}
+                                                documentDefaultData={serviceTransactionDefaultData}
+                                                documentId={serviceTransactionId}
+                                                keyName="status"
+                                                noText="Back"
+                                                pageData={pageData}
+                                                value="serviceWaived"
+                                                reloadPageData={reloadPageData}
+                                                yesText="Yes, Waive This"
+                                                className="btn-cancel-booking"
+                                            >
+                                                WAIVE
+                                            </FormMarkButton>
                                         ) : status === 'finished' ? (
                                             <span className="status-text finished">FINISHED</span>
                                         ) : (
@@ -1032,7 +1050,7 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
                                                 keyName="status"
                                                 noText="Back"
                                                 pageData={pageData}
-                                                value="canceled"
+                                                value="serviceCanceled"
                                                 reloadPageData={reloadPageData}
                                                 yesText="Yes, Cancel This"
                                                 className="btn-cancel-booking"
@@ -1044,7 +1062,8 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
                                 </div>
                             );
                         }
-                    )}
+                    ) : undefined
+                }
             </section>
 
             <div className="footer-actions">

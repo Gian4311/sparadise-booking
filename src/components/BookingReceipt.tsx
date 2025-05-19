@@ -258,7 +258,7 @@ export default function BookingReceipt( {
                     { service: { id: serviceId }, status } = serviceTransactionData,
                     packageId = serviceTransactionData.package?.id
                 ;
-                if( status === "canceled" ) continue;
+                if( status === "serviceCanceled" || status === "serviceWaived" ) continue;
                 if( packageId )
                     packageVoucherTransactionKeyMap[ packageId ] = undefined;
                 else

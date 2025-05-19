@@ -26,6 +26,7 @@ import {
 import LoadingScreen from "../components/LoadingScreen";
 import "../styles/ClientAccount.css";
 import NavBar from "../components/ClientNavBar";
+import PopupModal from "../components/PopupModal";
 
 interface AccountManagementPageData extends SpaRadisePageData {
 
@@ -126,8 +127,12 @@ export default function MyAccount(): JSX.Element {
 
         }
         delete updateMap[accountId];
+        pageData.popupData = {
+            children: `Account updated!`,
+            popupMode: "yesOnly",
+            yes: () => navigate( `/` )
+        }
         reloadPageData();
-        alert(`Updated!`); // note: remove later
 
     }
 
@@ -136,6 +141,7 @@ export default function MyAccount(): JSX.Element {
     return <>
         <LoadingScreen loading={ !pageData.loaded }></LoadingScreen>
         <NavBar pageData={ pageData } reloadPageData={ reloadPageData }/>
+        <PopupModal pageData={ pageData } reloadPageData={ reloadPageData }/>
         <form onSubmit={submit}>
             <main className="account-container">
                 <section className="account-details">
@@ -190,7 +196,7 @@ export default function MyAccount(): JSX.Element {
                     <div className="action-buttons">
                         <div className="left-buttons">
                             <button className="cancel-account-btn" type="button" onClick={cancelAccountForm}>Cancel</button>
-                            <button className="delete-account-btn" type="button" onClick={deleteAccount}>Delete</button>
+                            {/* <button className="delete-account-btn" type="button" onClick={deleteAccount}>Delete</button> */}
                         </div>
                         <div className="right-buttons">
                             <button className="save-changes-btn" type="submit">Save Changes</button>
