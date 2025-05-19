@@ -81,7 +81,7 @@ export default function CapacityMenu(): JSX.Element {
                         <div className="service-stat">{ObjectUtils.keyLength( capacityDataMap )}<br></br><span>Total History</span></div>
                     </div>
                     <div className="controls">
-                        <input placeholder="Search services or packages" className="search" value={search} onChange={event => handleChangeSearch(event)} />
+                        <input placeholder="Search capacity history" className="search" value={search} onChange={event => handleChangeSearch(event)} />
                         <button className="filter-btn" type="button" value={sortMode} onClick={toggleSortMode}>{
                             (sortMode === "ascending") ? "New to Old" : "Old to New"
                         }</button>
@@ -101,7 +101,7 @@ export default function CapacityMenu(): JSX.Element {
                                     count: string = (index + 1).toString(),
                                     { roomCount, chairCount, datetime } = capacityDataMap[documentId],
                                     show: boolean = StringUtils.has(
-                                        `${count}`
+                                        `${count}\t${ roomCount }\t${ chairCount }` + ( datetime ? DateUtils.toString( datetime, "Mmmm dd, yyyy - hh:mm a.m." ) : "" )
                                         , search
                                     )
                                 ;

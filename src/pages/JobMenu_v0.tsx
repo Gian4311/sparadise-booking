@@ -80,7 +80,7 @@ export default function JobMenu(): JSX.Element {
                         <div className="service-stat">{ObjectUtils.keyLength( jobDataMap )}<br></br><span>Total Jobs</span></div>
                     </div>
                     <div className="controls">
-                        <input placeholder="Search services or packages" className="search" value={search} onChange={event => handleChangeSearch(event)} />
+                        <input placeholder="Search jobs" className="search" value={search} onChange={event => handleChangeSearch(event)} />
                         <button className="filter-btn" type="button" value={sortMode} onClick={toggleSortMode}>{
                             (sortMode === "ascending") ? "A - Z" : "Z - A"
                         }</button>

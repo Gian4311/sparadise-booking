@@ -119,7 +119,7 @@ export default function VoucherMenu(): JSX.Element {
                 <div className="service-menu-form-section">
 
                     <div className="controls">
-                        <input placeholder="Search services or packages" className="search" value={search} onChange={event => handleChangeSearch(event)} />
+                        <input placeholder="Search vouchers" className="search" value={search} onChange={event => handleChangeSearch(event)} />
                         <button className="filter-btn" type="button" value={sortMode} onClick={toggleSortMode}>{
                             (sortMode === "ascending") ? "A - Z" : "Z - A"
                         }</button>

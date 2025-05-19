@@ -81,7 +81,7 @@ export default function AccountMenu(): JSX.Element {
                         <div className="service-stat">{ObjectUtils.keyLength( accountDataMap )}<br></br><span>Total Accounts</span></div>
                     </div>
                     <div className="controls">
-                        <input placeholder="Search services or packages" className="search" value={search} onChange={event => handleChangeSearch(event)} />
+                        <input placeholder="Search accounts" className="search" value={search} onChange={event => handleChangeSearch(event)} />
                         <button className="filter-btn" type="button" value={sortMode} onClick={toggleSortMode}>{
                             (sortMode === "ascending") ? "A - Z" : "Z - A"
                         }</button>
