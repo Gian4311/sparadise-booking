@@ -1271,9 +1271,7 @@ function Finished({ pageData, reloadPageData }: {
 
     async function nextPage(): Promise<void> {
 
-        await checkFormValidity();
-        pageData.formIndex++;
-        reloadPageData();
+        navigate( `/` );
 
     }
 

@@ -837,8 +837,14 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
             const { serviceTransactionDataMap } = clientInfoMap[clientId];
             for (let serviceTransactionId in serviceTransactionDataMap) {
 
-                const { actualBookingDateTimeEnd } = serviceTransactionDataMap[serviceTransactionId];
-                if (!actualBookingDateTimeEnd) {
+                const
+                    {
+                        actualBookingDateTimeEnd, status
+                    } = serviceTransactionDataMap[serviceTransactionId],
+                    canceled = ( status === "serviceCanceled" || status === "serviceWaived" )
+                ;
+                if( canceled ) continue;
+                if ( !actualBookingDateTimeEnd ) {
 
                     isFinished = false;
                     break;
@@ -872,8 +878,6 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
         }
 
     }
-
-    console.log( pageData.clientInfoMap )
 
     return (
         <main className="employee-booking-management-main-content">
@@ -940,7 +944,7 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
                                 : 'pending'
                             ;
 
-                            const canceled = status === 'canceled';
+                            const canceled = ( status === 'canceled' || status === "waived" );
 
                             return (
                                 <div className={`service-card ${status}`} key={serviceTransactionId}>
