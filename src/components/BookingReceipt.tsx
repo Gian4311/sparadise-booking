@@ -532,7 +532,7 @@ export default function BookingReceipt( {
                 </tfoot>
             </table>
         </section>
-        <h2 className="voucher-input-label">Voucher/s:</h2>
+        <h2 className="voucher-input-label">Vouchers:</h2>
         <section className="form-section booking-summary-section">
             <div>
                 <section className="booking-summary-tables">
@@ -591,7 +591,9 @@ export default function BookingReceipt( {
                                         )
                                     }</td>
                                     <td>{
-                                        ( bookingReceiptMode === "newBooking" ) ? <button className="delete-voucher-btn" type="button" onClick={() => deleteVoucherTransaction(voucherTransactionId)}>Delete</button>
+                                        (
+                                            !( voucherTransactionId in voucherTransactionDefaultDataMap )
+                                        ) ? <button className="delete-voucher-btn" type="button" onClick={() => deleteVoucherTransaction(voucherTransactionId)}>Delete</button>
                                         : ( voucherTransactionDataMap[ voucherTransactionId ].status == "canceled" ) ? <FormMarkButton< voucherTransactionStatus >
                                             confirmMessage="Would you like to add back this voucher?"
                                             className="add-voucher-btn"
@@ -633,6 +635,15 @@ export default function BookingReceipt( {
                 </section>
             </div>
         </section>
+        {
+            ( bookingReceiptMode === "management" ) ? <>
+                <h2 className="voucher-input-label">Discounts:</h2>
+                <section className="form-section booking-summary-section">
+                    fefeef
+
+                </section>
+            </> : undefined
+        }
     </>;
 
 
