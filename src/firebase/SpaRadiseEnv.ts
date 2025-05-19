@@ -3,6 +3,7 @@ import NumberRange from "../utils/NumberRange";
 export default class SpaRadiseEnv {
 
     public static ACCOUNT_COLLECTION = "accounts";
+    public static ACCOUNT_TYPE_LIST = [ "management", "customer" ];
     public static BOOKING_COLLECTION = "bookings";
     public static CAPACITY_COLLECTION = "capacities";
     public static CLIENT_COLLECTION = "clients";
