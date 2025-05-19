@@ -498,7 +498,7 @@ export default function NewBooking(): JSX.Element {
                 accountType: "customer"
             };
         if (isNewMode)
-            if( pageData.customerInOrder !== undefined ) await loadFirstClient();
+            if( pageData.customerInOrder === undefined ) await loadFirstClient();
         else if (isEditMode)
             await loadBooking();
         await loadServiceData();
@@ -1038,7 +1038,7 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
 
             <section className="form-section package-section">
                 <div className="section-label">Select Packages:</div>
-                <button className="toggle-button" type="button" onClick={togglePackages}>Packages</button>
+                <button className="toggle-button" type="button" onClick={togglePackages}>Packages ▼</button>
                 <div className={showPackages ? "package-scroll-container" : "hidden"}>
                     {Object.keys(packageDataMap).map(packageId => {
                         const { price, status } = maintenanceDataMap[packageId];
@@ -1089,7 +1089,7 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
 
             <section className="form-section service-section">
                 <div className="section-label">Select Services:</div>
-                <button type="button" className="toggle-button" onClick={toggleServices}>Services</button>
+                <button type="button" className="toggle-button" onClick={toggleServices}>Services ▼</button>
                 <div className={showServices ? "service-scroll-container" : "hidden"}>
                     {Object.keys(serviceDataMap).map(serviceId => {
                         const { name, description } = serviceDataMap[serviceId];

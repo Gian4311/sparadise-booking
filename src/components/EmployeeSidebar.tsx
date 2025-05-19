@@ -101,9 +101,9 @@ export default function EmployeeSidebar( { pageData, reloadPageData }: {
                 </li>
                 <li>
                     <NavLink 
-                        to="/management/clients/menu" 
+                        to="/management/accounts/menu" 
                         className={({ isActive }) =>
-                            (window.location.pathname.startsWith("/management/clients"))  ? "active" : ""
+                            (window.location.pathname.startsWith("/management/accounts"))  ? "active" : ""
                         }                    >
                         Clients
                     </NavLink>

@@ -33,6 +33,8 @@ import NewHomepage from "./pages/NewClientIndex";
 import RoomMaintenanceManagement from "./pages/RoomManagement";
 import { onAuthStateChanged } from "firebase/auth";
 import CapacityManagement from "./pages/CapacityManagement";
+import AccountMenu from "./pages/AccountMenu";
+import AccountManagement from "./pages/AccountManagement";
 function App() {
 
     const [ isManager, setIsManager ] = useState< boolean >();
@@ -78,9 +80,9 @@ function App() {
                         <Route path="management/services/:id" element={ <ServiceManagement/> }/>
                         <Route path="management/vouchers/menu" element={ <VoucherMenu/> }/>
                         <Route path="management/vouchers/:id" element={ <VoucherManagement/> }/>
-                        <Route path="management/clients" element={ <ClientManagement/> }/>
-                        <Route path="management/clients/menu" element={<ClientMenu/>}/>
-                        <Route path="management/roomsAndChairs" element={ <RoomMaintenance/> }/>
+                        <Route path="management/accounts/menu" element={ <AccountMenu/> }/>
+                        <Route path="management/accounts/:id" element={ <AccountManagement/> }/>
+                        {/* <Route path="management/roomsAndChairs" element={ <RoomMaintenance/> }/> */}
                         <Route path="management/capacities/menu" element={ <CapacityMenu/> }/>
                         <Route path="management/capacities/:id" element={ <CapacityManagement/> }/>
                         {/* <Route path="management/roomsAndChairs" element={ <RoomMaintenance/> }/> */}

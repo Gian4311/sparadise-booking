@@ -76,7 +76,7 @@ export default function CapacityManagement(): JSX.Element {
 
     async function cancelCapacityForm(): Promise<void> {
 
-        navigate(`/management/capacitiesAndPackages/menu`);
+        navigate(`/management/capacities/menu`);
 
     }
 
