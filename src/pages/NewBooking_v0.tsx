@@ -155,7 +155,7 @@ export interface NewBookingPageData extends SpaRadisePageData {
 export default function NewBooking(): JSX.Element {
 
     const
-        currentDate: Date = DateUtils.toFloorByDay( new Date() ),
+        currentDate: Date = DateUtils.toFloorByDay(new Date()),
         [pageData, setPageData] = useState<NewBookingPageData>({
             accountData: {} as AccountData,
             bookingDefaultData: {} as BookingData,
@@ -173,7 +173,7 @@ export default function NewBooking(): JSX.Element {
             clientInfoMap: {},
             date: DateUtils.addTime(
                 currentDate,
-                { day: 14 + ( DateUtils.isSunday( currentDate ) ? 1 : 0 ) }
+                { day: 14 + (DateUtils.isSunday(currentDate) ? 1 : 0) }
             ),
             discountDataMap: {},
             discountDefaultDataMap: {},
@@ -216,8 +216,8 @@ export default function NewBooking(): JSX.Element {
         isNewMode: boolean = (bookingId === "new"),
         isEditMode: boolean = (bookingId !== undefined && !isNewMode),
         navigate = useNavigate()
-    ;
-    
+        ;
+
     async function checkFormValidity(): Promise<boolean> {
 
         // const {
@@ -403,12 +403,12 @@ export default function NewBooking(): JSX.Element {
 
     }
 
-    async function loadDiscounts(): Promise< void > {
+    async function loadDiscounts(): Promise<void> {
 
-        if( !bookingId || isNewMode ) return;
-        pageData.discountDataMap = await DiscountUtils.getDiscountDataMapByBooking( bookingId );
+        if (!bookingId || isNewMode) return;
+        pageData.discountDataMap = await DiscountUtils.getDiscountDataMapByBooking(bookingId);
         pageData.discountDefaultDataMap = { ...pageData.discountDataMap };
-        
+
     }
 
     async function loadClientList(): Promise<void> {
@@ -510,12 +510,12 @@ export default function NewBooking(): JSX.Element {
 
     }
 
-    async function loadPayments(): Promise< void > {
+    async function loadPayments(): Promise<void> {
 
-        if( !bookingId || isNewMode ) return;
-        pageData.paymentDataMap = await PaymentUtils.getPaymentDataMapByBooking( bookingId );
+        if (!bookingId || isNewMode) return;
+        pageData.paymentDataMap = await PaymentUtils.getPaymentDataMapByBooking(bookingId);
         pageData.paymentDefaultDataMap = { ...pageData.paymentDataMap };
-        
+
     }
 
     async function loadServiceData(): Promise<void> {
@@ -587,7 +587,7 @@ export default function NewBooking(): JSX.Element {
 
     async function loadVoucherDataOfDayData(): Promise<void> {
 
-        ObjectUtils.clear( pageData.voucherDataOfDayMap );
+        ObjectUtils.clear(pageData.voucherDataOfDayMap);
         const
             { date, voucherDataMap, voucherDataOfDayMap } = pageData,
             dateTimeStart: Date = DateUtils.toFloorByDay(date),
@@ -660,8 +660,8 @@ export default function NewBooking(): JSX.Element {
 
     return <>
         <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
-        <PopupModal pageData={ pageData } reloadPageData={ reloadPageData } />
-        <NavBar pageData={ pageData } reloadPageData={ reloadPageData }/>
+        <PopupModal pageData={pageData} reloadPageData={reloadPageData} />
+        <NavBar pageData={pageData} reloadPageData={reloadPageData} />
         <form onSubmit={submit}>
             {
                 (pageData.formIndex === 0) ? <ChooseClients pageData={pageData} reloadPageData={reloadPageData} />
@@ -720,76 +720,40 @@ function ChooseClients({ pageData, reloadPageData }: {
 
     }
 
-    async function checkFormValidity(): Promise<boolean> {
+    function checkFormValidity(): true | string {
+        const { MIN_AGE_LIMIT } = SpaRadiseEnv;
+        const { clientDataMap, date } = pageData;
 
-        const
-            { MIN_AGE_LIMIT } = SpaRadiseEnv,
-            { clientDataMap, customerInOrder } = pageData,
-            emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
-            ;
-        if( customerInOrder && !emailRegex.test( customerInOrder.email ) ) {
+        if (!date)
+            return "No booking date given";
 
-            pageData.popupData = {
-                children: `Invalid email`,
-                popupMode: `yesOnly`,
-                yesText: `OK`
-            };
-            reloadPageData();
-            return false;
-
-        }
-        if (!ObjectUtils.hasKeys(clientDataMap)) {
-
-            pageData.popupData = {
-                children: `There must be at least 1 client.`,
-                popupMode: `yesOnly`,
-                yesText: `OK`
-            };
-            reloadPageData();
-            return false;
-
-        }
         for (let clientId in clientDataMap) {
-
             const { name, birthDate } = clientDataMap[clientId];
-            if (!name) {
-
-                pageData.popupData = {
-                    children: `Client names cannot be empty!`,
-                    popupMode: `yesOnly`,
-                    yesText: `OK`
-                };
-                reloadPageData();
-                return false;
-
-            }
-            // check for duplicate names
-            if (!birthDate) {
-
-                pageData.popupData = {
-                    children: `Birth dates cannot be empty.`,
-                    popupMode: `yesOnly`,
-                    yesText: `OK`
-                };
-                reloadPageData();
-                return false;
-
-            }
-            if (DateUtils.getYearAge(birthDate) < MIN_AGE_LIMIT) {
-
-                pageData.popupData = {
-                    children: `The minimum age limit is ${ MIN_AGE_LIMIT } years old.`,
-                    popupMode: `yesOnly`,
-                    yesText: `OK`
-                };
-                reloadPageData();
-                return false;
-
-            }
-
+            if (!name) return "Please input client names";
+            if (!birthDate) return "Please input client birth dates";
+            if (DateUtils.getYearAge(birthDate) < MIN_AGE_LIMIT)
+                return `The age limit is ${MIN_AGE_LIMIT}`;
         }
-        return true;
 
+        return true;
+    }
+
+
+    async function nextPage(): Promise<void> {
+        const error = checkFormValidity();
+
+        if (error !== true) {
+            pageData.popupData = {
+                children: error,
+                popupMode: "yesOnly",
+                yesText: "OK"
+            };
+            reloadPageData();
+            return;
+        }
+
+        pageData.formIndex++;
+        reloadPageData();
     }
 
     async function deleteClient(clientId: string): Promise<void> {
@@ -810,15 +774,6 @@ function ChooseClients({ pageData, reloadPageData }: {
 
         }
         pageData.clientIdActive = getClientId(minimum);
-
-    }
-
-    async function nextPage(): Promise<void> {
-
-        if( !( await checkFormValidity() ) ) return;
-        pageData.formIndex++;
-        loadClientIdActive();
-        reloadPageData();
 
     }
 
@@ -863,7 +818,7 @@ function ChooseClients({ pageData, reloadPageData }: {
                 <button className="add-client-btn" type="button" onClick={addClient}>Add Another Client +</button>
                 <div className="action-buttons">
                     <button className="back-btn" type="button" onClick={previousPage}>Back</button>
-                    <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (1/4)</button>
+                    <button className={checkFormValidity() === true ? `proceed-btn` : `back-btn`} type="button" onClick={nextPage}>Proceed (1/4)</button>
                 </div>
             </section>
         </main>
@@ -943,26 +898,46 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
 
     }
 
-    async function checkFormValidity(): Promise<boolean> {
+
+    function checkFormValidity(): true | string {
         const { MIN_AGE_LIMIT } = SpaRadiseEnv;
         const { clientDataMap, date } = pageData;
 
         if (!date)
-            throw new Error("No booking date given!");
+            return "No booking date given";
         const isSunday: boolean = date.getDay() === 0;
         if (isSunday)
-            throw new Error("Booking date cannot be on a Sunday!");
+            return "SpaRadise is closed on Sundays";
 
         for (let clientId in clientDataMap) {
             const { name, birthDate } = clientDataMap[clientId];
-            if (!name) throw new Error(`Client names cannot be empty!`);
-            if (!birthDate) throw new Error(`Birth dates cannot be empty!`);
+            if (!name) return "Please input client names";
+            if (!birthDate) return "Please input client birth dates";
             if (DateUtils.getYearAge(birthDate) < MIN_AGE_LIMIT)
-                throw new Error(`The age limit is ${MIN_AGE_LIMIT} years old!`);
+                return `The age limit is ${MIN_AGE_LIMIT}`;
         }
 
         return true;
     }
+
+
+    async function nextPage(): Promise<void> {
+        const error = checkFormValidity();
+
+        if (error !== true) {
+            pageData.popupData = {
+                children: error,
+                popupMode: "yesOnly",
+                yesText: "OK"
+            };
+            reloadPageData();
+            return;
+        }
+
+        pageData.formIndex++;
+        reloadPageData();
+    }
+
 
     async function deletePackage(packageId: documentId): Promise<void> {
 
@@ -1007,14 +982,6 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
     function isConflictingService(serviceId: documentId): boolean {
 
         return serviceId in serviceIncludedMap;
-
-    }
-
-    async function nextPage(): Promise<void> {
-
-        await checkFormValidity();
-        pageData.formIndex++;
-        reloadPageData();
 
     }
 
@@ -1096,10 +1063,10 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
                                         const
                                             { name } = serviceDataMap[serviceId],
                                             isConflicting = isConflictingService(serviceId)
-                                        ;
+                                            ;
                                         return (
-                                            <div className={ isConflicting ? "included" : ""} key={serviceId}>
-                                                {name} { isConflicting ? "(Already Added)" : ""}</div>
+                                            <div className={isConflicting ? "included" : ""} key={serviceId}>
+                                                {name} {isConflicting ? "(Already Added)" : ""}</div>
                                         );
                                     })}
                                 </div>
@@ -1155,8 +1122,7 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
             </section>
             <section className="action-buttons">
                 <button className="back-btn" type="button" onClick={previousPage}>Back</button>
-                <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (2/4)</button>
-            </section>
+                <button className={checkFormValidity() === true ? `proceed-btn` : `back-btn`} type="button" onClick={nextPage}>Proceed (2/4)</button>            </section>
         </main >
     </>;
 
@@ -1190,16 +1156,16 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
 
     function checkFormValidity(): true | string {
 
-        for( let clientId in clientInfoMap ) {
+        for (let clientId in clientInfoMap) {
 
-            const { serviceTransactionDataMap } = clientInfoMap[ clientId ];
-            for( let serviceTransactionId in serviceTransactionDataMap ) {
+            const { serviceTransactionDataMap } = clientInfoMap[clientId];
+            for (let serviceTransactionId in serviceTransactionDataMap) {
 
                 const {
                     bookingDateTimeEnd, bookingDateTimeStart
-                } = serviceTransactionDataMap[ serviceTransactionId ];
-                if( !bookingDateTimeStart || !bookingDateTimeEnd )
-                    return "All services must have a schedule. If a service is unavailable for the whole day, please remove them from the last page.";
+                } = serviceTransactionDataMap[serviceTransactionId];
+                if (!bookingDateTimeStart || !bookingDateTimeEnd)
+                    return "If a service is not eligible for scheduling, please ensure it is removed from the previous page to proceed.";
 
             }
 
@@ -1211,7 +1177,7 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
     async function nextPage(): Promise<void> {
 
         const error = checkFormValidity();
-        if( error !== true ) {
+        if (error !== true) {
 
             pageData.popupData = {
                 children: error,
@@ -1242,7 +1208,7 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
             <DayPlanner dayPlannerMode="newBooking" pageData={dayPlannerPageData} />
             <section className="action-buttons">
                 <button className="back-btn" type="button" onClick={previousPage}>Back</button>
-                <button className={ checkFormValidity() === true ? `proceed-btn` : `back-btn` } type="button" onClick={nextPage}>Proceed (3/4)</button>
+                <button className={checkFormValidity() === true ? `proceed-btn` : `back-btn`} type="button" onClick={nextPage}>Proceed (3/4)</button>
             </section>
         </main>
     </>;
@@ -1307,7 +1273,7 @@ function Summary({ pageData, reloadPageData }: {
                     <div className="time-slot-date">{DateUtils.toString(date, "Mmmm dd, yyyy")}</div>
                 </section>
                 <section className="form-section booking-summary-section">
-                    <BookingReceipt bookingReceiptMode="newBooking" pageData={pageData} showActualTime={ false } addVoucher={ addVoucher } deleteVoucherTransaction={ deleteVoucherTransaction } reloadPageData={ reloadPageData }/>
+                    <BookingReceipt bookingReceiptMode="newBooking" pageData={pageData} showActualTime={false} addVoucher={addVoucher} deleteVoucherTransaction={deleteVoucherTransaction} reloadPageData={reloadPageData} />
                 </section>
             </section>
             <section className="form-section booking-summary-section">
@@ -1333,36 +1299,40 @@ function Finished({ pageData, reloadPageData }: {
         navigate = useNavigate()
         ;
 
-    async function checkFormValidity(): Promise<boolean> {
+    function checkFormValidity(): true | string {
+        const { MIN_AGE_LIMIT } = SpaRadiseEnv;
+        const { clientDataMap, date } = pageData;
 
-        const
-            { MIN_AGE_LIMIT } = SpaRadiseEnv,
-            { clientDataMap } = pageData
-            ;
-        if (!ObjectUtils.hasKeys(clientDataMap))
-            throw new Error(`There must be at least 1 client!`);
+        if (!date)
+            return "No booking date given";
+
         for (let clientId in clientDataMap) {
-
             const { name, birthDate } = clientDataMap[clientId];
-            if (!name) throw new Error(`Client names cannot be empty!`);
-            // check for duplicate names
-            if (!birthDate) throw new Error(`Birth dates cannot be empty!`);
+            if (!name) return "Please input client names";
+            if (!birthDate) return "Please input client birth dates";
             if (DateUtils.getYearAge(birthDate) < MIN_AGE_LIMIT)
-                throw new Error(`The age limit is ${MIN_AGE_LIMIT} years old!`);
-
+                return `The age limit is ${MIN_AGE_LIMIT}`;
         }
-        return true;
 
+        return true;
     }
 
+
     async function nextPage(): Promise<void> {
+        const error = checkFormValidity();
 
-        pageData.popupData = {
-            children: `Booking created!`,
-            popupMode: `yesOnly`,
-            yes: () => navigate( `/` )
-        };
+        if (error !== true) {
+            pageData.popupData = {
+                children: error,
+                popupMode: "yesOnly",
+                yesText: "OK"
+            };
+            reloadPageData();
+            return;
+        }
 
+        pageData.formIndex++;
+        reloadPageData();
     }
 
     async function previousPage(): Promise<void> {
@@ -1387,10 +1357,10 @@ function Finished({ pageData, reloadPageData }: {
     return <>
         <main className="booking-container-last">
             <div className="confirmation-message">Confirm Booking</div>
-                <section className="last-action-buttons">
-                    <button className="back-btn-confirm" type="button" onClick={previousPage}>Back</button>
-                    <button className="proceed-btn-confirm" type="submit" onClick={nextPage}>Complete Booking</button>
-                </section>
+            <section className="last-action-buttons">
+                <button className="back-btn-confirm" type="button" onClick={previousPage}>Back</button>
+                <button className={checkFormValidity() === true ? `proceed-btn` : `back-btn`}  type="submit" onClick={nextPage}>Complete Booking</button>
+            </section>
         </main>
     </>;
 
