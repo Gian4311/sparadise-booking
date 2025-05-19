@@ -9,7 +9,7 @@ import NavBar from "../components/ClientNavBar";
 const ClientAccount: React.FC = () => {
     return (
         <div>
-            <NavBar />
+            {/* <NavBar pageData={ pageData } reloadPageData={ reloadPageData }/> */}
 
             <main>
                 <div className="notification-container">

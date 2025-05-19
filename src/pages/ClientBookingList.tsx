@@ -47,7 +47,7 @@ export default function ClientBookingList(): JSX.Element {
 
   return (
     <div>
-      <NavBar />
+      {/* <NavBar pageData={ pageData } reloadPageData={ reloadPageData }/> */}
 
       <main className="bookingList-container">
         <div className="bookingList-card">

@@ -633,7 +633,7 @@ export default function NewBooking(): JSX.Element {
     return <>
         <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
         <PopupModal pageData={ pageData } reloadPageData={ reloadPageData } />
-        <NavBar></NavBar>
+        <NavBar pageData={ pageData } reloadPageData={ reloadPageData }/>
         <form onSubmit={submit}>
             {
                 (pageData.formIndex === 0) ? <ChooseClients pageData={pageData} reloadPageData={reloadPageData} />

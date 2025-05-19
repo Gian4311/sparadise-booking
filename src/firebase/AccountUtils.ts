@@ -10,6 +10,7 @@ import {
     QueryDocumentSnapshot,
     query,
     updateDoc,
+    where,
     WithFieldValue
 } from "firebase/firestore/lite";
 import {
@@ -125,7 +126,7 @@ export default class AccountUtils {
 
     }
 
-    public static async getAccountListAll(): Promise< AccountDataMap > {
+    public static async getAccountDataMapAll(): Promise< AccountDataMap > {
     
         const
             accountCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
@@ -134,6 +135,27 @@ export default class AccountUtils {
             accountQuery = query(
                 accountCollection,
                 orderBy( "name" )
+            ),
+            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( accountQuery ) ).docs,
+            accountDataMap: AccountDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            accountDataMap[ snapshot.id ] = await AccountUtils.getAccountData( snapshot );
+        return accountDataMap;
+
+    }
+
+    public static async getAccountDataByEmail(
+        email: string
+    ): Promise< AccountDataMap > {
+    
+        const
+            accountCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
+                SpaRadiseEnv.ACCOUNT_COLLECTION
+            ),
+            accountQuery = query(
+                accountCollection,
+                where( "email", "==", email )
             ),
             snapshotList: QueryDocumentSnapshot[] = ( await getDocs( accountQuery ) ).docs,
             accountDataMap: AccountDataMap = {}

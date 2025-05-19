@@ -135,7 +135,7 @@ export default function MyAccount(): JSX.Element {
 
     return <>
         <LoadingScreen loading={ !pageData.loaded }></LoadingScreen>
-        <NavBar />
+        <NavBar pageData={ pageData } reloadPageData={ reloadPageData }/>
         <form onSubmit={submit}>
             <main className="account-container">
                 <section className="account-details">

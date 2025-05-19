@@ -1,3 +1,7 @@
+import {
+    AccountData,
+    SpaRadisePageData
+} from "../firebase/SpaRadiseTypes";
 import React from 'react';
 import { Link } from "react-router-dom";
 import { NavLink } from 'react-router-dom';
@@ -6,6 +10,10 @@ import SparadiseLogo from "../images/SpaRadise Logo.png";
 import NotificationSymbol from "../images/Notification Symbol.png";
 import Background from "../images/indexbackground.jpg";
 import LoadingScreen from '../components/LoadingScreen';
+import {
+    useEffect,
+    useState
+} from "react";
 
 import Massage from "../images/massage.jpg";
 import Facials from "../images/facial.jpeg";
@@ -18,13 +26,43 @@ import Gluta from "../images/gluta.jpeg";
 
 import NavBar from "../components/ClientNavBar";
 
+interface ClientHomePageData extends SpaRadisePageData {
+
+    accountData: AccountData
+
+}
 
 export default function ClientHomePage() {
+
+    const
+        [ pageData, setPageData ] = useState< ClientHomePageData >( {
+            accountData: {
+                lastName: null as unknown as string,
+                firstName: null as unknown as string,
+                middleName: null,
+                sex: null as unknown as sex,
+                birthDate: null as unknown as Date,
+                email: null as unknown as string,
+                contactNumber: null as unknown as string,
+                contactNumberAlternate: null,
+                accountType: null as unknown as accountType
+            },
+            loaded: true,
+            updateMap: {}
+        } )
+    ;
+
+    function reloadPageData(): void {
+
+        setPageData( { ...pageData } );
+
+    }
+
     return (
 
             <div className="client-home-container">
 
-                <NavBar></NavBar>
+                <NavBar pageData={ pageData } reloadPageData={ reloadPageData }/>
 
 
                 {/* Hero Section */}
