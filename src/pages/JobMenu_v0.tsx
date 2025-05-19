@@ -77,7 +77,7 @@ export default function JobMenu(): JSX.Element {
                 <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">Jobs</label>
                 <div className="service-menu-form-section">
                     <div className="service-stats">
-                        <div className="service-stat">{ObjectUtils.keyLength( jobDataMap )}<br></br><span>Services & Packages</span></div>
+                        <div className="service-stat">{ObjectUtils.keyLength( jobDataMap )}<br></br><span>Total Jobs</span></div>
                     </div>
                     <div className="controls">
                         <input placeholder="Search services or packages" className="search" value={search} onChange={event => handleChangeSearch(event)} />
