@@ -2,8 +2,10 @@ import ArrayUtils from "../utils/ArrayUtils";
 import {
     BookingData,
     ClientDataMap,
+    DiscountDataMap,
     PackageDataMap,
     PackageMaintenanceData,
+    PaymentDataMap,
     ServiceDataMap,
     ServiceMaintenanceData,
     ServiceTransactionData,
@@ -49,6 +51,8 @@ interface BookingReceiptPageData extends SpaRadisePageData {
         }
     },
     date: Date,
+    discountDataMap: DiscountDataMap,
+    discountDefaultDataMap: DiscountDataMap,
     maintenanceDataMap: { [ documentId: documentId ]: PackageMaintenanceData | ServiceMaintenanceData },
     packageDataMap: PackageDataMap,
     packageServiceKeyMap: {
@@ -56,6 +60,8 @@ interface BookingReceiptPageData extends SpaRadisePageData {
     }
     serviceDataMap: ServiceDataMap,
     initialPrice: number,
+    paymentDataMap: PaymentDataMap,
+    paymentDefaultDataMap: PaymentDataMap,
     voucherDataMap: VoucherDataMap,
     voucherDiscount: number,
     voucherPackageKeyMap: {
@@ -518,7 +524,7 @@ export default function BookingReceipt( {
                     </tr>
                     <tr className="voucher-discount">
                         <td></td>
-                        <td colSpan={ showActualTime ? 3 : 2 }>Voucher Discount</td>
+                        <td colSpan={ showActualTime ? 3 : 2 }>Vouchers</td>
                         <td>-₱{ NumberUtils.toString( pageData.voucherDiscount, "n.00" ) }</td>
                     </tr>
                     <tr className="client-total">

@@ -4,6 +4,7 @@ import {
     BookingDataMap,
     ClientData,
     ClientDataMap,
+    DiscountDataMap,
     EmployeeDataMap,
     EmployeeLeaveDataMap,
     JobDataMap,
@@ -11,6 +12,7 @@ import {
     PackageDataMap,
     PackageMaintenanceData,
     PackageServiceDataMap,
+    PaymentDataMap,
     ServiceDataMap,
     ServiceMaintenanceData,
     ServiceTransactionDataMap,
@@ -31,6 +33,7 @@ import Bullet from "../components/Bullet";
 import ClientUtils from "../firebase/ClientUtils";
 import DateUtils from "../utils/DateUtils";
 import DayPlanner from "../components/DayPlanner";
+import DiscountUtils from "../firebase/DiscountUtils";
 import { DocumentReference } from "firebase/firestore/lite";
 import EmployeeLeaveUtils from "../firebase/EmployeeLeaveUtils";
 import EmployeeUtils from "../firebase/EmployeeUtils";
@@ -52,6 +55,7 @@ import ObjectUtils from "../utils/ObjectUtils";
 import PackageMaintenanceUtils from "../firebase/PackageMaintenanceUtils";
 import PackageServiceUtils from "../firebase/PackageServiceUtils";
 import PackageUtils from "../firebase/PackageUtils";
+import PaymentUtils from "../firebase/PaymentUtils";
 import PersonUtils from "../utils/PersonUtils";
 import ServiceMaintenanceUtils from "../firebase/ServiceMaintenanceUtils";
 import ServiceTransactionUtils from "../firebase/ServiceTransactionUtils";
@@ -104,6 +108,8 @@ export interface NewBookingPageData extends SpaRadisePageData {
         }
     },
     date: Date,
+    discountDataMap: DiscountDataMap,
+    discountDefaultDataMap: DiscountDataMap,
     employeeDataMap: EmployeeDataMap,
     employeeLeaveOfDayDataMap: EmployeeLeaveDataMap,
     formIndex: number,
@@ -116,6 +122,8 @@ export interface NewBookingPageData extends SpaRadisePageData {
     packageServiceKeyMap: {
         [packageId: documentId]: { [serviceId: documentId]: documentId }
     },
+    paymentDataMap: PaymentDataMap,
+    paymentDefaultDataMap: PaymentDataMap,
     serviceDataMap: ServiceDataMap,
     serviceTransactionDefaultDataMap: ServiceTransactionDataMap,
     serviceTransactionEmployeeListKeyMap: ServiceTransactionEmployeeListKeyMap,
@@ -139,8 +147,6 @@ export interface NewBookingPageData extends SpaRadisePageData {
 
 export default function NewBooking(): JSX.Element {
 
-    const [popupMessage, setPopupMessage] = useState("");
-
     const
         currentDate: Date = DateUtils.toFloorByDay( new Date() ),
         [pageData, setPageData] = useState<NewBookingPageData>({
@@ -162,6 +168,8 @@ export default function NewBooking(): JSX.Element {
                 currentDate,
                 { day: 14 + ( DateUtils.isSunday( currentDate ) ? 1 : 0 ) }
             ),
+            discountDataMap: {},
+            discountDefaultDataMap: {},
             employeeDataMap: {},
             employeeLeaveOfDayDataMap: {},
             formIndex: 0,
@@ -173,6 +181,8 @@ export default function NewBooking(): JSX.Element {
             packageDataMap: {},
             packageServiceDataMap: {},
             packageServiceKeyMap: {},
+            paymentDataMap: {},
+            paymentDefaultDataMap: {},
             serviceDataMap: {},
             serviceTransactionDefaultDataMap: {},
             serviceTransactionEmployeeListKeyMap: {},
@@ -195,15 +205,7 @@ export default function NewBooking(): JSX.Element {
         isNewMode: boolean = (bookingId === "new"),
         isEditMode: boolean = (bookingId !== undefined && !isNewMode),
         navigate = useNavigate()
-        ;
-
-    function addFormIndex(value: number = 1): void {
-
-        pageData.formIndex += value;
-        reloadPageData();
-
-    }
-
+    ;
     
     async function checkFormValidity(): Promise<boolean> {
 
@@ -367,7 +369,17 @@ export default function NewBooking(): JSX.Element {
         await loadClientList();
         await loadServiceTransactionList();
         await loadVoucherTransactionList();
+        await loadDiscounts();
+        await loadPayments();
 
+    }
+
+    async function loadDiscounts(): Promise< void > {
+
+        if( !bookingId || isNewMode ) return;
+        pageData.discountDataMap = await DiscountUtils.getDiscountDataMapByBooking( bookingId );
+        pageData.discountDefaultDataMap = { ...pageData.discountDataMap };
+        
     }
 
     async function loadClientList(): Promise<void> {
@@ -457,6 +469,14 @@ export default function NewBooking(): JSX.Element {
         await handleChangeDate();
         reloadPageData();
 
+    }
+
+    async function loadPayments(): Promise< void > {
+
+        if( !bookingId || isNewMode ) return;
+        pageData.paymentDataMap = await PaymentUtils.getPaymentDataMapByBooking( bookingId );
+        pageData.paymentDefaultDataMap = { ...pageData.paymentDataMap };
+        
     }
 
     async function loadServiceData(): Promise<void> {

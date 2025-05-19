@@ -2,9 +2,8 @@ import {
     AccountData,
     BookingData,
     BookingDataMap,
-    ClientData,
     ClientDataMap,
-    EmployeeData,
+    DiscountDataMap,
     EmployeeDataMap,
     EmployeeLeaveDataMap,
     JobDataMap,
@@ -12,11 +11,9 @@ import {
     PackageDataMap,
     PackageMaintenanceData,
     PackageServiceDataMap,
-    ServiceData,
+    PaymentDataMap,
     ServiceDataMap,
     ServiceMaintenanceData,
-    ServiceTransactionAvailabilityKeyMap,
-    ServiceTransactionData,
     ServiceTransactionDataMap,
     ServiceTransactionEmployeeListKeyMap,
     SpaRadisePageData,
@@ -33,6 +30,7 @@ import ClientUtils from "../firebase/ClientUtils";
 import DateRange from "../utils/DateRange";
 import DateUtils from "../utils/DateUtils";
 import DayPlanner from "../components/DayPlanner";
+import DiscountUtils from "../firebase/DiscountUtils";
 import { DocumentReference } from "firebase/firestore/lite";
 import EmployeeLeaveUtils from "../firebase/EmployeeLeaveUtils";
 import EmployeeSidebar from "../components/EmployeeSidebar";
@@ -55,14 +53,13 @@ import JobServiceUtils from "../firebase/JobServiceUtils";
 import PackageMaintenanceUtils from "../firebase/PackageMaintenanceUtils";
 import PackageServiceUtils from "../firebase/PackageServiceUtils";
 import PackageUtils from "../firebase/PackageUtils";
+import PaymentUtils from "../firebase/PaymentUtils";
 import PersonUtils from "../utils/PersonUtils";
 import PopupModal from "../components/PopupModal";
 import ServiceMaintenanceUtils from "../firebase/ServiceMaintenanceUtils";
 import ServiceTransactionUtils from "../firebase/ServiceTransactionUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
 import SpaRadiseDataMapUtils from "../firebase/SpaRadiseDataMapUtils";
-import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
-import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import {
     useNavigate,
     useParams
@@ -94,6 +91,8 @@ interface EmployeeBookingManagementPageData extends SpaRadisePageData {
         }
     },
     date: Date,
+    discountDataMap: DiscountDataMap,
+    discountDefaultDataMap: DiscountDataMap,
     employeeDataMap: EmployeeDataMap,
     employeeLeaveOfDayDataMap: EmployeeLeaveDataMap,
     formIndex: number,
@@ -106,6 +105,8 @@ interface EmployeeBookingManagementPageData extends SpaRadisePageData {
     packageServiceKeyMap: {
         [packageId: documentId]: { [serviceId: documentId]: documentId }
     },
+    paymentDataMap: PaymentDataMap,
+    paymentDefaultDataMap: PaymentDataMap,
     serviceDataMap: ServiceDataMap,
     serviceTransactionDefaultDataMap: ServiceTransactionDataMap,
     serviceTransactionEmployeeListKeyMap: ServiceTransactionEmployeeListKeyMap,
@@ -147,6 +148,8 @@ export default function EmployeeBookingManagement(): JSX.Element {
             clientIdActive: null as unknown as string,
             clientInfoMap: {},
             date: null as unknown as Date,
+            discountDataMap: {},
+            discountDefaultDataMap: {},
             employeeDataMap: {},
             employeeLeaveOfDayDataMap: {},
             formIndex: 0,
@@ -158,6 +161,8 @@ export default function EmployeeBookingManagement(): JSX.Element {
             packageDataMap: {},
             packageServiceDataMap: {},
             packageServiceKeyMap: {},
+            paymentDataMap: {},
+            paymentDefaultDataMap: {},
             serviceDataMap: {},
             serviceTransactionDefaultDataMap: {},
             serviceTransactionEmployeeListKeyMap: {},
@@ -224,6 +229,10 @@ export default function EmployeeBookingManagement(): JSX.Element {
             { hr: 12, min: 0 }
         );
         await loadVoucherTransactionList();
+        pageData.discountDataMap = await DiscountUtils.getDiscountDataMapByBooking( bookingId );
+        pageData.discountDefaultDataMap = { ...pageData.discountDataMap };
+        pageData.paymentDataMap = await PaymentUtils.getPaymentDataMapByBooking( bookingId );
+        pageData.paymentDefaultDataMap = { ...pageData.paymentDataMap };
 
     }
 
