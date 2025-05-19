@@ -13,6 +13,7 @@ import {
     WithFieldValue,
     where
 } from "firebase/firestore/lite";
+import Discount from "../utils/Discount";
 import {
     DiscountData,
     DiscountDataMap
@@ -100,6 +101,19 @@ export default class DiscountUtils {
 
         }
 
+
+    }
+
+    public static getDiscount( discountData: DiscountData ): Discount {
+    
+        const
+            { amount, percentage } = discountData,
+            isAmount: boolean = ( amount !== null )
+        ;
+        return new Discount(
+            ( isAmount ? amount : percentage ) ?? 0,
+            isAmount ? "amount" : "percentage"
+        )
 
     }
 

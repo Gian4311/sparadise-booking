@@ -212,7 +212,7 @@ export default function PackageManagement(): JSX.Element {
         if (!packageDocumentReference) return;
         for (let packageMaintenanceId in packageMaintenanceDataMap) {
 
-            const isNew: boolean = NumberUtils.isNumeric(packageMaintenanceId);
+            const isNew: boolean = !( packageMaintenanceId in packageMaintenanceDefaultDataMap );
             if (!isNew) continue;
             const packageMaintenanceData = packageMaintenanceDataMap[packageMaintenanceId];
             packageMaintenanceData.package = packageDocumentReference;

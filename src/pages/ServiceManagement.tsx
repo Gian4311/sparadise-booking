@@ -1,4 +1,3 @@
-import DataMapUtils from "../firebase/SpaRadiseDataMapUtils";
 import DateUtils from "../utils/DateUtils";
 import { DocumentReference } from "firebase/firestore/lite";
 import FormDateInput from "../components/FormDateInput";
@@ -24,9 +23,10 @@ import {
 } from "../firebase/SpaRadiseTypes";
 import ServiceMaintenanceUtils from "../firebase/ServiceMaintenanceUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
+import SpaRadiseDataMapUtils from "../firebase/SpaRadiseDataMapUtils";
+import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import { useParams } from "react-router-dom";
-import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import { Link } from "react-router-dom";
 import "../styles/EmployeeServiceManagement.css";
 import "../styles/Sidebar.css";
@@ -171,13 +171,13 @@ export default function ServiceManagement(): JSX.Element {
         const {
             serviceDocumentReference,
             serviceMaintenanceDataMap,
-            serviceMaintenanceDefaultDataMap,
-            serviceMaintenanceDateKeyMap
+            serviceMaintenanceDateKeyMap,
+            serviceMaintenanceDefaultDataMap
         } = pageData;
         if (!serviceDocumentReference) return;
         for (let serviceMaintenanceId in serviceMaintenanceDataMap) {
 
-            const isNew: boolean = NumberUtils.isNumeric(serviceMaintenanceId);
+            const isNew: boolean = !( serviceMaintenanceId in serviceMaintenanceDefaultDataMap );
             if (!isNew) continue;
             const serviceMaintenanceData = serviceMaintenanceDataMap[serviceMaintenanceId];
             serviceMaintenanceData.service = serviceDocumentReference;
@@ -193,7 +193,7 @@ export default function ServiceManagement(): JSX.Element {
             serviceMaintenanceDateKeyMap[dateKey] = serviceMaintenanceIdNew;
 
         }
-        pageData.serviceMaintenanceDefaultDataMap = DataMapUtils.clone(serviceMaintenanceDataMap);
+        pageData.serviceMaintenanceDefaultDataMap = SpaRadiseDataMapUtils.clone(serviceMaintenanceDataMap);
 
     }
 
@@ -308,7 +308,7 @@ export default function ServiceManagement(): JSX.Element {
             await ServiceMaintenanceUtils.getServiceMaintenanceDataMapByService(documentId)
             ;
         const { serviceMaintenanceDataMap, serviceMaintenanceDateKeyMap } = pageData;
-        pageData.serviceMaintenanceDefaultDataMap = DataMapUtils.clone(serviceMaintenanceDataMap);
+        pageData.serviceMaintenanceDefaultDataMap = SpaRadiseDataMapUtils.clone(serviceMaintenanceDataMap);
         for (let serviceMaintenanceId in serviceMaintenanceDataMap) {
 
             const dateKey: string = getDateKey(

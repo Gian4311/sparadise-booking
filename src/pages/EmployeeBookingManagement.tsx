@@ -60,6 +60,8 @@ import ServiceMaintenanceUtils from "../firebase/ServiceMaintenanceUtils";
 import ServiceTransactionUtils from "../firebase/ServiceTransactionUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
 import SpaRadiseDataMapUtils from "../firebase/SpaRadiseDataMapUtils";
+import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
+import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import {
     useNavigate,
     useParams
@@ -93,6 +95,8 @@ interface EmployeeBookingManagementPageData extends SpaRadisePageData {
     date: Date,
     discountDataMap: DiscountDataMap,
     discountDefaultDataMap: DiscountDataMap,
+    discountIndex: number,
+    discountTotal: number,
     employeeDataMap: EmployeeDataMap,
     employeeLeaveOfDayDataMap: EmployeeLeaveDataMap,
     formIndex: number,
@@ -107,6 +111,8 @@ interface EmployeeBookingManagementPageData extends SpaRadisePageData {
     },
     paymentDataMap: PaymentDataMap,
     paymentDefaultDataMap: PaymentDataMap,
+    paymentIndex: number,
+    paymentTotal: number,
     serviceDataMap: ServiceDataMap,
     serviceTransactionDefaultDataMap: ServiceTransactionDataMap,
     serviceTransactionEmployeeListKeyMap: ServiceTransactionEmployeeListKeyMap,
@@ -150,6 +156,8 @@ export default function EmployeeBookingManagement(): JSX.Element {
             date: null as unknown as Date,
             discountDataMap: {},
             discountDefaultDataMap: {},
+            discountIndex: 0,
+            discountTotal: 0,
             employeeDataMap: {},
             employeeLeaveOfDayDataMap: {},
             formIndex: 0,
@@ -163,6 +171,8 @@ export default function EmployeeBookingManagement(): JSX.Element {
             packageServiceKeyMap: {},
             paymentDataMap: {},
             paymentDefaultDataMap: {},
+            paymentIndex: 0,
+            paymentTotal: 0,
             serviceDataMap: {},
             serviceTransactionDefaultDataMap: {},
             serviceTransactionEmployeeListKeyMap: {},
@@ -194,6 +204,46 @@ export default function EmployeeBookingManagement(): JSX.Element {
     
         
         return true;
+
+    }
+
+    async function createDiscountList(): Promise<void> {
+
+        const { bookingDocumentReference, discountDataMap, discountDefaultDataMap } = pageData;
+        if( !bookingDocumentReference ) return;
+        for( let discountId in discountDataMap ) {
+
+            const isNew: boolean = !( discountId in discountDefaultDataMap );
+            if( !isNew ) continue;
+            const
+                discountData = discountDataMap[ discountId ],
+                discountDocumentReference = await DiscountUtils.createDiscount( discountData )
+            ;
+            delete discountDataMap[ discountId ];
+            discountDataMap[ discountDocumentReference.id ] = discountData;
+
+        }
+        pageData.discountDefaultDataMap = SpaRadiseDataMapUtils.clone( pageData.discountDataMap );
+
+    }
+
+    async function createPaymentList(): Promise<void> {
+
+        const { bookingDocumentReference, paymentDataMap, paymentDefaultDataMap } = pageData;
+        if( !bookingDocumentReference ) return;
+        for( let paymentId in paymentDataMap ) {
+
+            const isNew: boolean = !( paymentId in paymentDefaultDataMap );
+            if( !isNew ) continue;
+            const
+                paymentData = paymentDataMap[ paymentId ],
+                paymentDocumentReference = await PaymentUtils.createPayment( paymentData )
+            ;
+            delete paymentDataMap[ paymentId ];
+            paymentDataMap[ paymentDocumentReference.id ] = paymentData;
+
+        }
+        pageData.paymentDefaultDataMap = SpaRadiseDataMapUtils.clone( pageData.paymentDataMap );
 
     }
 
@@ -233,6 +283,9 @@ export default function EmployeeBookingManagement(): JSX.Element {
         pageData.discountDefaultDataMap = { ...pageData.discountDataMap };
         pageData.paymentDataMap = await PaymentUtils.getPaymentDataMapByBooking( bookingId );
         pageData.paymentDefaultDataMap = { ...pageData.paymentDataMap };
+        pageData.bookingDocumentReference = SpaRadiseFirestore.getDocumentReference(
+            bookingId, SpaRadiseEnv.BOOKING_COLLECTION
+        );
 
     }
 
@@ -428,6 +481,146 @@ export default function EmployeeBookingManagement(): JSX.Element {
     async function submit( event: FormEvent< HTMLFormElement > ): Promise<void> {
 
         event.preventDefault();
+        switch( pageData.formIndex ) {
+
+            case 0:
+                const { canceledDateTime, finishedDateTime } = pageData.bookingData;
+                if( canceledDateTime || !finishedDateTime ) return;
+                await updateBookingEmployeeData();
+                break;
+            case 1:
+                await updateBookingPriceData();
+                pageData.popupData = {
+                    children: "Booking done!",
+                    popupMode: "yesOnly",
+                    yes: () => navigate( `/management/bookings/menu/` + DateUtils.toString( pageData.date, "yyyy-mm-dd" ) )
+                }
+
+        }
+        pageData.formIndex++;
+        reloadPageData();
+
+    }
+
+    async function updateBookingEmployeeData(): Promise< void > {
+
+        pageData.loaded = false;
+        reloadPageData();
+        const { bookingData, updateMap } = pageData;
+        if( bookingId && bookingId in updateMap) {
+
+            await BookingUtils.updateBooking( bookingId, bookingData );
+            pageData.bookingDefaultData = { ...bookingData };
+            delete updateMap[ bookingId ];
+
+        }
+        await updateClientList();
+        pageData.loaded = true;
+        reloadPageData();
+
+    }
+
+    async function updateBookingPriceData(): Promise< void > {
+
+        pageData.loaded = false;
+        reloadPageData();
+        const { bookingData, updateMap } = pageData;
+        if( bookingId && bookingId in updateMap) {
+
+            await BookingUtils.updateBooking( bookingId, bookingData );
+            pageData.bookingDefaultData = { ...bookingData };
+            delete updateMap[ bookingId ];
+
+        }
+        await updateDiscountList();
+        await updatePaymentList();
+        pageData.loaded = true;
+        reloadPageData();
+
+    }
+
+    async function updateClientList(): Promise< void > {
+
+        const {
+            clientDataMap, clientDefaultDataMap, clientInfoMap, serviceTransactionDefaultDataMap,
+            updateMap
+        } = pageData;
+
+        for( let clientId in clientInfoMap ) {
+
+            const
+                clientData = clientDataMap[ clientId ],
+                { serviceTransactionDataMap } = clientInfoMap[ clientId ]
+            ;
+            if( clientId in updateMap ) {
+
+                await ClientUtils.updateClient( clientId, clientData );
+                clientDefaultDataMap[ clientId ] = { ...clientData };
+                delete updateMap[ clientId ];
+
+            }
+            for( let serviceTransactionId in serviceTransactionDataMap ) {
+
+                if( !( serviceTransactionId in updateMap ) ) continue;
+                const serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ];
+                await ServiceTransactionUtils.updateServiceTransaction(
+                    serviceTransactionId, serviceTransactionData
+                );
+                serviceTransactionDefaultDataMap[ serviceTransactionId ] = {
+                    ...serviceTransactionData
+                };
+                delete updateMap[ clientId ];
+
+            }
+
+
+        }
+
+    }
+
+    async function updateDiscountList(): Promise< void > {
+
+        await updateDiscountListInUpdateMap();
+        await createDiscountList();
+
+    }
+
+    async function updateDiscountListInUpdateMap(): Promise<void> {
+    
+        const { discountDataMap, discountDefaultDataMap, updateMap } = pageData;
+        for( let discountId in discountDataMap ) {
+
+            const isDiscountId: boolean = discountId in discountDefaultDataMap;
+            if (!isDiscountId) continue;
+            const discountData = discountDataMap[discountId];
+            await DiscountUtils.updateDiscount( discountId, discountData );
+            delete updateMap[ discountId ];
+            discountDefaultDataMap[ discountId ] = { ...discountData };
+
+        }
+
+    }
+
+    async function updatePaymentList(): Promise< void > {
+
+        await updatePaymentListInUpdateMap();
+        await createPaymentList();
+
+    }
+
+    async function updatePaymentListInUpdateMap(): Promise<void> {
+    
+        const { paymentDataMap, paymentDefaultDataMap, updateMap } = pageData;
+        for( let paymentId in paymentDataMap ) {
+
+            const isPaymentId: boolean = paymentId in paymentDefaultDataMap;
+            if (!isPaymentId) continue;
+            const paymentData = paymentDataMap[paymentId];
+            await PaymentUtils.updatePayment( paymentId, paymentData );
+            delete updateMap[ paymentId ];
+            paymentDefaultDataMap[ paymentId ] = { ...paymentData };
+
+        }
 
     }
 
@@ -486,8 +679,8 @@ export default function EmployeeBookingManagement(): JSX.Element {
             </p>
             <DayPlanner dayPlannerMode="management" pageData={ dayPlannerPageData } show={ false }/>
             {
-                (pageData.formIndex === 0) ? <EditServiceTransactions bookingId={ bookingId } pageData={pageData} reloadPageData={reloadPageData} />
-                : (pageData.formIndex === 1) ? <EditPayments bookingId={ bookingId } pageData={pageData} reloadPageData={reloadPageData} />
+                (pageData.formIndex === 0) ? <EditServiceTransactions bookingId={ bookingId } pageData={pageData} reloadPageData={reloadPageData} updateBooking={ updateBookingEmployeeData } />
+                : (pageData.formIndex === 1) ? <EditPayments bookingId={ bookingId } pageData={pageData} reloadPageData={reloadPageData} updateBooking={ updateBookingPriceData }/>
                 : <button type="button" onClick={() => { pageData.formIndex--; reloadPageData(); }}>None, Go Back</button>
             }
 
@@ -499,10 +692,11 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
 }
 
-function EditServiceTransactions( { bookingId, pageData, reloadPageData }: {
+function EditServiceTransactions( { bookingId, pageData, reloadPageData, updateBooking }: {
     bookingId: documentId | undefined,
     pageData: EmployeeBookingManagementPageData,
-    reloadPageData: () => void
+    reloadPageData: () => void,
+    updateBooking: () => Promise< void > | void
 } ): JSX.Element {
 
     async function checkFormValidity(): Promise< boolean > {
@@ -514,16 +708,6 @@ function EditServiceTransactions( { bookingId, pageData, reloadPageData }: {
     async function handleChangeClientActive( clientId: string ): Promise< void > {
 
         pageData.clientIdActive = clientId;
-        reloadPageData();
-
-    }
-
-    async function nextPage(): Promise<void> {
-
-        const { canceledDateTime, finishedDateTime } = pageData.bookingData;
-        if( canceledDateTime || !finishedDateTime ) return;
-        await updateBooking();
-        pageData.formIndex++;
         reloadPageData();
 
     }
@@ -619,64 +803,6 @@ function EditServiceTransactions( { bookingId, pageData, reloadPageData }: {
 
             delete updateMap[ bookingId ].finishedDateTime;
             if( !ObjectUtils.hasKeys( updateMap[ bookingId ] ) ) delete updateMap[ bookingId ];
-
-        }
-
-    }
-
-    async function updateBooking(): Promise< void > {
-
-        pageData.loaded = false;
-        reloadPageData();
-        if( !( await checkFormValidity() ) ) return;
-        const { bookingData, updateMap } = pageData;
-        if( bookingId && bookingId in updateMap) {
-
-            await BookingUtils.updateBooking( bookingId, bookingData );
-            pageData.bookingDefaultData = { ...bookingData };
-            delete updateMap[ bookingId ];
-
-        }
-        await updateClientList();
-        pageData.loaded = true;
-        reloadPageData();
-
-    }
-
-    async function updateClientList(): Promise< void > {
-
-        const {
-            clientDataMap, clientDefaultDataMap, clientInfoMap, serviceTransactionDefaultDataMap,
-            updateMap
-        } = pageData;
-
-        for( let clientId in clientInfoMap ) {
-
-            const
-                clientData = clientDataMap[ clientId ],
-                { serviceTransactionDataMap } = clientInfoMap[ clientId ]
-            ;
-            if( clientId in updateMap ) {
-
-                await ClientUtils.updateClient( clientId, clientData );
-                clientDefaultDataMap[ clientId ] = { ...clientData };
-                delete updateMap[ clientId ];
-
-            }
-            for( let serviceTransactionId in serviceTransactionDataMap ) {
-
-                if( !( serviceTransactionId in updateMap ) ) continue;
-                const serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ];
-                await ServiceTransactionUtils.updateServiceTransaction(
-                    serviceTransactionId, serviceTransactionData
-                );
-                serviceTransactionDefaultDataMap[ serviceTransactionId ] = {
-                    ...serviceTransactionData
-                };
-                delete updateMap[ clientId ];
-
-            }
-
 
         }
 
@@ -822,16 +948,17 @@ function EditServiceTransactions( { bookingId, pageData, reloadPageData }: {
         }</section>
         <button type="button">Cancel All</button>
         <button type="button" onClick={ updateBooking }>Save</button>
-        <button type="button" onClick={ nextPage }>Proceed to Payment</button>
+        <button type="submit">Proceed to Payment</button>
         <button type="button" onClick={ () => console.log( pageData ) }>Log page data</button>
     </main>
 
 }
 
-function EditPayments( { bookingId, pageData, reloadPageData }: {
+function EditPayments( { bookingId, pageData, reloadPageData, updateBooking }: {
     bookingId: documentId | undefined,
     pageData: EmployeeBookingManagementPageData,
-    reloadPageData: () => void
+    reloadPageData: () => void,
+    updateBooking: () => Promise< void > | void
 } ): JSX.Element {
 
     async function addVoucher(): Promise<void> {
@@ -863,38 +990,9 @@ function EditPayments( { bookingId, pageData, reloadPageData }: {
 
     }
 
-    async function nextPage(): Promise<void> {
-
-        const { canceledDateTime, finishedDateTime } = pageData.bookingData;
-        if( canceledDateTime || !finishedDateTime ) return;
-        await updateBooking();
-        pageData.formIndex++;
-        reloadPageData();
-
-    }
-
-    async function updateBooking(): Promise< void > {
-
-        pageData.loaded = false;
-        reloadPageData();
-        if( !( await checkFormValidity() ) ) return;
-        const { bookingData, updateMap } = pageData;
-        if( bookingId && bookingId in updateMap) {
-
-            await BookingUtils.updateBooking( bookingId, bookingData );
-            pageData.bookingDefaultData = { ...bookingData };
-            delete updateMap[ bookingId ];
-
-        }
-        pageData.loaded = true;
-        reloadPageData();
-
-    }
-
     return <main className="employee-booking-management-main-content">
         <BookingReceipt bookingReceiptMode="management" pageData={ pageData } showActualTime={ true } addVoucher={ addVoucher } deleteVoucherTransaction={ deleteVoucherTransaction } reloadPageData={ reloadPageData }/>
-        <button type="button" onClick={ updateBooking }>Save</button>
-        <button type="button" onClick={ nextPage }>Finish</button>
+        <button type="submit">Finish</button>
         <button type="button" onClick={ () => console.log( pageData ) }>Log page data</button>
     </main>
 

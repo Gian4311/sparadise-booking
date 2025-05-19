@@ -11,7 +11,6 @@ import {
     ServiceTransactionData,
     ServiceTransactionDataMap,
     SpaRadisePageData,
-    VoucherData,
     VoucherDataMap,
     VoucherTransactionApplicationMap,
     VoucherTransactionDataMap
@@ -19,12 +18,19 @@ import {
 import DateRange from "../utils/DateRange";
 import DateUtils from "../utils/DateUtils";
 import Discount from "../utils/Discount";
+import DiscountUtils from "../firebase/DiscountUtils";
+import { DocumentReference } from "firebase/firestore/lite";
 import FormMarkButton from "./FormMarkButton";
+import FormMoneyInput from "./FormMoneyInput";
+import FormMoneyOrPercentageInput from "./FormMoneyOrPercentageInput";
+import FormTinyTextInput from "./FormTinyTextInput";
 import FormVoucherInput from "./FormVoucherInput";
 import { Fragment } from "react/jsx-runtime";
 import MoneyUtils from "../firebase/MoneyUtils";
 import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
+import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
+import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import StringUtils from "../utils/StringUtils";
 import {
     useEffect,
@@ -40,6 +46,7 @@ type bookingReceiptMode = "newBooking" | "management";
 interface BookingReceiptPageData extends SpaRadisePageData {
 
     bookingData: BookingData,
+    bookingDocumentReference?: DocumentReference,
     clientDataMap: ClientDataMap,
     clientInfoMap: {
         [ clientId: string ]: {
@@ -53,6 +60,8 @@ interface BookingReceiptPageData extends SpaRadisePageData {
     date: Date,
     discountDataMap: DiscountDataMap,
     discountDefaultDataMap: DiscountDataMap,
+    discountIndex: number,
+    discountTotal: number,
     maintenanceDataMap: { [ documentId: documentId ]: PackageMaintenanceData | ServiceMaintenanceData },
     packageDataMap: PackageDataMap,
     packageServiceKeyMap: {
@@ -62,6 +71,8 @@ interface BookingReceiptPageData extends SpaRadisePageData {
     initialPrice: number,
     paymentDataMap: PaymentDataMap,
     paymentDefaultDataMap: PaymentDataMap,
+    paymentIndex: number,
+    paymentTotal: number,
     voucherDataMap: VoucherDataMap,
     voucherDiscount: number,
     voucherPackageKeyMap: {
@@ -101,8 +112,8 @@ export default function BookingReceipt( {
 
     const
         {
-            clientDataMap, clientInfoMap, maintenanceDataMap, packageDataMap, serviceDataMap,
-            voucherDataMap,
+            clientDataMap, clientInfoMap, discountDataMap, discountDefaultDataMap, maintenanceDataMap,
+            packageDataMap, paymentDataMap, paymentDefaultDataMap, serviceDataMap, voucherDataMap, 
             voucherPackageKeyMap, voucherServiceKeyMap, voucherTransactionApplicationMap,
             voucherTransactionDataMap, voucherTransactionDefaultDataMap
         } = pageData,
@@ -110,11 +121,92 @@ export default function BookingReceipt( {
     ;
     let priceRowCount = 0;
 
+    async function addDiscount(): Promise<void> {
+    
+        const
+            { discountIndex, bookingDocumentReference } = pageData,
+            discountId: string = getPaymentId( discountIndex )
+        ;
+        if( !bookingDocumentReference ) return;
+        discountDataMap[ discountId ] = {
+            booking: bookingDocumentReference,
+            discountType: null as unknown as string,
+            amount: null,
+            percentage: null,
+            status: "availed"
+        };
+        pageData.discountIndex++;
+        reloadPageData();
+
+    }
+
+    async function addPayment(): Promise<void> {
+    
+        const
+            { paymentIndex, bookingDocumentReference } = pageData,
+            paymentId: string = getPaymentId( paymentIndex )
+        ;
+        if( !bookingDocumentReference ) return;
+        paymentDataMap[ paymentId ] = {
+            booking: bookingDocumentReference,
+            amount: null as unknown as number,
+            gcashReference: null,
+            status: "availed"
+        };
+        pageData.paymentIndex++;
+        reloadPageData();
+
+    }
+
+    function deleteDiscount(discountId: string): void {
+
+        delete pageData.discountDataMap[discountId];
+        reloadPageData();
+
+    }
+
+    function deletePayment(paymentId: string): void {
+
+        delete pageData.paymentDataMap[paymentId];
+        reloadPageData();
+
+    }
+
     async function loadComponentData(): Promise< void > {
 
         await loadServiceServiceTransactionData();
         await loadPriceData();
+        await loadDiscountData();
+        await loadPaymentData();
         setReload( !reload );
+
+    }
+
+    async function loadDiscountData(): Promise< void > {
+
+        pageData.discountTotal = 0;
+        const { initialPrice } = pageData;
+        for( let discountId in discountDataMap ) {
+
+            const
+                discountData = discountDataMap[ discountId ],
+                discount: Discount = DiscountUtils.getDiscount( discountData )
+            ;
+            pageData.discountTotal += discount.getDiscount( initialPrice );
+
+        }
+
+    }
+
+    async function loadPaymentData(): Promise< void > {
+
+        pageData.paymentTotal = 0;
+        for( let paymentId in paymentDataMap ) {
+
+            const { amount } = paymentDataMap[ paymentId ];
+            if( amount ) pageData.paymentTotal += amount;
+
+        }
 
     }
 
@@ -527,12 +619,35 @@ export default function BookingReceipt( {
                         <td colSpan={ showActualTime ? 3 : 2 }>Vouchers</td>
                         <td>-₱{ NumberUtils.toString( pageData.voucherDiscount, "n.00" ) }</td>
                     </tr>
+                    <tr className="voucher-discount">
+                        <td></td>
+                        <td colSpan={ showActualTime ? 3 : 2 }>Discounts</td>
+                        <td>-₱{ NumberUtils.toString( pageData.discountTotal, "n.00" ) }</td>
+                    </tr>
                     <tr className="client-total">
                         <td></td>
                         <td colSpan={ showActualTime ? 3 : 2 }>Total Price</td>
                         <td>₱{ NumberUtils.toString( MoneyUtils.add(
                             pageData.initialPrice,
-                            -pageData.voucherDiscount
+                            -pageData.voucherDiscount,
+                            -pageData.discountTotal
+                        ), "n.00" ) }</td>
+                    </tr>
+                    <tr className="initial-price">
+                        <td></td>
+                        <td colSpan={ showActualTime ? 3 : 2 }>Paid</td>
+                        <td>₱{ NumberUtils.toString( MoneyUtils.add(
+                            pageData.paymentTotal
+                        ), "n.00" ) }</td>
+                    </tr>
+                    <tr className="initial-price">
+                        <td></td>
+                        <td colSpan={ showActualTime ? 3 : 2 }>Change</td>
+                        <td>₱{ NumberUtils.toString( MoneyUtils.add(
+                            pageData.paymentTotal
+                            -pageData.initialPrice,
+                            pageData.voucherDiscount,
+                            pageData.discountTotal
                         ), "n.00" ) }</td>
                     </tr>
                 </tfoot>
@@ -645,8 +760,77 @@ export default function BookingReceipt( {
             ( bookingReceiptMode === "management" ) ? <>
                 <h2 className="voucher-input-label">Discounts:</h2>
                 <section className="form-section booking-summary-section">
-                    fefeef
+                    <section className="booking-summary-tables">
+                        <table>
+                            <thead><tr>
+                                <th>#</th>
+                                <th>Amount</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                            </tr></thead>
+                            <tbody>
+                                {
+                                    Object.keys( discountDataMap ).map( ( discountId, index ) => {
 
+                                        const
+                                            discountData = discountDataMap[ discountId ],
+                                            discountDefaultData = discountDefaultDataMap[ discountId ]
+                                        ;
+                                        return <tr key={ discountId }>
+                                            <td>{ index + 1 }</td>
+                                            <td><FormMoneyOrPercentageInput documentData={ discountData } documentDefaultData={ discountDefaultData } documentId={ discountId } keyNameMoney="amount" keyNamePercentage="percentage" name="amount" pageData={ pageData } required={ true } onChange={ reloadPageData }/></td>
+                                            <td><FormTinyTextInput documentData={ discountData } documentDefaultData={ discountDefaultData } documentId={ discountId } keyName="discountType" name="discount-type" pageData={ pageData } required={ true }/></td>
+                                            <td><button className="delete-voucher-btn" type="button" onClick={() => deleteDiscount( discountId )}>Delete</button></td>
+                                        </tr>;
+
+                                    } )
+                                }
+                                <tr>
+                                    <td colSpan={ 4 }></td>
+                                    <td><button className="add-voucher-btn" type="button" onClick={addDiscount}>
+                                        Add
+                                    </button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+                </section>
+                <h2 className="voucher-input-label">Payments:</h2>
+                <section className="form-section booking-summary-section">
+                    <section className="booking-summary-tables">
+                        <table>
+                            <thead><tr>
+                                <th>#</th>
+                                <th>Amount</th>
+                                <th>GCash Reference (If Applicable)</th>
+                                <th>Actions</th>
+                            </tr></thead>
+                            <tbody>
+                                {
+                                    Object.keys( paymentDataMap ).map( ( paymentId, index ) => {
+
+                                        const
+                                            paymentData = paymentDataMap[ paymentId ],
+                                            paymentDefaultData = paymentDefaultDataMap[ paymentId ]
+                                        ;
+                                        return <tr key={ paymentId }>
+                                            <td>{ index + 1 }</td>
+                                            <td><FormMoneyInput documentData={ paymentData } documentDefaultData={ paymentDefaultData } documentId={ paymentId } keyName="amount" name="amount" pageData={ pageData } required={ true } onChange={ reloadPageData }/></td>
+                                            <td><FormTinyTextInput documentData={ paymentData } documentDefaultData={ paymentDefaultData } documentId={ paymentId } keyName="gcashReference" name="payment-type" pageData={ pageData }/></td>
+                                            <td><button className="delete-voucher-btn" type="button" onClick={() => deletePayment( paymentId )}>Delete</button></td>
+                                        </tr>;
+
+                                    } )
+                                }
+                                <tr>
+                                    <td colSpan={ 4 }></td>
+                                    <td><button className="add-voucher-btn" type="button" onClick={addPayment}>
+                                        Add
+                                    </button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
                 </section>
             </> : undefined
         }
@@ -739,5 +923,17 @@ function compareServiceTransactionData(
     if( !hasSameStart ) return DateUtils.compare( bookingDateTimeStart1, bookingDateTimeStart2 );
     if( !hasSameEnd ) return DateUtils.compare( bookingDateTimeEnd1, bookingDateTimeEnd2 );
     return StringUtils.compare( serviceDataMap[ serviceId1 ].name, serviceDataMap[ serviceId2 ].name );
+
+}
+
+export function getDiscountId( discountIndex: number ): string {
+
+    return `d${ discountIndex }`;
+
+}
+
+export function getPaymentId( paymentIndex: number ): string {
+
+    return `d${ paymentIndex }`;
 
 }
