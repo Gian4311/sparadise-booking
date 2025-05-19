@@ -1,5 +1,5 @@
 export default function PageNotFound(): JSX.Element {
 
-    return <>Unauthorized Access</>
+    return <>Page Not Found</>
 
 }

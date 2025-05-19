@@ -40,6 +40,7 @@ export default function EmployeeSidebar( { pageData, reloadPageData }: {
 
         await SpaRadiseAuth.signOutGoogle();
         pageData.accountId = undefined;
+        navigate( `/` );
         reloadPageData();
 
     }
@@ -58,20 +59,9 @@ export default function EmployeeSidebar( { pageData, reloadPageData }: {
             pageData.accountId = accountId;
 
         }
-        if( !accountData ) {
-            
-            // navigate( `/` );
-            return;
-
-        }
-        if( accountData.accountType === "customer" ) {
-
-            console.log( "no" );
-
-        }
+        if( !accountData || accountData.accountType === "customer" ) return;
         pageData.accountData = accountData;
         reloadPageData();
-        
 
     }
 
@@ -130,6 +120,26 @@ export default function EmployeeSidebar( { pageData, reloadPageData }: {
                 </li>
                 <li>
                     <NavLink 
+                        to="/management/jobs/menu" 
+                        className={({ isActive }) =>
+                            window.location.pathname.startsWith("/management/jobs") ? "active" : ""
+                        }
+                    >
+                        Jobs
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink 
+                        to="/management/roomsAndChairs" 
+                        className={({ isActive }) =>
+                            window.location.pathname.startsWith("/management/roomsAndChairs") ? "active" : ""
+                        }
+                    >
+                        Rooms & Chairs
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink 
                         to="/management/servicesAndPackages/menu" 
                         className={({ isActive }) =>
                             window.location.pathname.startsWith("/management/services") || (window.location.pathname.startsWith("/management/packages"))  ? "active" : ""
@@ -146,26 +156,6 @@ export default function EmployeeSidebar( { pageData, reloadPageData }: {
                         }
                     >
                         Vouchers
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink 
-                        to="/management/roomsAndChairs" 
-                        className={({ isActive }) =>
-                            window.location.pathname.startsWith("/management/roomsAndChairs") ? "active" : ""
-                        }
-                    >
-                        Rooms & Chairs
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink 
-                        to="/management/jobs/menu" 
-                        className={({ isActive }) =>
-                            window.location.pathname.startsWith("/management/jobs") ? "active" : ""
-                        }
-                    >
-                        Jobs
                     </NavLink>
                 </li>
                 <li>{

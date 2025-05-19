@@ -11,10 +11,11 @@ import JobManagement from "./pages/JobManagement_v0";
 import JobMenu from "./pages/JobMenu_v0";
 import MyAccount from "./pages/MyAccount_v0";
 import PackageManagement from "./pages/PackageManagement_v0";
-import PageNotFound from "./components/PageNotFound";
+import PageNotFound from "./firebase/PageNotFound";
 import ServiceManagement from "./pages/ServiceManagement";
 import ServicePackageMenu from "./pages/ServicePackageMenu_v0";
 import SpaRadiseAuth from "./firebase/SpaRadiseAuth";
+import Unauthorized from "./firebase/Unauthorized";
 import { useEffect, useState } from "react";
 import VoucherManagement from "./pages/VoucherManagement_v0";
 import VoucherMenu from "./pages/VoucherMenu_v0";
@@ -79,7 +80,7 @@ function App() {
                         <Route path="management/clients" element={ <ClientManagement/> }/>
                         <Route path="management/clients/menu" element={<ClientMenu/>}/>
                         <Route path="management/roomsAndChairs" element={ <RoomMaintenance/> }/>
-                    </> : undefined
+                    </> : <Route path="management/*" element={ <Unauthorized/> }/>
                 }
             </Routes>
         </BrowserRouter>
