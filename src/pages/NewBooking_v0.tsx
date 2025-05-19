@@ -834,7 +834,7 @@ function ChooseClients({ pageData, reloadPageData }: {
                 <h1 className="booking-title">Who are the Clients?</h1>
                 {
                     ( pageData.customerInOrder !== undefined ) ? <>
-                        <label className="account-email" >Account Email</label>
+                        <label className="account-email" >Email Account</label>
                         <NewBookingEmailInput name="account-email" pageData={ pageData } required={ true }/>
                     </> : undefined
                 }
