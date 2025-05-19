@@ -64,6 +64,13 @@ export default function EmployeeMenu(): JSX.Element {
 
     }
 
+    const employeeList = Object.values(employeeDataMap);
+
+    const activeCount = employeeList.filter(emp => emp.status === "active").length;
+    const onLeaveCount = employeeList.filter(emp => emp.status === "on-leave").length;
+    const inactiveCount = employeeList.filter(emp => emp.status === "inactive").length;
+
+
     async function loadPageData(): Promise<void> {
 
         pageData.employeeDataMap = await EmployeeUtils.getEmployeeDataMapAll();
@@ -89,10 +96,10 @@ export default function EmployeeMenu(): JSX.Element {
     useEffect(() => { loadPageData(); }, []);
 
     return <>
-        <LoadingScreen loading={ !pageData.loaded }></LoadingScreen>
+        <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
         <div>
             <div className="layout">
-                <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
+                <EmployeeSidebar pageData={pageData} reloadPageData={reloadPageData} />
                 <div className="content">
                     <Outlet />
                     <div className="service-menu-main-content">
@@ -100,10 +107,7 @@ export default function EmployeeMenu(): JSX.Element {
                         </label>
                         <div className="service-menu-form-section">
                             <div className="service-stats">
-                                <div className="service-stat">{ObjectUtils.keyLength(rowTypeMap)}<br></br><span>Employees</span></div>
-                                <div className="service-stat">?<br></br><span>Active</span></div>
-                                <div className="service-stat">?<br></br><span>On-Leave</span></div>
-                                <div className="service-stat">?<br></br><span>Inactive</span></div>
+                                <div className="service-stat">{ObjectUtils.keyLength(employeeDataMap)}<br></br><span>Employees</span></div>
                             </div>
 
 
@@ -168,7 +172,6 @@ export default function EmployeeMenu(): JSX.Element {
                                     })
                                 }</tbody>
                             </table>
-                            <button type="button" onClick={() => console.log(pageData)}>Log page date</button>
                         </div>
                     </div>
                 </div>

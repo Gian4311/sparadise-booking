@@ -6,6 +6,7 @@ import {
     useEffect,
     useState
 } from "react";
+import LoadingScreen from "../components/LoadingScreen";
 import FormMoneyOrPercentageInput from "../components/FormMoneyOrPercentageInput";
 import FormTinyTextInput from "../components/FormTinyTextInput";
 import NumberUtils from "../utils/NumberUtils";
@@ -483,6 +484,7 @@ export default function VoucherManagement(): JSX.Element {
     useEffect(() => { loadPageData() }, []);
 
     return <>
+
         <EmployeeSidebar pageData={pageData} reloadPageData={reloadPageData} />
         <form onSubmit={submit}>
             <div className="service-main-content">
