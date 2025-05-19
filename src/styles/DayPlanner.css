@@ -89,8 +89,7 @@ table.dayPlanner td.move {
   height: 40px;
 }
 table.dayPlanner td.booking-selected {
-  border: 2px solid #ebcb2a;
-  color: #ebcb2a;
+  color: #EDE848;
 }
 
 table.dayPlanner td.reserved {

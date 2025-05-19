@@ -13,16 +13,13 @@ import {
     PackageServiceDataMap,
     ServiceDataMap,
     ServiceMaintenanceData,
-    ServiceTransactionData,
     ServiceTransactionDataMap,
     ServiceTransactionEmployeeListKeyMap,
     SpaRadisePageData,
-    VoucherData,
     VoucherDataMap,
     VoucherPackageDataMap,
     VoucherServiceDataMap,
     VoucherTransactionApplicationMap,
-    VoucherTransactionData,
     VoucherTransactionDataMap
 } from "../firebase/SpaRadiseTypes";
 import "../styles/ClientIndex.css";
@@ -493,28 +490,6 @@ export default function NewBooking(): JSX.Element {
 
     }
 
-    async function loadVoucherDataOfDayData(): Promise<void> {
-
-        pageData.voucherDataOfDayMap = {};
-        const
-            { date, voucherDataMap, voucherDataOfDayMap } = pageData,
-            dateTimeStart: Date = DateUtils.toFloorByDay(date),
-            dateTimeEnd: Date = DateUtils.toCeilByDay(date),
-            dateRange: DateRange = new DateRange(dateTimeStart, dateTimeEnd)
-            ;
-        for (let voucherId in voucherDataMap) {
-
-            const
-                voucherData = voucherDataMap[voucherId],
-                { dateValid, dateExpiry } = voucherData,
-                dateRangeCompare: DateRange = new DateRange(dateValid, dateExpiry)
-                ;
-            if (dateRange.overlapsWith(dateRangeCompare))
-                voucherDataOfDayMap[voucherId] = voucherData;
-
-        }
-    }
-
     async function loadVoucherData(): Promise<void> {
 
         const
@@ -549,6 +524,28 @@ export default function NewBooking(): JSX.Element {
 
         }
 
+    }
+
+    async function loadVoucherDataOfDayData(): Promise<void> {
+
+        ObjectUtils.clear( pageData.voucherDataOfDayMap );
+        const
+            { date, voucherDataMap, voucherDataOfDayMap } = pageData,
+            dateTimeStart: Date = DateUtils.toFloorByDay(date),
+            dateTimeEnd: Date = DateUtils.toCeilByDay(date),
+            dateRange: DateRange = new DateRange(dateTimeStart, dateTimeEnd)
+            ;
+        for (let voucherId in voucherDataMap) {
+
+            const
+                voucherData = voucherDataMap[voucherId],
+                { dateValid, dateExpiry } = voucherData,
+                dateRangeCompare: DateRange = new DateRange(dateValid, dateExpiry)
+                ;
+            if (dateRange.overlapsWith(dateRangeCompare))
+                voucherDataOfDayMap[voucherId] = voucherData;
+
+        }
     }
 
     async function loadVoucherTransactionList(): Promise<void> {
@@ -1142,7 +1139,7 @@ function Summary({ pageData, reloadPageData }: {
 
     }
 
-    function deleteVoucher(voucherTransactionId: string): void {
+    function deleteVoucherTransaction(voucherTransactionId: string): void {
 
         delete pageData.voucherTransactionDataMap[voucherTransactionId];
         reloadPageData();
@@ -1173,7 +1170,7 @@ function Summary({ pageData, reloadPageData }: {
                     <div className="time-slot-date">{DateUtils.toString(date, "Mmmm dd, yyyy")}</div>
                 </section>
                 <section className="form-section booking-summary-section">
-                    <BookingReceipt pageData={pageData} showActualTime={ false } addVoucher={ addVoucher } deleteVoucher={ deleteVoucher } reloadPageData={ reloadPageData }/>
+                    <BookingReceipt bookingReceiptMode="newBooking" pageData={pageData} showActualTime={ false } addVoucher={ addVoucher } deleteVoucherTransaction={ deleteVoucherTransaction } reloadPageData={ reloadPageData }/>
                 </section>
             </section>
             <section className="form-section booking-summary-section">

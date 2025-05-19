@@ -51,6 +51,22 @@ export interface ClientDataMap extends SpaRadiseDataMap< ClientData > {
 
 }
 
+export interface DiscountData extends SpaRadiseDocumentData {
+
+    booking: DocumentReference,
+    discountType: string | null,
+    amount: number | null,
+    percentage: number | null,
+    status: discountStatus
+
+}
+
+export interface DiscountDataMap extends SpaRadiseDataMap< DiscountData > {
+
+    [ discountId: string | number ]: DiscountData
+
+}
+
 export interface EmployeeData extends SpaRadiseDocumentData {
 
     lastName: string,
@@ -162,6 +178,21 @@ export interface PackageServiceData extends SpaRadiseDocumentData {
 export interface PackageServiceDataMap extends SpaRadiseDataMap< PackageServiceData > {
 
     [ packageServiceId: string | number ]: PackageServiceData
+
+}
+
+export interface PaymentData extends SpaRadiseDocumentData {
+
+    booking: DocumentReference,
+    amount: number,
+    gcashReference: string | null,
+    status: paymentStatus
+
+}
+
+export interface PaymentDataMap extends SpaRadiseDataMap< PaymentData > {
+
+    [ paymentId: string | number ]: PaymentData
 
 }
 
@@ -323,7 +354,7 @@ export interface VoucherTransactionData extends SpaRadiseDocumentData {
 
     voucher: DocumentReference,
     booking: DocumentReference,
-    status: voucherStatus
+    status: voucherTransactionStatus
 
 }
 

@@ -17,6 +17,7 @@ import {
 import DateRange from "../utils/DateRange";
 import DateUtils from "../utils/DateUtils";
 import Discount from "../utils/Discount";
+import FormMarkButton from "./FormMarkButton";
 import FormVoucherInput from "./FormVoucherInput";
 import { Fragment } from "react/jsx-runtime";
 import MoneyUtils from "../firebase/MoneyUtils";
@@ -31,6 +32,8 @@ import VoucherUtils from "../firebase/VoucherUtils";
 
 import "../styles/ClientBookingCreation2.css";
 import "../styles/BookingReceipt.scss";
+
+type bookingReceiptMode = "newBooking" | "management";
 
 interface BookingReceiptPageData extends SpaRadisePageData {
 
@@ -62,7 +65,8 @@ interface BookingReceiptPageData extends SpaRadisePageData {
         [ voucherId: documentId ]: { [ serviceId: documentId ]: documentId }
     },
     voucherTransactionApplicationMap: VoucherTransactionApplicationMap,
-    voucherTransactionDataMap: VoucherTransactionDataMap
+    voucherTransactionDataMap: VoucherTransactionDataMap,
+    voucherTransactionDefaultDataMap: VoucherTransactionDataMap
 
 }
 
@@ -78,13 +82,14 @@ interface PriceRow {
 const DATE_TIME_FORMAT = "h:mmAM-h:mmAM";
 
 export default function BookingReceipt( {
-    pageData, showActualTime,
-    addVoucher, deleteVoucher, reloadPageData
+    bookingReceiptMode, pageData, showActualTime,
+    addVoucher, deleteVoucherTransaction, reloadPageData
 }: {
+    bookingReceiptMode: bookingReceiptMode,
     pageData: BookingReceiptPageData,
     showActualTime: boolean,
     addVoucher(): Promise< void > | void,
-    deleteVoucher( voucherTransactionId: documentId ): Promise< void > | void,
+    deleteVoucherTransaction( voucherTransactionId: documentId ): Promise< void > | void,
     reloadPageData(): void
 } ): JSX.Element {
 
@@ -93,13 +98,11 @@ export default function BookingReceipt( {
             clientDataMap, clientInfoMap, maintenanceDataMap, packageDataMap, serviceDataMap,
             voucherDataMap,
             voucherPackageKeyMap, voucherServiceKeyMap, voucherTransactionApplicationMap,
-            voucherTransactionDataMap
+            voucherTransactionDataMap, voucherTransactionDefaultDataMap
         } = pageData,
         [ reload, setReload ] = useState< boolean >( false )
     ;
     let priceRowCount = 0;
-
-    
 
     async function loadComponentData(): Promise< void > {
 
@@ -154,9 +157,10 @@ export default function BookingReceipt( {
 
                 const
                     serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ],
-                    { service: { id: serviceId } } = serviceTransactionData,
+                    { service: { id: serviceId }, status } = serviceTransactionData,
                     packageId = serviceTransactionData.package?.id
                 ;
+                if( status === "canceled" ) continue;
                 if( packageId )
                     packageVoucherTransactionKeyMap[ packageId ] = undefined;
                 else
@@ -201,8 +205,11 @@ export default function BookingReceipt( {
 
         for( let voucherTransactionId in voucherTransactionDataMap ) {
 
-            const voucherId = voucherTransactionDataMap[ voucherTransactionId ].voucher?.id;
-            if( !voucherId ) continue;
+            const
+                { voucher, status } = voucherTransactionDataMap[ voucherTransactionId ],
+                voucherId = voucher?.id
+            ;
+            if( !voucherId || status === "canceled" ) continue;
             voucherTransactionPriceTableMap[ voucherTransactionId ] = [];
             const
                 packageKeyMap = voucherPackageKeyMap[ voucherId ],
@@ -392,9 +399,9 @@ export default function BookingReceipt( {
                     <tr>
                         <th>#</th>
                         <th>Service</th>
-                        <th>Time</th>
+                        <th>Booking Time</th>
                         {
-                            showActualTime ? <th>Actual</th> : undefined
+                            showActualTime ? <th>Actual Time</th> : undefined
                         }
                         <th>Price</th>
                     </tr>
@@ -583,9 +590,35 @@ export default function BookingReceipt( {
                                             "n.00"
                                         )
                                     }</td>
-                                    <td><button className="delete-voucher-btn" type="button" onClick={() => deleteVoucher(voucherTransactionId)}>
-                                        Delete
-                                    </button></td>
+                                    <td>{
+                                        ( bookingReceiptMode === "newBooking" ) ? <button className="delete-voucher-btn" type="button" onClick={() => deleteVoucherTransaction(voucherTransactionId)}>Delete</button>
+                                        : ( voucherTransactionDataMap[ voucherTransactionId ].status == "canceled" ) ? <FormMarkButton< voucherTransactionStatus >
+                                            confirmMessage="Would you like to add back this voucher?"
+                                            className="add-voucher-btn"
+                                            documentData={ voucherTransactionDataMap[ voucherTransactionId ] }
+                                            documentDefaultData={ voucherTransactionDefaultDataMap[ voucherTransactionId ] }
+                                            documentId={ voucherTransactionId }
+                                            keyName="status"
+                                            noText="Cancel"
+                                            pageData={ pageData }
+                                            value="pending"
+                                            reloadPageData={ reloadPageData }
+                                            yesText="Yes"
+                                        >Redeem</FormMarkButton>
+                                        : <FormMarkButton< voucherTransactionStatus >
+                                            confirmMessage="Would you like to cancel this voucher?"
+                                            className="delete-voucher-btn"
+                                            documentData={ voucherTransactionDataMap[ voucherTransactionId ] }
+                                            documentDefaultData={ voucherTransactionDefaultDataMap[ voucherTransactionId ] }
+                                            documentId={ voucherTransactionId }
+                                            keyName="status"
+                                            noText="Back"
+                                            pageData={ pageData }
+                                            value="canceled"
+                                            reloadPageData={ reloadPageData }
+                                            yesText="Yes, Cancel This"
+                                        >Cancel</FormMarkButton>
+                                    }</td>
                                 </tr>;
 
                             })}
@@ -636,9 +669,14 @@ function SingleServiceRow( {
             bookingDateTimeStart, canceled
         } = serviceTransactionData,
         dateRangeBooking: DateRange = new DateRange( bookingDateTimeStart, bookingDateTimeEnd ),
+        isOneMinute: boolean = Boolean(
+            actualBookingDateTimeStart && actualBookingDateTimeEnd
+            && DateUtils.areSameByMinute( actualBookingDateTimeStart, actualBookingDateTimeEnd )
+        ),
         dateRangeActual: DateRange | undefined =
-            ( !canceled && actualBookingDateTimeStart && actualBookingDateTimeEnd ) ?
-                new DateRange( actualBookingDateTimeStart, actualBookingDateTimeEnd )
+            (
+                !canceled && actualBookingDateTimeStart && actualBookingDateTimeEnd && !isOneMinute
+            ) ? new DateRange( actualBookingDateTimeStart, actualBookingDateTimeEnd )
             : undefined
     ;
     return <tr className="receiptRow">
@@ -646,9 +684,12 @@ function SingleServiceRow( {
         <td>{ serviceName }</td>
         <td>{ dateRangeBooking.toString( DATE_TIME_FORMAT ) }</td>
         {
-            showActualTime ? <td>
-                { dateRangeActual ? dateRangeActual.toString( DATE_TIME_FORMAT ) : "-" }
-            </td> : undefined
+            showActualTime ? <td>{
+                dateRangeActual ? dateRangeActual.toString( DATE_TIME_FORMAT )
+                : ( isOneMinute && actualBookingDateTimeStart ) ?
+                    DateUtils.toString( actualBookingDateTimeStart, "h:mmAM" )
+                : "-"
+            }</td> : undefined
         }
         <td>{ ( price !== undefined ) ? `₱` + NumberUtils.toString( price, "n.00" ) : "" }</td>
     </tr>;
