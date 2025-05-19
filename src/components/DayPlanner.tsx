@@ -30,6 +30,7 @@ import StringUtils from "../utils/StringUtils";
 import { useNavigate } from "react-router-dom";
 
 import "../styles/DayPlanner.css";
+import CapacityUtils from "../firebase/CapacityUtils";
 
 type dayPlannerMode = "newBooking" | "management";
 
@@ -877,12 +878,17 @@ export default function DayPlanner({
 
     async function loadCapacityData(): Promise<void> {
 
-        // initial
         for (let timeSlotId in calendarRowDataMap) {
 
-            const calendarRow = calendarRowDataMap[timeSlotId];
-            calendarRow.chairs = 5;
-            calendarRow.rooms = 5;
+            const
+                calendarRow = calendarRowDataMap[timeSlotId],
+                [ hr, min ] = timeSlotId.replace(`-`, `:`).split(`:`).map(value => +value),
+                date = DateUtils.setTime( pageData.date, { hr, min } ),
+                capacityData = await CapacityUtils.getCapacityDataByDate( date )
+            ;
+            if( !capacityData ) return;
+            calendarRow.chairs = capacityData.chairCount;
+            calendarRow.rooms = capacityData.roomCount;
 
         }
 

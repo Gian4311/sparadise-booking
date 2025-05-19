@@ -44,6 +44,18 @@ export default function BookingDateInput(
             parsedValue: main = await parseValue( unparsedValueNew ),
             old = await parseValue( unparsedValue )
         ;
+        if( parsedValue instanceof Date && DateUtils.isSunday( parsedValue ) ) {
+
+            pageData.popupData = {
+                children: `Booking cannot be on a Sunday.`,
+                popupMode: `yesOnly`,
+                yesText: `OK`
+            };
+            pageData.loaded = true;
+            reloadPageData();
+            return;
+
+        }
         if( validate ) if( !( await validate( parsedValue, unparsedValueNew, old ) ) ) return;
         setUnparsedValue( unparsedValueNew );
         pageData.date = parsedValue ?? ( null as unknown as Date );

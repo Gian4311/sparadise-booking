@@ -138,8 +138,8 @@ export default class CapacityUtils {
             ,
             capacityQuery = query(
                 capacityCollection,
-                where( "date", "<=", date ),
-                orderBy( "date", "desc" )
+                where( "datetime", "<=", date ),
+                orderBy( "datetime", "desc" )
             ),
             snapshotList: QueryDocumentSnapshot[] =
                 ( await getDocs( capacityQuery ) ).docs
