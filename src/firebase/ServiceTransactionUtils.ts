@@ -106,7 +106,6 @@ export default class ServiceTransactionUtils {
             service: data.service,
             package: data.package,
             canceled: data.canceled,
-            free: data.free,
             bookingDateTimeStart: SpaRadiseFirestore.getDateFromSnapshot(
                 snapshot, "bookingDateTimeStart"
             ),
@@ -120,7 +119,8 @@ export default class ServiceTransactionUtils {
                 snapshot, "actualBookingDateTimeEnd"
             ),
             employee: data.employee,
-            notes: data.notes
+            notes: data.notes,
+            status: data.status
             
         };
 

@@ -213,13 +213,13 @@ export interface ServiceTransactionData extends SpaRadiseDocumentData {
     client: DocumentReference,
     service: DocumentReference,
     package: DocumentReference | null,
-    canceled: boolean,
     bookingDateTimeStart: Date,
     bookingDateTimeEnd: Date,
     actualBookingDateTimeStart: Date | null,
     actualBookingDateTimeEnd: Date | null,
     employee: DocumentReference | null,
-    notes: string | null
+    notes: string | null,
+    status: serviceTransactionStatus
 
 }
 

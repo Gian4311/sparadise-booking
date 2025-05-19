@@ -807,13 +807,13 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
             package: packageId ? SpaRadiseFirestore.getDocumentReference(
                 packageId, SpaRadiseEnv.PACKAGE_COLLECTION
             ) : null,
-            canceled: false,
             bookingDateTimeStart: null as unknown as Date,
             bookingDateTimeEnd: null as unknown as Date,
             actualBookingDateTimeStart: null,
             actualBookingDateTimeEnd: null,
             employee: null,
-            notes: null
+            notes: null,
+            status: "uncanceled"
         };
         serviceIncludedMap[serviceId] = getServiceTransactionId(
             clientIdActive, serviceTransactionIndex

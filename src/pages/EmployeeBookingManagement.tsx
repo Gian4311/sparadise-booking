@@ -330,7 +330,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
                 : <button type="button" onClick={() => { pageData.formIndex--; reloadPageData(); }}>None, Go Back</button>
             }
 
-            <button type="button" onClick={() => console.log(pageData)}>Log pasge data</button>
+            <button type="button" onClick={() => console.log(pageData)}>Log page data</button>
         </form>
     </>
 
@@ -557,7 +557,7 @@ function EditServiceTransactions( { bookingId, pageData, reloadPageData }: {
                     {
                         service: { id: serviceId },
                         actualBookingDateTimeEnd, actualBookingDateTimeStart,
-                        bookingDateTimeEnd, bookingDateTimeStart, canceled, employee
+                        bookingDateTimeEnd, bookingDateTimeStart, employee
                     } = serviceTransactionData,
                     dateRange: DateRange = new DateRange(
                         bookingDateTimeStart, bookingDateTimeEnd
@@ -574,11 +574,12 @@ function EditServiceTransactions( { bookingId, pageData, reloadPageData }: {
                                 .includes( employeeId )
                     ),
                     status = (
-                        canceled ? "canceled"
+                        ( serviceTransactionData.status === "canceled" ) ? "canceled"
                         : actualBookingDateTimeEnd ? "finished"
                         : actualBookingDateTimeStart ? "active"
                         : "pending"
-                    )
+                    ),
+                    canceled = ( status === "canceled" )
                 ;
 
                 return <div className={ `service-scroll-item ${ status }` } key={ serviceTransactionId }>
@@ -671,8 +672,6 @@ function EditPayments( { bookingId, pageData, reloadPageData }: {
     pageData: EmployeeBookingManagementPageData,
     reloadPageData: () => void
 } ): JSX.Element {
-
-    return <></>
 
     async function checkFormValidity(): Promise< boolean > {
 
@@ -870,7 +869,7 @@ function EditPayments( { bookingId, pageData, reloadPageData }: {
             </div>
         </section>
         <section className="service-scroll-container">{
-            pageData.clientIdActive ? Object.keys( pageData.clientInfoMap[ pageData.clientIdActive ] ).map( serviceTransactionId => {
+            pageData.clientIdActive ? Object.keys( pageData.clientInfoMap[ pageData.clientIdActive ].serviceTransactionDataMap ).map( serviceTransactionId => {
 
                 const
                     {
@@ -887,7 +886,7 @@ function EditPayments( { bookingId, pageData, reloadPageData }: {
                     {
                         service: { id: serviceId },
                         actualBookingDateTimeEnd, actualBookingDateTimeStart,
-                        bookingDateTimeEnd, bookingDateTimeStart, canceled, employee
+                        bookingDateTimeEnd, bookingDateTimeStart, employee
                     } = serviceTransactionData,
                     dateRange: DateRange = new DateRange(
                         bookingDateTimeStart, bookingDateTimeEnd
@@ -904,11 +903,12 @@ function EditPayments( { bookingId, pageData, reloadPageData }: {
                                 .includes( employeeId )
                     ),
                     status = (
-                        canceled ? "canceled"
+                        ( serviceTransactionData.status === "canceled" ) ? "canceled"
                         : actualBookingDateTimeEnd ? "finished"
                         : actualBookingDateTimeStart ? "active"
                         : "pending"
-                    )
+                    ),
+                    canceled = ( status === "canceled" )
                 ;
 
                 return <div className={ `service-scroll-item ${ status }` } key={ serviceTransactionId }>
