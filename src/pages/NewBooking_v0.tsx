@@ -57,6 +57,7 @@ import PackageServiceUtils from "../firebase/PackageServiceUtils";
 import PackageUtils from "../firebase/PackageUtils";
 import PaymentUtils from "../firebase/PaymentUtils";
 import PersonUtils from "../utils/PersonUtils";
+import PopupModal from "../components/PopupModal";
 import ServiceMaintenanceUtils from "../firebase/ServiceMaintenanceUtils";
 import ServiceTransactionUtils from "../firebase/ServiceTransactionUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
@@ -81,7 +82,7 @@ import NavBar from "../components/ClientNavBar";
 import LoadingScreen from "../components/LoadingScreen";
 import "../styles/NewBooking_v0.css"
 import DateRange from "../utils/DateRange";
-import QuickPopup from "../components/quickPopupMessage";
+
 export interface NewBookingPageData extends SpaRadisePageData {
 
     accountData: AccountData,
@@ -628,7 +629,9 @@ export default function NewBooking(): JSX.Element {
     useEffect(() => { loadPageData(); }, []);
 
     return <>
-        {/* <EmployeeSidebar/> */}
+        <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
+        <PopupModal pageData={ pageData } reloadPageData={ reloadPageData } />
+        <NavBar></NavBar>
         <form onSubmit={submit}>
             {
                 (pageData.formIndex === 0) ? <ChooseClients pageData={pageData} reloadPageData={reloadPageData} />
@@ -746,8 +749,6 @@ function ChooseClients({ pageData, reloadPageData }: {
     }
 
     return <>
-        <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
-        <NavBar></NavBar>
         <main className="booking-container">
             <section className="booking-form">
                 <h1 className="booking-title">Who are the Clients?</h1>
@@ -957,8 +958,6 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
     }
 
     return <>
-        <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
-        <NavBar></NavBar>
         <main className="booking-container">
             <section className="form-section client-date-section">
                 <div className="date-input">
@@ -1100,15 +1099,40 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
 
     }
 
-    async function checkFormValidity(): Promise<boolean> {
+    function checkFormValidity(): true | string {
 
+        for( let clientId in clientInfoMap ) {
+
+            const { serviceTransactionDataMap } = clientInfoMap[ clientId ];
+            for( let serviceTransactionId in serviceTransactionDataMap ) {
+
+                const {
+                    bookingDateTimeEnd, bookingDateTimeStart
+                } = serviceTransactionDataMap[ serviceTransactionId ];
+                if( !bookingDateTimeStart || !bookingDateTimeEnd )
+                    return "All services must have a schedule. If a service is unavailable for the whole day, please remove them from the last page.";
+
+            }
+
+        }
         return true;
 
     }
 
     async function nextPage(): Promise<void> {
 
-        await checkFormValidity();
+        const error = checkFormValidity();
+        if( error !== true ) {
+
+            pageData.popupData = {
+                children: error,
+                popupMode: "yesOnly",
+                yesText: "OK"
+            }
+            reloadPageData();
+            return;
+
+        };
         pageData.formIndex++;
         reloadPageData();
 
@@ -1122,8 +1146,6 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
     }
 
     return <>
-        <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
-        <NavBar></NavBar>
         <main className="booking-container">
             <section className="form-section client-date-section">
                 <div className="time-slot-date">{DateUtils.toString(date, "Mmmm dd, yyyy")}</div>
@@ -1131,7 +1153,7 @@ function ChooseTimeSlots({ pageData, reloadPageData }: {
             <DayPlanner dayPlannerMode="newBooking" pageData={dayPlannerPageData} />
             <section className="action-buttons">
                 <button className="back-btn" type="button" onClick={previousPage}>Back</button>
-                <button className="proceed-btn" type="button" onClick={nextPage}>Proceed (3/4)</button>
+                <button className={ checkFormValidity() === true ? `proceed-btn` : `back-btn` } type="button" onClick={nextPage}>Proceed (3/4)</button>
             </section>
         </main>
     </>;
@@ -1189,8 +1211,6 @@ function Summary({ pageData, reloadPageData }: {
     }
 
     return <>
-        <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
-        <NavBar></NavBar>
         <main className="booking-container">
             <section className="form-section booking-summary-section">
                 <h2 className="summary-label">Booking Summary</h2>
@@ -1274,8 +1294,6 @@ function Finished({ pageData, reloadPageData }: {
     }
 
     return <>
-        <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
-        <NavBar></NavBar>
         <main className="booking-container-last">
             <div className="confirmation-message">Confirm Booking</div>
                 <section className="last-action-buttons">
@@ -1284,86 +1302,6 @@ function Finished({ pageData, reloadPageData }: {
                 </section>
         </main>
     </>;
-
-}
-
-function Receipt({ pageData, reloadPageData }: {
-    pageData: NewBookingPageData,
-    reloadPageData: () => void
-}): JSX.Element {
-
-    const
-        {
-            date, clientDataMap, clientInfoMap, maintenanceDataMap, packageDataMap,
-            packageServiceKeyMap, serviceDataMap
-        } = pageData
-        ;
-    return (
-        <table className="booking-summary-table">
-            <thead>
-                <tr>
-                    <th>Client</th>
-                    <th>Service/Package</th>
-                    <th>Price</th>
-                </tr>
-            </thead>
-            <tbody>
-                {Object.keys(clientInfoMap).map((clientIndex) => {
-                    const clientData = clientDataMap[+clientIndex];
-                    const { name } = clientData;
-                    const {
-                        packageIncludedMap,
-                        singleServiceIncludedMap,
-                        serviceTransactionDataMap,
-                        serviceIncludedMap,
-                    } = clientInfoMap[+clientIndex];
-
-                    // Get total rows needed for rowspan
-                    const packageKeys = Object.keys(packageIncludedMap);
-                    const totalRows = packageKeys.length;
-
-                    return packageKeys.map((packageKey, idx) => {
-                        const { name: packageName } = packageDataMap[packageKey];
-                        const { price } = maintenanceDataMap[packageKey];
-
-                        return (
-                            <tr key={`${clientIndex}-${packageKey}`}>
-                                {idx === 0 && (
-                                    <td className="client-name-summary" rowSpan={totalRows} style={{ verticalAlign: "top" }}>
-                                        {name}
-                                    </td>
-                                )}
-                                <td>
-                                    <div className="package-name-summary">{packageName}</div>
-                                    {Object.keys(packageServiceKeyMap[packageKey]).map(
-                                        serviceId => {
-                                            const { name: serviceName } = serviceDataMap[serviceId];
-                                            const serviceTransactionId = serviceIncludedMap[serviceId];
-                                            if (!serviceTransactionId) return undefined;
-                                            const {
-                                                bookingDateTimeStart,
-                                                bookingDateTimeEnd,
-                                            } = serviceTransactionDataMap[serviceTransactionId];
-                                            const dateRange = new DateRange(
-                                                bookingDateTimeStart,
-                                                bookingDateTimeEnd
-                                            );
-                                            return (
-                                                <div key={serviceId}>
-                                                    {'> '}{serviceName} ({dateRange.toString("h:mmAM-h:mmAM")})
-                                                </div>
-                                            );
-                                        }
-                                    )}
-                                </td>
-                                <td>₱{price}</td>
-                            </tr>
-                        );
-                    });
-                })}
-            </tbody>
-        </table>
-    );
 
 }
 

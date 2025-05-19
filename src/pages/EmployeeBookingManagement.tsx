@@ -493,7 +493,10 @@ export default function EmployeeBookingManagement(): JSX.Element {
                 pageData.popupData = {
                     children: "Booking done!",
                     popupMode: "yesOnly",
-                    yes: () => navigate( `/management/bookings/menu/` + DateUtils.toString( pageData.date, "yyyy-mm-dd" ) )
+                    yes: () => navigate(
+                        `/management/bookings/menu/`
+                        + DateUtils.toString( pageData.date, "yyyy-mm-dd" )
+                    )
                 }
 
         }
