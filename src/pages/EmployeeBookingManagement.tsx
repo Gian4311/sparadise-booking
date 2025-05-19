@@ -746,9 +746,6 @@ export default function EmployeeBookingManagement(): JSX.Element {
                     </button>
                 )}
 
-                <button type="button" className="log-data" onClick={() => console.log(pageData)}>
-                    Log page data
-                </button>
             </form>
         </>
     );
@@ -1027,7 +1024,7 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
                                     <div className="service-card-footer">
                                         {
                                         status === 'waived' ? (
-                                            <span className="status-text canceled">WAIVED</span>
+                                            <span className="status-text waived">WAIVED</span>
                                         ) : status === 'canceled' ? (
                                             <FormMarkButton<serviceTransactionStatus>
                                                 confirmMessage="Would you like to waive this service transaction?"
@@ -1040,7 +1037,7 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
                                                 value="serviceWaived"
                                                 reloadPageData={reloadPageData}
                                                 yesText="Yes, Waive This"
-                                                className="btn-cancel-booking"
+                                                className="btn-waive-booking"
                                             >
                                                 WAIVE
                                             </FormMarkButton>
@@ -1126,8 +1123,7 @@ function EditPayments({ bookingId, pageData, reloadPageData, updateBooking }: {
 
     return <main className="employee-booking-management-main-content">
         <BookingReceipt bookingReceiptMode="management" pageData={pageData} showActualTime={true} addVoucher={addVoucher} deleteVoucherTransaction={deleteVoucherTransaction} reloadPageData={reloadPageData} />
-        <button type="submit">Finish</button>
-        <button type="button" onClick={() => console.log(pageData)}>Log page data</button>
+        <button className="finish-booking-management"type="submit">Finish Booking</button>
     </main>
 
 }
