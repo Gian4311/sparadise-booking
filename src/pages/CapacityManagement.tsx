@@ -34,6 +34,7 @@ import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 import QuickPopup from "../components/quickPopupMessage";
 import FormDateTimeInput from "../components/FormDateTimeInput";
 import PopupModal from "../components/PopupModal";
+import FormDateTime30MinStepInput from "../components/FormDateTime30MinStepInput";
 
 interface CapacityManagementPageData extends SpaRadisePageData {
 
@@ -202,7 +203,7 @@ export default function CapacityManagement(): JSX.Element {
                             <div className="service-form-row-group">
                                 <div className="service-form-row">
                                     <label htmlFor="service-name">Date & Time</label>
-                                    <FormDateTimeInput documentData={pageData.capacityData} documentDefaultData={pageData.capacityDefaultData} documentId={documentId} keyName="datetime" min={ isNewMode ? new Date() : undefined } name="service-name" pageData={pageData} required={true} />
+                                    <FormDateTime30MinStepInput documentData={pageData.capacityData} documentDefaultData={pageData.capacityDefaultData} documentId={documentId} keyName="datetime" min={ isNewMode ? new Date() : undefined } name="service-name" pageData={pageData} required={true} />
                                 </div>
                             </div>
 
