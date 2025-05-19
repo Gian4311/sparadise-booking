@@ -460,19 +460,6 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     }
 
-    async function previousPage(): Promise<void> {
-
-        const formIndex: number = pageData.formIndex--;
-        if (formIndex === 0) {
-
-            navigate(-1);
-            return;
-
-        }
-        reloadPageData();
-
-    }
-
     function reloadPageData(): void {
 
         setPageData({ ...pageData });
@@ -764,6 +751,50 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
     updateBooking: () => Promise<void> | void
 }): JSX.Element {
 
+    function cancelAll(): void {
+
+        if (!bookingId) return;
+        const {
+            clientInfoMap, bookingDefaultData, serviceTransactionDefaultDataMap, updateMap
+        } = pageData;
+        for (let clientId in clientInfoMap) {
+
+            const { serviceTransactionDataMap } = clientInfoMap[clientId];
+            for (let serviceTransactionId in serviceTransactionDataMap) {
+
+                const
+                    serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ],
+                    serviceTransactionDefaultData =
+                        serviceTransactionDefaultDataMap[ serviceTransactionId ]
+                    ,
+                    { status } = serviceTransactionData
+                ;
+                if( status === "serviceCanceled" || status === "serviceWaived" ) continue;
+                serviceTransactionData.status = "serviceCanceled";
+                const
+                    statusDefault = serviceTransactionDefaultData.status,
+                    isDefault: boolean = ( status === statusDefault ),
+                    hasUpdateRecord: boolean = (serviceTransactionId in updateMap)
+                    ;
+                if (!isDefault) {
+
+                    if (!hasUpdateRecord) updateMap[serviceTransactionId] = {};
+                    updateMap[serviceTransactionId].status = true;
+
+                } else if (hasUpdateRecord) {
+
+                    delete updateMap[serviceTransactionId].status;
+                    if (!ObjectUtils.hasKeys(updateMap[serviceTransactionId])) delete updateMap[serviceTransactionId];
+
+                }
+
+            }
+
+        }
+        setCanceledBooking();
+
+    }
+
     async function checkFormValidity(): Promise<boolean> {
 
         return true;
@@ -815,6 +846,46 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
         } else if (hasUpdateRecord) {
 
             delete updateMap[bookingId].activeDateTime;
+            if (!ObjectUtils.hasKeys(updateMap[bookingId])) delete updateMap[bookingId];
+
+        }
+
+    }
+
+    function setCanceledBooking(): void {
+
+        if (!bookingId) return;
+        const { clientInfoMap, bookingData, bookingDefaultData, updateMap } = pageData;
+        let isCanceled: boolean = true;
+        for (let clientId in clientInfoMap) {
+
+            const { serviceTransactionDataMap } = clientInfoMap[clientId];
+            for (let serviceTransactionId in serviceTransactionDataMap) {
+
+                const { status } = serviceTransactionDataMap[serviceTransactionId];
+                isCanceled = ( status === "serviceCanceled" || status === "serviceWaived" );
+
+            }
+            if (!isCanceled) break;
+
+        }
+        if( !isCanceled ) return;
+        bookingData.canceledDateTime = new Date();
+        const
+            dateDefault = bookingDefaultData.canceledDateTime,
+            isDefault: boolean = dateDefault ? DateUtils.areSameByMinute(
+                dateDefault, bookingData.canceledDateTime
+            ) : false,
+            hasUpdateRecord: boolean = (bookingId in updateMap)
+            ;
+        if (!isDefault) {
+
+            if (!hasUpdateRecord) updateMap[bookingId] = {};
+            updateMap[bookingId].canceledDateTime = true;
+
+        } else if (hasUpdateRecord) {
+
+            delete updateMap[bookingId].canceledDateTime;
             if (!ObjectUtils.hasKeys(updateMap[bookingId])) delete updateMap[bookingId];
 
         }
@@ -878,6 +949,8 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
         }
 
     }
+
+    const isEditable = !pageData.bookingDefaultData?.finishedDateTime && !pageData.bookingDefaultData?.canceledDateTime
 
     return (
         <main className="employee-booking-management-main-content">
@@ -964,7 +1037,7 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
                                                 employeeDataMap={serviceTransactionEmployeeDataMap}
                                                 pageData={pageData}
                                                 keyName="employee"
-                                                readOnly={canceled}
+                                                readOnly={!isEditable || canceled}
                                                 required={true}
                                                 onChange={reloadPageData}
                                             >
@@ -982,7 +1055,7 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
                                                 documentId={serviceTransactionId}
                                                 pageData={pageData}
                                                 keyName="actualBookingDateTimeStart"
-                                                readOnly={canceled || !employee}
+                                                readOnly={!isEditable || canceled || !employee}
                                                 required={true}
                                                 onChange={() => {
                                                     setActiveBooking();
@@ -1002,7 +1075,7 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
                                                 min={actualBookingDateTimeStart || undefined}
                                                 pageData={pageData}
                                                 keyName="actualBookingDateTimeEnd"
-                                                readOnly={canceled || !employee || !actualBookingDateTimeStart}
+                                                readOnly={!isEditable || canceled || !employee || !actualBookingDateTimeStart}
                                                 required={true}
                                                 onChange={() => {
                                                     setFinishedBooking();
@@ -1071,9 +1144,11 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
             </section>
 
             <div className="footer-actions">
-                <button className="btn cancel-all-booking" type="button">
-                    Cancel All
-                </button>
+                {
+                    isEditable ? <button className="btn cancel-all-booking" type="button" onClick={ cancelAll }>
+                        Cancel All
+                    </button> : undefined
+                }
                 <button className="btn save-booking" type="button" onClick={updateBooking}>
                     Save
                 </button>
@@ -1093,6 +1168,8 @@ function EditPayments({ bookingId, pageData, reloadPageData, updateBooking }: {
     reloadPageData: () => void,
     updateBooking: () => Promise<void> | void
 }): JSX.Element {
+
+    const navigate = useNavigate();
 
     async function addVoucher(): Promise<void> {
 
@@ -1123,8 +1200,24 @@ function EditPayments({ bookingId, pageData, reloadPageData, updateBooking }: {
 
     }
 
+    async function previousPage(): Promise<void> {
+
+        const formIndex: number = pageData.formIndex--;
+        if (formIndex === 0) {
+
+            navigate(-1);
+            return;
+
+        }
+        reloadPageData();
+
+    }
+
     return <main className="employee-booking-management-main-content">
         <BookingReceipt bookingReceiptMode="management" pageData={pageData} showActualTime={true} addVoucher={addVoucher} deleteVoucherTransaction={deleteVoucherTransaction} reloadPageData={reloadPageData} />
+        <button className="btn save-booking" type="button" onClick={previousPage}>
+            Back
+        </button>
         <button type="submit">Finish</button>
         <button type="button" onClick={() => console.log(pageData)}>Log page data</button>
     </main>
