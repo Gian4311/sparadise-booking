@@ -16,6 +16,7 @@ import FormTinyTextInput from "../components/FormTinyTextInput";
 import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
 import {
+    AccountData,
     ServiceData,
     ServiceMaintenanceData,
     ServiceMaintenanceDataMap,
@@ -37,6 +38,8 @@ import QuickPopup from "../components/quickPopupMessage";
 
 interface ServiceManagementPageData extends SpaRadisePageData {
 
+    accountData: AccountData,
+    accountId?: documentId,
     serviceDefaultData: ServiceData,
     serviceData: ServiceData,
     serviceDocumentReference?: DocumentReference,
@@ -55,6 +58,7 @@ export default function ServiceManagement(): JSX.Element {
 
     const
         [pageData, setPageData] = useState<ServiceManagementPageData>({
+            accountData: {} as unknown as AccountData,
             loaded: false,
             serviceData: {
                 name: null as unknown as string,
@@ -407,7 +411,7 @@ export default function ServiceManagement(): JSX.Element {
 
     return <>
 
-        <EmployeeSidebar />
+        <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
         <form onSubmit={submit}>
             <div className="servman-container">
                 <div className="service-main-content">

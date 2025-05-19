@@ -1,6 +1,7 @@
 
 import { DocumentReference } from "firebase/firestore/lite";
 import {
+    AccountData,
     EmployeeData,
     JobData,
     JobDataMap,
@@ -39,6 +40,8 @@ import EmployeeSidebar from "../components/EmployeeSidebar";
 
 interface EmployeeManagementPageData extends SpaRadisePageData {
 
+    accountData: AccountData,
+    accountId?: documentId,
     employeeData: EmployeeData,
     employeeDefaultData: EmployeeData,
     employeeDocumentReference?: DocumentReference,
@@ -53,6 +56,7 @@ export default function EmployeeManagement(): JSX.Element {
 
     const
         [pageData, setPageData] = useState<EmployeeManagementPageData>({
+            accountData: {} as unknown as AccountData,
             employeeData: {
                 lastName: null as unknown as string,
                 firstName: null as unknown as string,
@@ -214,7 +218,7 @@ export default function EmployeeManagement(): JSX.Element {
 
     return <>
         <PopupModal pageData={pageData} reloadPageData={reloadPageData} />
-        <EmployeeSidebar />
+        <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
         <form onSubmit={submit}>
             <div className="employee-main-content">
                 <label htmlFor="employee-main-content" className="employee-management-location">Employees - {PersonUtils.toString(pageData.employeeDefaultData, "f mi l")}</label>

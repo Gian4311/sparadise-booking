@@ -7,7 +7,7 @@ import FormTextInput from "../components/FormTextInput";
 export default function EmployeeServiceDetail() {
   return (
     <div className="page-wrapper">
-      <EmployeeSidebar />
+      {/* <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/> */}
 
       <div className="service-main-content">
         <label htmlFor="service-main-content" className="service-management-location">

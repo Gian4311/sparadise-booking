@@ -1,15 +1,52 @@
+import {
+  AccountData,
+  SpaRadisePageData
+} from "../firebase/SpaRadiseTypes";
 import React from 'react';
 import '../styles/EmployeeServiceMenu.css';
 import '../styles/Sidebar.css';
 import { NavLink } from 'react-router-dom';
+import { useState } from "react";
 
 import SideBar from "../components/EmployeeSidebar";
 
+interface EmployeeDetailsPageData extends SpaRadisePageData {
+
+    accountData: AccountData,
+    accountId?: documentId
+
+}
+
 const ServicePackageMenu: React.FC = () => {
+
+  const
+      [ pageData, setPageData ] = useState< EmployeeDetailsPageData >( {
+          accountData: {
+              lastName: null as unknown as string,
+              firstName: null as unknown as string,
+              middleName: null,
+              sex: null as unknown as sex,
+              birthDate: null as unknown as Date,
+              email: null as unknown as string,
+              contactNumber: null as unknown as string,
+              contactNumberAlternate: null,
+              accountType: null as unknown as accountType
+          },
+          loaded: true,
+          updateMap: {}
+      } )
+  ;
+
+  function reloadPageData(): void {
+
+      setPageData( { ...pageData } );
+
+  }
+
   return (
     <div className="container">
 
-    <SideBar></SideBar>
+      <SideBar pageData={ pageData } reloadPageData={ reloadPageData }/>
 
       <div className="service-menu-main-content">
         <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">

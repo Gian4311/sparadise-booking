@@ -11,7 +11,7 @@ const RoomMaintenance: React.FC = () => {
         {/* <LoadingScreen></LoadingScreen> */}
         <div>
 
-            <EmployeeSidebar/>
+            {/* <EmployeeSidebar/> */}
             <div className="service-menu-main-content">
                 <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">
                     Rooms & Chairs

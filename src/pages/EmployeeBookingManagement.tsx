@@ -642,7 +642,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
         <>
             <LoadingScreen loading={!pageData.loaded} />
             <PopupModal pageData={pageData} reloadPageData={reloadPageData} />
-            <EmployeeSidebar />
+            <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
 
             <form onSubmit={submit} className="booking-form-layout">
                 <button onClick={() => navigate(-1)} className="service-back-arrow" aria-label="Back" style={{ background: "none", border: "none", padding: 0 }}><img src={BackButton} alt="Back" className="back-icon" /></button>

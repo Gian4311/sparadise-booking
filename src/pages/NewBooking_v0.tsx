@@ -83,8 +83,6 @@ import LoadingScreen from "../components/LoadingScreen";
 import "../styles/NewBooking_v0.css"
 import DateRange from "../utils/DateRange";
 
-// blah blah blah
-
 export interface NewBookingPageData extends SpaRadisePageData {
 
     accountData: AccountData,

@@ -1,7 +1,92 @@
+import {
+    AccountData,
+    AccountDataMap,
+    SpaRadisePageData
+} from "../firebase/SpaRadiseTypes";
+import AccountUtils from "../firebase/AccountUtils";
+import {
+    Auth,
+    onAuthStateChanged
+} from "firebase/auth";
+import DateUtils from "../utils/DateUtils";
 import { NavLink } from "react-router-dom";
+import SpaRadiseAuth from "../firebase/SpaRadiseAuth";
+import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function EmployeeSidebar(): JSX.Element {
+interface EmployeeSidebarPageData extends SpaRadisePageData {
+
+    accountData: AccountData,
+    accountId?: string
+
+}
+
+export default function EmployeeSidebar( { pageData, reloadPageData }: {
+    pageData: EmployeeSidebarPageData,
+    reloadPageData(): void
+} ): JSX.Element {
+
+    const navigate = useNavigate();
+
+    async function handleLogIn(): Promise< void > {
+    
+        await SpaRadiseAuth.signInGoogle();
+
+    }
+
+    async function handleLogOut(): Promise< void > {
+
+        await SpaRadiseAuth.signOutGoogle();
+        pageData.accountId = undefined;
+        reloadPageData();
+
+    }
+
+    async function loadAccountData(): Promise< void > {
+
+        const email = SpaRadiseAuth.getEmail();
+        if( !email ) return;
+        const accountDataMap: AccountDataMap =
+            await AccountUtils.getAccountDataByEmail( email )
+        ;
+        let accountData: AccountData | undefined = undefined;
+        for( let accountId in accountDataMap ) {
+
+            accountData = accountDataMap[ accountId ];
+            pageData.accountId = accountId;
+
+        }
+        if( !accountData ) {
+            
+            // navigate( `/` );
+            return;
+
+        }
+        if( accountData.accountType === "customer" ) {
+
+            console.log( "no" );
+
+        }
+        pageData.accountData = accountData;
+        reloadPageData();
+        
+
+    }
+
+    useEffect( () => {
+    
+        const auth: Auth = SpaRadiseAuth.getAuth();
+        onAuthStateChanged( auth, user => {
+
+            if( !user ) return;
+            loadAccountData();
+
+        } );
+
+    }, [] );
+
     return (
         <div className="sidebar">
             <div className="sidebar-logo">
@@ -83,7 +168,10 @@ export default function EmployeeSidebar(): JSX.Element {
                         Jobs
                     </NavLink>
                 </li>
-                <li><a href="#">Log Out</a></li>
+                <li>{
+                    SpaRadiseAuth.isSignedIn() ? <button className="client-home-link" onClick={ () => handleLogOut() }>Log Out</button>
+                    : <button className="client-home-link" onClick={ () => handleLogIn() }>Log In</button>
+                }</li>
             </ul>
         </div>
     );

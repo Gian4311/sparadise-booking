@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { JobDataMap } from "../firebase/SpaRadiseTypes";
+import { AccountData, JobDataMap } from "../firebase/SpaRadiseTypes";
 import JobUtils from "../firebase/JobUtils";
 import { SpaRadisePageData } from "../firebase/SpaRadiseTypes";
 import {
@@ -12,6 +12,8 @@ import LoadingScreen from "../components/LoadingScreen";
 
 interface JobMenuPageData extends SpaRadisePageData {
 
+    accountData: AccountData,
+    accountId?: documentId,
     jobDataMap: JobDataMap
 
 }
@@ -20,6 +22,7 @@ export default function JobMenu(): JSX.Element {
 
     const
         [pageData, setPageData] = useState<JobMenuPageData>({
+            accountData: {} as unknown as AccountData,
             jobDataMap: {},
             loaded: false,
             updateMap: {}
@@ -47,7 +50,7 @@ export default function JobMenu(): JSX.Element {
         <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
 
         <div>
-            <EmployeeSidebar />
+            <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
             <div className="service-menu-main-content">
                 <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">Jobs</label>
                 <div className="service-menu-form-section">

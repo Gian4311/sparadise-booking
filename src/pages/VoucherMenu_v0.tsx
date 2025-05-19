@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { VoucherDataMap } from "../firebase/SpaRadiseTypes";
+import { AccountData, VoucherDataMap } from "../firebase/SpaRadiseTypes";
 import VoucherUtils from "../firebase/VoucherUtils";
 import { SpaRadisePageData, PackageDataMap, ServiceDataMap } from "../firebase/SpaRadiseTypes";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +21,8 @@ type sortMode = "ascending" | "descending";
 
 interface VoucherMenuPageData extends SpaRadisePageData {
 
+    accountData: AccountData,
+    accountId?: documentId,
     voucherDataMap: VoucherDataMap,
     rowTypeMap: { [documentId: documentId]: rowType },
     packageDataMap: PackageDataMap,
@@ -32,6 +34,7 @@ export default function VoucherMenu(): JSX.Element {
 
     const
         [pageData, setPageData] = useState<VoucherMenuPageData>({
+            accountData: {} as unknown as AccountData,
             loaded: false,
             voucherDataMap: {},
             packageDataMap: {},
@@ -104,7 +107,7 @@ export default function VoucherMenu(): JSX.Element {
 
     return <>
         <div>
-            <EmployeeSidebar />
+            <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
 
             <div className="service-menu-main-content">
                 <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">Vouchers

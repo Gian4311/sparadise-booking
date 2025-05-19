@@ -16,6 +16,7 @@ import FormTinyTextInput from "../components/FormTinyTextInput";
 import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
 import {
+    AccountData,
     PackageData,
     PackageMaintenanceData,
     PackageMaintenanceDataMap,
@@ -38,6 +39,8 @@ import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 
 interface PackageManagementPageData extends SpaRadisePageData {
 
+    accountData: AccountData,
+    accountId?: documentId,
     packageDefaultData: PackageData,
     packageData: PackageData,
     packageDocumentReference?: DocumentReference,
@@ -59,6 +62,7 @@ export default function PackageManagement(): JSX.Element {
 
     const
         [pageData, setPageData] = useState<PackageManagementPageData>({
+            accountData: {} as unknown as AccountData,
             loaded: false,
             packageData: {
                 name: null as unknown as string,
@@ -553,7 +557,7 @@ export default function PackageManagement(): JSX.Element {
 
     return <>
         <form onSubmit={submit}>
-            <EmployeeSidebar />
+            <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
             <div className="service-main-content">
                 <label htmlFor="service-main-content" className="service-management-location">Services & Packages - {pageData.packageName}</label>
                 <div className="service-form-section">

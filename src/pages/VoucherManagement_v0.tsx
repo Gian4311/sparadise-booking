@@ -19,7 +19,8 @@ import {
     SpaRadisePageData,
     VoucherData,
     VoucherPackageDataMap,
-    VoucherServiceDataMap
+    VoucherServiceDataMap,
+    AccountData
 } from "../firebase/SpaRadiseTypes";
 import VoucherUtils from "../firebase/VoucherUtils";
 import VoucherPackageUtils from "../firebase/VoucherPackageUtils";
@@ -34,6 +35,8 @@ import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 
 interface VoucherManagementPageData extends SpaRadisePageData {
 
+    accountData: AccountData,
+    accountId?: documentId,
     packageDataMap: PackageDataMap,
     serviceDataMap: ServiceDataMap,
     voucherData: VoucherData,
@@ -56,6 +59,7 @@ export default function VoucherManagement(): JSX.Element {
 
     const
         [pageData, setPageData] = useState<VoucherManagementPageData>({
+            accountData: {} as unknown as AccountData,
             loaded: false,
             packageDataMap: {},
             serviceDataMap: {},
@@ -479,7 +483,7 @@ export default function VoucherManagement(): JSX.Element {
     useEffect(() => { loadPageData() }, []);
 
     return <>
-        <EmployeeSidebar />
+        <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
         <form onSubmit={submit}>
             <div className="service-main-content">
                 <label htmlFor="service-main-content" className="service-management-location"> Vouchers - {pageData.voucherData.name}</label>

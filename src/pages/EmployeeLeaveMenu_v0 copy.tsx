@@ -2,6 +2,7 @@ import DataMapUtils from "../firebase/SpaRadiseDataMapUtils";
 import DateUtils from "../utils/DateUtils";
 import { DocumentReference } from "firebase/firestore/lite";
 import {
+    AccountData,
     EmployeeData,
     EmployeeDataMap,
     EmployeeLeaveData,
@@ -38,6 +39,8 @@ import SideBar from "../components/EmployeeSidebar";
 
 interface EmployeeLeaveMenuPageData extends SpaRadisePageData {
 
+    accountData: AccountData,
+    accountId?: documentId,
     employeeDataMap: EmployeeDataMap,
     employeeLeaveDataMap: EmployeeLeaveDataMap
 
@@ -48,6 +51,7 @@ export default function EmployeeLeaveMenu(): JSX.Element {
 
     const
         [pageData, setPageData] = useState<EmployeeLeaveMenuPageData>({
+            accountData: {} as unknown as AccountData,
             employeeDataMap: {},
             employeeLeaveDataMap: {},
             loaded: false,
@@ -76,7 +80,7 @@ export default function EmployeeLeaveMenu(): JSX.Element {
 
     return <>
 
-        <SideBar></SideBar>
+            <SideBar pageData={ pageData } reloadPageData={ reloadPageData }/>
 
             <Link to="/management/employeeLeaves">
                 <h1>New</h1>

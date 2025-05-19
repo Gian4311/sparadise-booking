@@ -6,6 +6,7 @@ import {
 import { Link } from "react-router-dom";
 import ObjectUtils from "../utils/ObjectUtils";
 import {
+    AccountData,
     PackageDataMap,
     PackageMaintenanceData,
     ServiceDataMap,
@@ -33,6 +34,8 @@ type sortMode = "ascending" | "descending";
 
 interface ServicePackageMenuPageData extends SpaRadisePageData {
 
+    accountData: AccountData,
+    accountId?: documentId,
     maintenanceDataMap: { [documentId: documentId]: PackageMaintenanceData | ServiceMaintenanceData },
     packageDataMap: PackageDataMap,
     rowTypeMap: { [documentId: documentId]: rowType },
@@ -44,6 +47,7 @@ export default function ServicePackageMenu(): JSX.Element {
 
     const
         [pageData, setPageData] = useState<ServicePackageMenuPageData>({
+            accountData: {} as unknown as AccountData,
             loaded: false,
             maintenanceDataMap: {},
             packageDataMap: {},
@@ -129,7 +133,7 @@ export default function ServicePackageMenu(): JSX.Element {
         <LoadingScreen loading={ !pageData.loaded }></LoadingScreen>
         <div>
             
-                <EmployeeSidebar />
+                <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
 
                 <div className="service-menu-main-content">
                     <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">Services & Packages

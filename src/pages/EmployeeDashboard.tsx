@@ -1,3 +1,7 @@
+import {
+    AccountData,
+    SpaRadisePageData
+  } from "../firebase/SpaRadiseTypes";
 import React, { useEffect, useState } from "react";
 import "../styles/Dashboard.css";
 import Sidebar from "../components/EmployeeSidebar";
@@ -17,8 +21,39 @@ interface EmployeeDisplay {
     job: string;
 }
 
+interface EmployeeDashboardPageData extends SpaRadisePageData {
+
+    accountData: AccountData,
+    accountId?: documentId
+
+}
+
 const Dashboard: React.FC = () => {
-    const [employeeList, setEmployeeList] = useState<EmployeeDisplay[]>([]);
+
+    const
+        [ pageData, setPageData ] = useState< EmployeeDashboardPageData >( {
+            accountData: {
+                lastName: null as unknown as string,
+                firstName: null as unknown as string,
+                middleName: null,
+                sex: null as unknown as sex,
+                birthDate: null as unknown as Date,
+                email: null as unknown as string,
+                contactNumber: null as unknown as string,
+                contactNumberAlternate: null,
+                accountType: null as unknown as accountType
+            },
+            loaded: true,
+            updateMap: {}
+        } ),
+        [employeeList, setEmployeeList] = useState<EmployeeDisplay[]>([])
+    ;
+
+    function reloadPageData(): void {
+
+        setPageData( { ...pageData } );
+  
+    }
 
     useEffect(() => {
         async function loadEmployees(): Promise<void> {
@@ -51,7 +86,7 @@ const Dashboard: React.FC = () => {
         {/* <LoadingScreen loading={ pageD}></LoadingScreen> */}
         <div>
             <div>
-                <Sidebar />
+                <Sidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
             </div>
             <div className="dashboard-container">
                 <main className="dashboard-main-content" id="main-content-area">

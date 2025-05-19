@@ -2,6 +2,7 @@ import DateRange from "../utils/DateRange";
 import DateUtils from "../utils/DateUtils";
 import { DocumentReference } from "firebase/firestore/lite";
 import {
+    AccountData,
     EmployeeData,
     EmployeeDataMap,
     EmployeeLeaveData,
@@ -42,6 +43,8 @@ import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 
 interface EmployeeLeaveManagementPageData extends SpaRadisePageData {
 
+    accountData: AccountData,
+    accountId?: documentId,
     employeeDataMap: EmployeeDataMap,
     employeeLeaveData: EmployeeLeaveData,
     employeeLeaveDefaultData: EmployeeLeaveData,
@@ -55,6 +58,17 @@ export default function EmployeeLeaveManagement(): JSX.Element {
 
     const
         [ pageData, setPageData ] = useState< EmployeeLeaveManagementPageData >( {
+            accountData: {
+                lastName: null as unknown as string,
+                firstName: null as unknown as string,
+                middleName: null,
+                sex: null as unknown as sex,
+                birthDate: null as unknown as Date,
+                email: null as unknown as string,
+                contactNumber: null as unknown as string,
+                contactNumberAlternate: null,
+                accountType: null as unknown as accountType
+            },
             employeeDataMap: {},
             employeeLeaveData: {
                 employee: null as unknown as DocumentReference,
@@ -206,7 +220,7 @@ export default function EmployeeLeaveManagement(): JSX.Element {
     return <>
         <PopupModal pageData={ pageData } reloadPageData={ reloadPageData } />
         <form onSubmit={submit}>
-            <EmployeeSidebar/>
+            <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
             <nav className="navbar">
                 <div className="clientIndex-Logo">
                     <img src="../images/SpaRadise Logo.png" alt="SpaRadise Logo"/>

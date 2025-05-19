@@ -5,6 +5,7 @@ import {
 } from "react";
 import DateUtils from "../utils/DateUtils";
 import {
+    AccountData,
     EmployeeDataMap,
     JobDataMap
 } from "../firebase/SpaRadiseTypes";
@@ -29,6 +30,8 @@ type sortMode = "ascending" | "descending";
 
 interface EmployeeMenuPageData extends SpaRadisePageData {
 
+    accountData: AccountData,
+    accountId?: documentId,
     employeeDataMap: EmployeeDataMap,
     jobDataMap: JobDataMap,
     rowTypeMap: { [documentId: documentId]: rowType }
@@ -39,6 +42,7 @@ export default function EmployeeMenu(): JSX.Element {
 
     const
         [pageData, setPageData] = useState<EmployeeMenuPageData>({
+            accountData: {} as unknown as AccountData,
             employeeDataMap: {},
             jobDataMap: {},
             loaded: false,
@@ -88,7 +92,7 @@ export default function EmployeeMenu(): JSX.Element {
         <LoadingScreen loading={ !pageData.loaded }></LoadingScreen>
         <div>
             <div className="layout">
-                <EmployeeSidebar />
+                <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
                 <div className="content">
                     <Outlet />
                     <div className="service-menu-main-content">

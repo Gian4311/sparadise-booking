@@ -11,7 +11,7 @@ const CommissionDetailsPage: React.FC = () => {
         <div>
         
 
-            <EmployeeSidebar></EmployeeSidebar>
+            {/* <EmployeeSidebar></EmployeeSidebar> */}
 
             <div className="commission-container">
                 <div className="calendar-header">

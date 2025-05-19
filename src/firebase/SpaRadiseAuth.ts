@@ -1,3 +1,7 @@
+import {
+    AccountData,
+    AccountDataMap
+} from "./SpaRadiseTypes";
 import AccountUtils from "./AccountUtils";
 import {
     documentId,
@@ -46,8 +50,13 @@ export default class SpaRadiseAuth {
 
             const email = SpaRadiseAuth.getEmail();
             if( !email ) throw null;
-            const accountData = await AccountUtils.getAccountData( uid );
-            return ( accountData.accountType === "management" );
+            const accountDataMap: AccountDataMap =
+                await AccountUtils.getAccountDataByEmail( email )
+            ;
+            let accountData: AccountData | undefined = undefined;
+            for( let accountId in accountDataMap )
+                accountData = accountDataMap[ accountId ];
+            return accountData?.accountType === "management";
 
         } catch( error ) {
 

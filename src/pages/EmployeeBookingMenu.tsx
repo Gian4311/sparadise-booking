@@ -1,5 +1,6 @@
 import BookingDateInput from "../components/BookingDateInput";
 import {
+    AccountData,
     BookingDataMap,
     ClientDataMap,
     EmployeeDataMap,
@@ -41,6 +42,7 @@ import "../styles/EmployeeServiceMenu.css";
 
 interface EmployeeBookingMenuPageData extends SpaRadisePageData {
 
+    accountData: AccountData,
     bookingDataMap: BookingDataMap,
     bookingIdActive: string | undefined,
     clientDataMap: ClientDataMap,
@@ -62,6 +64,7 @@ export default function EmployeeBookingMenu(): JSX.Element {
     const
         dateParam = useParams().date,
         [pageData, setPageData] = useState<EmployeeBookingMenuPageData>({
+            accountData: {} as AccountData,
             bookingDataMap: {},
             bookingIdActive: undefined,
             clientDataMap: {},
@@ -168,7 +171,7 @@ export default function EmployeeBookingMenu(): JSX.Element {
 
     return <>
         <LoadingScreen loading={!pageData.loaded} />
-        <EmployeeSidebar />
+        <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
         <div className="service-menu-main-content">
             <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">Bookings</label>
             <div className="service-menu-form-section">

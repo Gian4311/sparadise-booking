@@ -1,5 +1,6 @@
 import {
     AccountData,
+    AccountDataMap,
     SpaRadisePageData
 } from "../firebase/SpaRadiseTypes";
 import AccountUtils from "../firebase/AccountUtils";
@@ -16,14 +17,15 @@ import SparadiseLogo from "../images/SpaRadise Logo.png";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-interface EmployeeSidePageData extends SpaRadisePageData {
+interface ClientNavBarPageData extends SpaRadisePageData {
 
-    accountData: AccountData
+    accountData: AccountData,
+    accountId?: string
 
 }
 
 export default function ClientNavBar( { pageData, reloadPageData }: {
-    pageData: EmployeeSidePageData,
+    pageData: ClientNavBarPageData,
     reloadPageData(): void
 } ): JSX.Element {
 
@@ -35,29 +37,48 @@ export default function ClientNavBar( { pageData, reloadPageData }: {
 
     }
 
+    async function handleLogOut(): Promise< void > {
+
+        await SpaRadiseAuth.signOutGoogle();
+        pageData.accountId = undefined;
+        reloadPageData();
+
+    }
+
     async function loadAccountData(): Promise< void > {
 
         const email = SpaRadiseAuth.getEmail();
-            if( !email ) return;
-            // let accountData: AccountData | undefined =
-            //     await AccountUtils.getAccountDataByEmail( email )
-            // ;
-            // if( !accountData ) {
+        if( !email ) return;
+        const accountDataMap: AccountDataMap =
+            await AccountUtils.getAccountDataByEmail( email )
+        ;
+        let accountData: AccountData | undefined = undefined;
+        for( let accountId in accountDataMap ) {
 
-            //     accountData = {
-            //         lastName: "",
-            //         firstName: "",
-            //         middleName: null,
-            //         sex: "male",
-            //         birthDate: DateUtils.addTime( new Date(), { yr: -SpaRadiseEnv.MIN_AGE_LIMIT - 1 } ),
-            //         email,
-            //         contactNumber: "",
-            //         contactNumberAlternate: null,
-            //         accountType: "customer"
-            //     }
-            //     await AccountUtils.createAccount( accountData );
+            accountData = accountDataMap[ accountId ];
+            pageData.accountId = accountId;
 
-            // }
+        }
+        if( accountData ) {
+
+            pageData.accountData = accountData;
+            reloadPageData();
+            return;
+
+        }
+        accountData = {
+            lastName: "",
+            firstName: "",
+            middleName: null,
+            sex: "male",
+            birthDate: DateUtils.addTime( new Date(), { yr: -SpaRadiseEnv.MIN_AGE_LIMIT - 1 } ),
+            email,
+            contactNumber: "",
+            contactNumberAlternate: null,
+            accountType: "customer"
+        }
+        const { id: accountId } = await AccountUtils.createAccount( accountData );
+        navigate( `clients/${ accountId }/account` );
 
     }
 
@@ -82,14 +103,19 @@ export default function ClientNavBar( { pageData, reloadPageData }: {
 
                 <div className="client-home-nav-center">
                     <Link to="/" className="client-home-link">Home</Link>
-                    <a href="/bookingList" className="client-home-link">Bookings</a>
-                    <Link to="/clients/A6xoQYfymODeKJdp8bnT/account" className="client-home-link">Account</Link>
                     {
-                        SpaRadiseAuth.isSignedIn() ? <button className="client-home-link">Log Out</button>
+                        !pageData.accountId ? undefined
+                        : ( pageData.accountData.accountType === "customer" ) ? <a href="/bookingList" className="client-home-link">Bookings</a>
+                        : <Link to={ `/management/dashboard` } className="client-home-link">Manage</Link>
+                    }
+                    {
+                        pageData.accountId ? <Link to={ `/clients/${ pageData.accountId }/account` } className="client-home-link">Account</Link>
+                        : undefined
+                    }
+                    {
+                        SpaRadiseAuth.isSignedIn() ? <button className="client-home-link" onClick={ () => handleLogOut() }>Log Out</button>
                         : <button className="client-home-link" onClick={ () => handleLogIn() }>Log In</button>
                     }
-                    <Link to="/clients/A6xoQYfymODeKJdp8bnT/account" className="client-home-link">Account</Link>
-                    
                 </div>
 
                 <div className="client-home-nav-right">
