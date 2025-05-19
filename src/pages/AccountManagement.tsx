@@ -183,7 +183,7 @@ export default function AccountManagement(): JSX.Element {
         <form onSubmit={submit}>
             <div className="servman-container">
                 <div className="service-main-content">
-                    <label htmlFor="service-main-content" className="service-management-location">Accounts & Packages - {pageData.accountName}</label>
+                    <label htmlFor="service-main-content" className="service-management-location">Accounts - {pageData.accountName}</label>
                     <div className="service-form-section">
                         <div className="service-header">
                             <button onClick={() => navigate(`/management/capacities/menu`)} className="service-back-arrow" aria-label="Back" style={{ background: "none", border: "none", padding: 0 }}><img src={BackButton} alt="Back" className="back-icon" /></button>
@@ -193,7 +193,7 @@ export default function AccountManagement(): JSX.Element {
                         <div className="account-form-row-group">
                             <div className="account-form-row">
                                 <label htmlFor="account-sex">Sex</label>
-                                <FormSelect className="account-input" documentData={pageData.accountData} documentDefaultData={pageData.accountData} documentId={documentId} name="account-sex" keyName="accountType" optionList={SpaRadiseEnv.ACCOUNT_TYPE_LIST} pageData={pageData} required={true}>
+                                <FormSelect className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} name="account-sex" keyName="accountType" optionList={SpaRadiseEnv.ACCOUNT_TYPE_LIST} pageData={pageData} required={true}>
                                     <option value="" disabled>Select account type</option>
                                     <option value="customer">Customer</option>
                                     <option value="management">Manager</option>
@@ -201,22 +201,22 @@ export default function AccountManagement(): JSX.Element {
                             </div>
                             <div className="account-form-row">
                                 <label htmlFor="account-name">Last Name</label>
-                                <FormTinyTextInput className="account-input" documentData={pageData.accountData} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="lastName" name="account-lastName" pageData={pageData} required={true} />
+                                <FormTinyTextInput className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="lastName" name="account-lastName" pageData={pageData} required={true} />
                             </div>
                             <div className="account-form-row">
                                 <label htmlFor="account-name">First Name</label>
-                                <FormTinyTextInput className="account-input" documentData={pageData.accountData} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="firstName" name="account-firstName" pageData={pageData} required={true} />
+                                <FormTinyTextInput className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="firstName" name="account-firstName" pageData={pageData} required={true} />
                             </div>
                             <div className="account-form-row">
                                 <label htmlFor="account-middle-name">Middle Name</label>
-                                <FormTinyTextInput className="account-input" documentData={pageData.accountData} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="middleName" name="account-middleName" pageData={pageData} />
+                                <FormTinyTextInput className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="middleName" name="account-middleName" pageData={pageData} />
                             </div>
                         </div>
 
                         <div className="account-form-row-group">
                             <div className="account-form-row">
                                 <label htmlFor="account-sex">Sex</label>
-                                <FormSelect className="account-input" documentData={pageData.accountData} documentDefaultData={pageData.accountData} documentId={documentId} name="account-sex" keyName="sex" optionList={SpaRadiseEnv.SEX_LIST} pageData={pageData} required={true}>
+                                <FormSelect className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} name="account-sex" keyName="sex" optionList={SpaRadiseEnv.SEX_LIST} pageData={pageData} required={true}>
                                     <option value="" disabled>Select sex</option>
                                     <option value="male">Male</option>
                                     <option value="female">Female</option>
@@ -225,22 +225,22 @@ export default function AccountManagement(): JSX.Element {
                             </div>
                             <div className="account-form-row">
                                 <label htmlFor="account-birthdate">Birthdate</label>
-                                <FormDateInput className="account-input" documentData={pageData.accountData} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="birthDate" name="account-birthdate" pageData={pageData} required={true} />
+                                <FormDateInput className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="birthDate" name="account-birthdate" pageData={pageData} required={true} />
                             </div>
                         </div>
 
                         <div className="account-form-row-group">
                             <div className="account-form-row">
                                 <label htmlFor="account-email">Email</label>
-                                <FormEmailInput className="account-input" documentData={pageData.accountData} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="email" name="account-email" pageData={pageData} required={true} />
+                                <FormEmailInput className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="email" name="account-email" pageData={pageData} required={true} />
                             </div>
                             <div className="account-form-row">
                                 <label htmlFor="account-contact-number">Contact Number</label>
-                                <FormContactNumberInput className="account-input" documentData={pageData.accountData} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="contactNumber" name="account-contactNumber" pageData={pageData} required={true} />
+                                <FormContactNumberInput className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="contactNumber" name="account-contactNumber" pageData={pageData} required={true} />
                             </div>
                             <div className="account-form-row">
                                 <label htmlFor="account-alter-contact-number">Alternate Contact Number</label>
-                                <FormContactNumberInput className="account-input" documentData={pageData.accountData} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="contactNumberAlternate" name="account-contactNumber" pageData={pageData} />
+                                <FormContactNumberInput className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="contactNumberAlternate" name="account-contactNumber" pageData={pageData} />
                             </div>
                         </div>
 

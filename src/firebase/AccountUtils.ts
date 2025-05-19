@@ -132,10 +132,7 @@ export default class AccountUtils {
             accountCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
                 SpaRadiseEnv.ACCOUNT_COLLECTION
             ),
-            accountQuery = query(
-                accountCollection,
-                orderBy( "name" )
-            ),
+            accountQuery = query( accountCollection ),
             snapshotList: QueryDocumentSnapshot[] = ( await getDocs( accountQuery ) ).docs,
             accountDataMap: AccountDataMap = {}
         ;

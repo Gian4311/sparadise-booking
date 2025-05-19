@@ -90,6 +90,7 @@ export default function AccountMenu(): JSX.Element {
                     <table className="services-table">
                         <thead><tr>
                             <th>#</th>
+                            <th>Email</th>
                             <th>Name</th>
                             <th>Account Type</th>
                         </tr></thead>
@@ -113,12 +114,13 @@ export default function AccountMenu(): JSX.Element {
                                     count: string = (index + 1).toString(),
                                     accountData = accountDataMap[documentId],
                                     show: boolean = StringUtils.has(
-                                        `${count}\t${name}`
+                                        `${count}\t${accountData.email}\t${PersonUtils.toString( accountData, "f mi l" )}`
                                         , search
                                     )
                                 ;
                                 return show ? <tr key={documentId} onClick={() => navigate(`/management/accounts/${documentId}`)}>
                                     <td>{count}</td>
+                                    <td>{ accountData.email }</td>
                                     <td>{ PersonUtils.toString( accountData, "f mi l" ) }</td>
                                     <td>{ accountData.accountType === "customer" ? "Customer" : "Manager" }</td>
                                 </tr> : undefined;
