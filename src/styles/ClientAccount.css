@@ -36,10 +36,10 @@
   }
   
   .account-input, .account-select {
-    padding: 5%;
+    padding: 5px;
     border: none;
-    border-radius: 0%;
-    font-size: 150%;
+    border-radius: 12px;
+    font-size: 100%;
     background-color: rgba(255,255,255, .7);
   }
   

@@ -5,6 +5,7 @@ import {
 } from "../firebase/SpaRadiseTypes";
 import React from "react";
 import "../styles/EmployeeEmployeeManagement.css";
+import "../styles/EmployeeServiceManagement.css"
 import "../styles/Sidebar.css";
 import { useState } from "react";
 
@@ -49,7 +50,7 @@ const EmployeeDetailsPage: React.FC = () => {
 
             <Sidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
 
-            <div className="employee-main-content">
+            <div className="service-menu-main-content ">
                 <label className="employee-management-location">
                     Employees - Cabangbang, R-Man Rey S.
                 </label>
