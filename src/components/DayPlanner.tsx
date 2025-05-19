@@ -603,7 +603,12 @@ export default function DayPlanner({
 
                     if (!timeSlotData) return false;
                     if (!serviceTransactionIdIgnoreList) return true;
-                    const { serviceTransactionId: serviceTransactionIdCompare } = timeSlotData;
+                    const {
+                        serviceTransactionId: serviceTransactionIdCompare,
+                        serviceTransactionData: { status }
+                    } = timeSlotData;
+                    if( status === "serviceCanceled" || status === "serviceWaived" )
+                        return false;
                     return !serviceTransactionIdIgnoreList.includes(serviceTransactionIdCompare);
 
                 }) as TimeSlotData[]

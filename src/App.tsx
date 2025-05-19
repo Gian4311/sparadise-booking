@@ -35,6 +35,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import CapacityManagement from "./pages/CapacityManagement";
 import AccountMenu from "./pages/AccountMenu";
 import AccountManagement from "./pages/AccountManagement";
+import MyBookings from "./pages/MyBookings";
 function App() {
 
     const [ isManager, setIsManager ] = useState< boolean >();
@@ -56,7 +57,7 @@ function App() {
                 <Route index element={ <NewHomepage/> }/>
                 <Route path="*" element={<PageNotFound/>} />
                 <Route path="notifications" element={ <Notifications/> }/>
-                <Route path="bookingList" element={ <ClientBookingList/> }/>
+                <Route path="bookingList" element={ <MyBookings/> }/>
                 <Route path="clients/:accountId/account" element={ <MyAccount/> }/>
                 <Route path="clients/:accountId/bookings/:bookingId" element={ <NewBooking/> }/>
 

@@ -10,7 +10,8 @@ import {
     QueryDocumentSnapshot,
     query,
     updateDoc,
-    WithFieldValue
+    WithFieldValue,
+    where
 } from "firebase/firestore/lite";
 import {
     BookingData,
@@ -133,6 +134,34 @@ export default class BookingUtils {
         ;
         for( let snapshot of snapshotList )
             bookingDataMap[ snapshot.id ] = await BookingUtils.getBookingData( snapshot );
+        return bookingDataMap;
+
+    }
+
+    public static async getBookingDataMapByAccount(
+        by: documentId | DocumentReference | DocumentSnapshot
+    ): Promise< BookingDataMap > {
+    
+        const
+            bookingCollection: CollectionReference =
+                SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.BOOKING_COLLECTION )
+            ,
+            accountReference: DocumentReference = SpaRadiseFirestore.getDocumentReference(
+                by, SpaRadiseEnv.ACCOUNT_COLLECTION
+            ),
+            bookingQuery = query(
+                bookingCollection,
+                where( "account", "==", accountReference )
+            ),
+            snapshotList: QueryDocumentSnapshot[] =
+                ( await getDocs( bookingQuery ) ).docs
+            ,
+            bookingDataMap: BookingDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            bookingDataMap[ snapshot.id ] =
+                await BookingUtils.getBookingData( snapshot )
+            ;
         return bookingDataMap;
 
     }
