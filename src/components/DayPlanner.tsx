@@ -1263,7 +1263,7 @@ export default function DayPlanner({
                     })
                 }</tbody></table>
             </> : <>
-                <button type="button" onClick={openBooking}>Edit</button>
+                <button className="management-edit-booking" type="button" onClick={openBooking}>Edit</button>
             </>
         }
         <div className="planner-container">

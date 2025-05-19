@@ -35,6 +35,7 @@ import { DocumentReference } from "firebase/firestore/lite";
 import EmployeeLeaveUtils from "../firebase/EmployeeLeaveUtils";
 import EmployeeSidebar from "../components/EmployeeSidebar";
 import EmployeeUtils from "../firebase/EmployeeUtils";
+import BackButton from "../images/back button.png";
 import FormEmployeeSelect from "../components/FormEmployeeSelect";
 import {
     FormEvent,
@@ -72,7 +73,7 @@ import VoucherTransactionUtils from "../firebase/VoucherTransactionUtils";
 import VoucherUtils from "../firebase/VoucherUtils";
 
 import "../styles/FormTimeInput.scss"
-
+import "../styles/BookingManagement.css"
 interface EmployeeBookingManagementPageData extends SpaRadisePageData {
 
     accountData: AccountData,
@@ -84,12 +85,12 @@ interface EmployeeBookingManagementPageData extends SpaRadisePageData {
     clientDefaultDataMap: ClientDataMap,
     clientIdActive: documentId,
     clientInfoMap: {
-        [ clientId: string ]: {
-            packageServiceTransactionDataMap: { [ packageId: documentId ]: ServiceTransactionDataMap },
-            packageVoucherTransactionKeyMap: { [ packageId: documentId ]: documentId | undefined },
-            serviceServiceTransactionKeyMap: { [ serviceId: documentId ]: documentId },
+        [clientId: string]: {
+            packageServiceTransactionDataMap: { [packageId: documentId]: ServiceTransactionDataMap },
+            packageVoucherTransactionKeyMap: { [packageId: documentId]: documentId | undefined },
+            serviceServiceTransactionKeyMap: { [serviceId: documentId]: documentId },
             serviceTransactionDataMap: ServiceTransactionDataMap,
-            singleServiceVoucherTransactionKeyMap: { [ serviceId: documentId ]: documentId | undefined }
+            singleServiceVoucherTransactionKeyMap: { [serviceId: documentId]: documentId | undefined }
         }
     },
     date: Date,
@@ -102,7 +103,7 @@ interface EmployeeBookingManagementPageData extends SpaRadisePageData {
     formIndex: number,
     jobDataMap: JobDataMap,
     jobServiceDataMap: JobServiceDataMap,
-    maintenanceDataMap: { [ documentId: documentId]: PackageMaintenanceData | ServiceMaintenanceData },
+    maintenanceDataMap: { [documentId: documentId]: PackageMaintenanceData | ServiceMaintenanceData },
     initialPrice: number,
     packageDataMap: PackageDataMap,
     packageServiceDataMap: PackageServiceDataMap,
@@ -138,7 +139,7 @@ interface EmployeeBookingManagementPageData extends SpaRadisePageData {
 export default function EmployeeBookingManagement(): JSX.Element {
 
     const
-        [ pageData, setPageData ] = useState< EmployeeBookingManagementPageData >( {
+        [pageData, setPageData] = useState<EmployeeBookingManagementPageData>({
             accountData: { email: "" } as AccountData,
             bookingData: {
                 account: null as unknown as DocumentReference,
@@ -189,7 +190,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
             voucherTransactionDataMap: {},
             voucherTransactionDefaultDataMap: {},
             voucherTransactionIndex: 0
-        } ),
+        }),
         bookingId: string | undefined = useParams().id,
         dayPlannerPageData = {
             ...pageData,
@@ -198,11 +199,11 @@ export default function EmployeeBookingManagement(): JSX.Element {
             serviceTransactionToAddDataMap: {} as ServiceTransactionDataMap
         },
         navigate = useNavigate()
-    ;
+        ;
 
-    async function checkFormValidity(): Promise< boolean > {
-    
-        
+    async function checkFormValidity(): Promise<boolean> {
+
+
         return true;
 
     }
@@ -210,58 +211,58 @@ export default function EmployeeBookingManagement(): JSX.Element {
     async function createDiscountList(): Promise<void> {
 
         const { bookingDocumentReference, discountDataMap, discountDefaultDataMap } = pageData;
-        if( !bookingDocumentReference ) return;
-        for( let discountId in discountDataMap ) {
+        if (!bookingDocumentReference) return;
+        for (let discountId in discountDataMap) {
 
-            const isNew: boolean = !( discountId in discountDefaultDataMap );
-            if( !isNew ) continue;
+            const isNew: boolean = !(discountId in discountDefaultDataMap);
+            if (!isNew) continue;
             const
-                discountData = discountDataMap[ discountId ],
-                discountDocumentReference = await DiscountUtils.createDiscount( discountData )
-            ;
-            delete discountDataMap[ discountId ];
-            discountDataMap[ discountDocumentReference.id ] = discountData;
+                discountData = discountDataMap[discountId],
+                discountDocumentReference = await DiscountUtils.createDiscount(discountData)
+                ;
+            delete discountDataMap[discountId];
+            discountDataMap[discountDocumentReference.id] = discountData;
 
         }
-        pageData.discountDefaultDataMap = SpaRadiseDataMapUtils.clone( pageData.discountDataMap );
+        pageData.discountDefaultDataMap = SpaRadiseDataMapUtils.clone(pageData.discountDataMap);
 
     }
 
     async function createPaymentList(): Promise<void> {
 
         const { bookingDocumentReference, paymentDataMap, paymentDefaultDataMap } = pageData;
-        if( !bookingDocumentReference ) return;
-        for( let paymentId in paymentDataMap ) {
+        if (!bookingDocumentReference) return;
+        for (let paymentId in paymentDataMap) {
 
-            const isNew: boolean = !( paymentId in paymentDefaultDataMap );
-            if( !isNew ) continue;
+            const isNew: boolean = !(paymentId in paymentDefaultDataMap);
+            if (!isNew) continue;
             const
-                paymentData = paymentDataMap[ paymentId ],
-                paymentDocumentReference = await PaymentUtils.createPayment( paymentData )
-            ;
-            delete paymentDataMap[ paymentId ];
-            paymentDataMap[ paymentDocumentReference.id ] = paymentData;
+                paymentData = paymentDataMap[paymentId],
+                paymentDocumentReference = await PaymentUtils.createPayment(paymentData)
+                ;
+            delete paymentDataMap[paymentId];
+            paymentDataMap[paymentDocumentReference.id] = paymentData;
 
         }
-        pageData.paymentDefaultDataMap = SpaRadiseDataMapUtils.clone( pageData.paymentDataMap );
+        pageData.paymentDefaultDataMap = SpaRadiseDataMapUtils.clone(pageData.paymentDataMap);
 
     }
 
-    async function loadBookingData(): Promise< void > {
-    
+    async function loadBookingData(): Promise<void> {
+
         pageData.bookingDataMap = await BookingUtils.getBookingDataMapAll();
         pageData.serviceTransactionOfDayDataMap =
-            await ServiceTransactionUtils.getServiceTransactionDataMapByDay( pageData.date, false )
-        ;
-        if( !bookingId ) return;
-        pageData.bookingData = pageData.bookingDataMap[ bookingId ];
+            await ServiceTransactionUtils.getServiceTransactionDataMapByDay(pageData.date, false)
+            ;
+        if (!bookingId) return;
+        pageData.bookingData = pageData.bookingDataMap[bookingId];
         pageData.bookingDefaultData = { ...pageData.bookingData };
-        pageData.accountData = await AccountUtils.getAccountData( pageData.bookingData.account );
+        pageData.accountData = await AccountUtils.getAccountData(pageData.bookingData.account);
         const { clientDataMap, clientInfoMap } = pageData;
         let clientId: documentId = "";
-        for( clientId in clientDataMap )
-            if( clientDataMap[ clientId ].booking.id === bookingId )
-                clientInfoMap[ clientId ] = {
+        for (clientId in clientDataMap)
+            if (clientDataMap[clientId].booking.id === bookingId)
+                clientInfoMap[clientId] = {
                     packageServiceTransactionDataMap: {},
                     packageVoucherTransactionKeyMap: {},
                     serviceServiceTransactionKeyMap: {},
@@ -270,18 +271,18 @@ export default function EmployeeBookingManagement(): JSX.Element {
                 };
         const
             serviceTransactionOfClientDataMap: ServiceTransactionDataMap =
-                await ServiceTransactionUtils.getServiceTransactionDataMapByClient( clientId )
+                await ServiceTransactionUtils.getServiceTransactionDataMapByClient(clientId)
             ,
-            serviceTransactionId: documentId = Object.keys( serviceTransactionOfClientDataMap )[ 0 ]
-        ;
+            serviceTransactionId: documentId = Object.keys(serviceTransactionOfClientDataMap)[0]
+            ;
         pageData.date = DateUtils.setTime(
-            serviceTransactionOfClientDataMap[ serviceTransactionId ].bookingDateTimeStart,
+            serviceTransactionOfClientDataMap[serviceTransactionId].bookingDateTimeStart,
             { hr: 12, min: 0 }
         );
         await loadVoucherTransactionList();
-        pageData.discountDataMap = await DiscountUtils.getDiscountDataMapByBooking( bookingId );
+        pageData.discountDataMap = await DiscountUtils.getDiscountDataMapByBooking(bookingId);
         pageData.discountDefaultDataMap = { ...pageData.discountDataMap };
-        pageData.paymentDataMap = await PaymentUtils.getPaymentDataMapByBooking( bookingId );
+        pageData.paymentDataMap = await PaymentUtils.getPaymentDataMapByBooking(bookingId);
         pageData.paymentDefaultDataMap = { ...pageData.paymentDataMap };
         pageData.bookingDocumentReference = SpaRadiseFirestore.getDocumentReference(
             bookingId, SpaRadiseEnv.BOOKING_COLLECTION
@@ -289,48 +290,48 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     }
 
-    async function loadClientData(): Promise< void > {
-    
+    async function loadClientData(): Promise<void> {
+
         pageData.clientDataMap = await ClientUtils.getClientDataMapAll();
-        pageData.clientDefaultDataMap = SpaRadiseDataMapUtils.clone( pageData.clientDataMap );
+        pageData.clientDefaultDataMap = SpaRadiseDataMapUtils.clone(pageData.clientDataMap);
         pageData.clientIdActive =
-            ObjectUtils.getFirstKeyName( pageData.clientDataMap ) ?? null as unknown as string
-        ;
+            ObjectUtils.getFirstKeyName(pageData.clientDataMap) ?? null as unknown as string
+            ;
 
     }
 
     async function loadEmployeeData(): Promise<void> {
-        
+
         const { date } = pageData;
         pageData.employeeDataMap = await EmployeeUtils.getEmployeeDataMapAll();
         pageData.employeeLeaveOfDayDataMap =
-            await EmployeeLeaveUtils.getApprovedEmployeeLeaveDataMapByDay( date )
-        ;
+            await EmployeeLeaveUtils.getApprovedEmployeeLeaveDataMapByDay(date)
+            ;
 
     }
 
-    async function loadJobData(): Promise< void > {
-        
+    async function loadJobData(): Promise<void> {
+
         pageData.jobDataMap = await JobUtils.getJobDataMapAll();
         pageData.jobServiceDataMap = await JobServiceUtils.getJobServiceDataMapAll();
 
     }
 
     async function loadMaintenanceData(): Promise<void> {
-    
+
         const
             { date } = pageData,
             packageMaintenanceDataMap =
-                await PackageMaintenanceUtils.getPackageMaintenanceDataMapByDate( date )
+                await PackageMaintenanceUtils.getPackageMaintenanceDataMapByDate(date)
             ,
             serviceMaintenanceDataMap =
-                await ServiceMaintenanceUtils.getServiceMaintenanceDataMapByDate( date )
-        ;
+                await ServiceMaintenanceUtils.getServiceMaintenanceDataMapByDate(date)
+            ;
         pageData.maintenanceDataMap = { ...packageMaintenanceDataMap, ...serviceMaintenanceDataMap };
 
     }
 
-    async function loadPageData(): Promise< void > {
+    async function loadPageData(): Promise<void> {
 
         await loadClientData();
         await loadBookingData();
@@ -347,40 +348,40 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     }
 
-    async function loadServiceData(): Promise< void > {
-        
+    async function loadServiceData(): Promise<void> {
+
         pageData.serviceDataMap = await ServiceUtils.getServiceDataMapAll();
         pageData.packageDataMap = await PackageUtils.getPackageDataMapAll();
         pageData.packageServiceDataMap = await PackageServiceUtils.getPackageServiceDataMapAll();
-            const { packageDataMap, packageServiceDataMap, packageServiceKeyMap } = pageData;
-            for (let packageId in packageDataMap) packageServiceKeyMap[packageId] = {};
-            for (let packageServiceId in packageServiceDataMap) {
-    
-                const {
-                    package: { id: packageId }, service: { id: serviceId }
-                } = packageServiceDataMap[packageServiceId];
-                packageServiceKeyMap[packageId][serviceId] = packageServiceId;
-    
-            }
+        const { packageDataMap, packageServiceDataMap, packageServiceKeyMap } = pageData;
+        for (let packageId in packageDataMap) packageServiceKeyMap[packageId] = {};
+        for (let packageServiceId in packageServiceDataMap) {
+
+            const {
+                package: { id: packageId }, service: { id: serviceId }
+            } = packageServiceDataMap[packageServiceId];
+            packageServiceKeyMap[packageId][serviceId] = packageServiceId;
+
+        }
 
     }
 
-    async function loadServiceTransactionData(): Promise< void > {
+    async function loadServiceTransactionData(): Promise<void> {
 
         pageData.serviceTransactionOfDayDataMap =
-            await ServiceTransactionUtils.getServiceTransactionDataMapByDay( pageData.date, false )
-        ;
+            await ServiceTransactionUtils.getServiceTransactionDataMapByDay(pageData.date, false)
+            ;
         const { clientInfoMap, serviceTransactionOfDayDataMap } = pageData;
-        for( let serviceTransactionId in serviceTransactionOfDayDataMap ) {
+        for (let serviceTransactionId in serviceTransactionOfDayDataMap) {
 
             const
-                serviceTransactionData = serviceTransactionOfDayDataMap[ serviceTransactionId ],
+                serviceTransactionData = serviceTransactionOfDayDataMap[serviceTransactionId],
                 clientId = serviceTransactionData.client.id
-            ;
-            if( clientId in clientInfoMap )
-                clientInfoMap[ clientId ].serviceTransactionDataMap[ serviceTransactionId ] =
-                    serviceTransactionData
                 ;
+            if (clientId in clientInfoMap)
+                clientInfoMap[clientId].serviceTransactionDataMap[serviceTransactionId] =
+                    serviceTransactionData
+                    ;
 
         }
         pageData.serviceTransactionDefaultDataMap = SpaRadiseDataMapUtils.clone(
@@ -390,7 +391,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
     }
 
     async function loadVoucherData(): Promise<void> {
-    
+
         const
             { voucherPackageKeyMap, voucherServiceKeyMap } = pageData,
             voucherDataMap = await VoucherUtils.getVoucherDataMapAll(),
@@ -426,8 +427,8 @@ export default function EmployeeBookingManagement(): JSX.Element {
     }
 
     async function loadVoucherDataOfDayData(): Promise<void> {
-    
-        ObjectUtils.clear( pageData.voucherDataOfDayMap );
+
+        ObjectUtils.clear(pageData.voucherDataOfDayMap);
         const
             { date, voucherDataMap, voucherDataOfDayMap } = pageData,
             dateTimeStart: Date = DateUtils.toFloorByDay(date),
@@ -448,7 +449,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
     }
 
     async function loadVoucherTransactionList(): Promise<void> {
-    
+
         if (!bookingId) return;
         pageData.voucherTransactionDataMap =
             await VoucherTransactionUtils.getVoucherTransactionDataMapByBooking(bookingId)
@@ -459,12 +460,12 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     }
 
-    async function previousPage(): Promise< void > {
+    async function previousPage(): Promise<void> {
 
         const formIndex: number = pageData.formIndex--;
-        if( formIndex === 0 ) {
-            
-            navigate( -1 );
+        if (formIndex === 0) {
+
+            navigate(-1);
             return;
 
         }
@@ -474,18 +475,18 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     function reloadPageData(): void {
 
-        setPageData( { ...pageData } );
+        setPageData({ ...pageData });
 
     }
 
-    async function submit( event: FormEvent< HTMLFormElement > ): Promise<void> {
+    async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
 
         event.preventDefault();
-        switch( pageData.formIndex ) {
+        switch (pageData.formIndex) {
 
             case 0:
                 const { canceledDateTime, finishedDateTime } = pageData.bookingData;
-                if( canceledDateTime || !finishedDateTime ) return;
+                if (canceledDateTime || !finishedDateTime) return;
                 await updateBookingEmployeeData();
                 break;
             case 1:
@@ -495,7 +496,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
                     popupMode: "yesOnly",
                     yes: () => navigate(
                         `/management/bookings/menu/`
-                        + DateUtils.toString( pageData.date, "yyyy-mm-dd" )
+                        + DateUtils.toString(pageData.date, "yyyy-mm-dd")
                     )
                 }
 
@@ -505,16 +506,16 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     }
 
-    async function updateBookingEmployeeData(): Promise< void > {
+    async function updateBookingEmployeeData(): Promise<void> {
 
         pageData.loaded = false;
         reloadPageData();
         const { bookingData, updateMap } = pageData;
-        if( bookingId && bookingId in updateMap) {
+        if (bookingId && bookingId in updateMap) {
 
-            await BookingUtils.updateBooking( bookingId, bookingData );
+            await BookingUtils.updateBooking(bookingId, bookingData);
             pageData.bookingDefaultData = { ...bookingData };
-            delete updateMap[ bookingId ];
+            delete updateMap[bookingId];
 
         }
         await updateClientList();
@@ -523,16 +524,16 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     }
 
-    async function updateBookingPriceData(): Promise< void > {
+    async function updateBookingPriceData(): Promise<void> {
 
         pageData.loaded = false;
         reloadPageData();
         const { bookingData, updateMap } = pageData;
-        if( bookingId && bookingId in updateMap) {
+        if (bookingId && bookingId in updateMap) {
 
-            await BookingUtils.updateBooking( bookingId, bookingData );
+            await BookingUtils.updateBooking(bookingId, bookingData);
             pageData.bookingDefaultData = { ...bookingData };
-            delete updateMap[ bookingId ];
+            delete updateMap[bookingId];
 
         }
         await updateDiscountList();
@@ -542,37 +543,37 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     }
 
-    async function updateClientList(): Promise< void > {
+    async function updateClientList(): Promise<void> {
 
         const {
             clientDataMap, clientDefaultDataMap, clientInfoMap, serviceTransactionDefaultDataMap,
             updateMap
         } = pageData;
 
-        for( let clientId in clientInfoMap ) {
+        for (let clientId in clientInfoMap) {
 
             const
-                clientData = clientDataMap[ clientId ],
-                { serviceTransactionDataMap } = clientInfoMap[ clientId ]
-            ;
-            if( clientId in updateMap ) {
+                clientData = clientDataMap[clientId],
+                { serviceTransactionDataMap } = clientInfoMap[clientId]
+                ;
+            if (clientId in updateMap) {
 
-                await ClientUtils.updateClient( clientId, clientData );
-                clientDefaultDataMap[ clientId ] = { ...clientData };
-                delete updateMap[ clientId ];
+                await ClientUtils.updateClient(clientId, clientData);
+                clientDefaultDataMap[clientId] = { ...clientData };
+                delete updateMap[clientId];
 
             }
-            for( let serviceTransactionId in serviceTransactionDataMap ) {
+            for (let serviceTransactionId in serviceTransactionDataMap) {
 
-                if( !( serviceTransactionId in updateMap ) ) continue;
-                const serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ];
+                if (!(serviceTransactionId in updateMap)) continue;
+                const serviceTransactionData = serviceTransactionDataMap[serviceTransactionId];
                 await ServiceTransactionUtils.updateServiceTransaction(
                     serviceTransactionId, serviceTransactionData
                 );
-                serviceTransactionDefaultDataMap[ serviceTransactionId ] = {
+                serviceTransactionDefaultDataMap[serviceTransactionId] = {
                     ...serviceTransactionData
                 };
-                delete updateMap[ clientId ];
+                delete updateMap[clientId];
 
             }
 
@@ -581,7 +582,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
 
     }
 
-    async function updateDiscountList(): Promise< void > {
+    async function updateDiscountList(): Promise<void> {
 
         await updateDiscountListInUpdateMap();
         await createDiscountList();
@@ -589,22 +590,22 @@ export default function EmployeeBookingManagement(): JSX.Element {
     }
 
     async function updateDiscountListInUpdateMap(): Promise<void> {
-    
+
         const { discountDataMap, discountDefaultDataMap, updateMap } = pageData;
-        for( let discountId in discountDataMap ) {
+        for (let discountId in discountDataMap) {
 
             const isDiscountId: boolean = discountId in discountDefaultDataMap;
             if (!isDiscountId) continue;
             const discountData = discountDataMap[discountId];
-            await DiscountUtils.updateDiscount( discountId, discountData );
-            delete updateMap[ discountId ];
-            discountDefaultDataMap[ discountId ] = { ...discountData };
+            await DiscountUtils.updateDiscount(discountId, discountData);
+            delete updateMap[discountId];
+            discountDefaultDataMap[discountId] = { ...discountData };
 
         }
 
     }
 
-    async function updatePaymentList(): Promise< void > {
+    async function updatePaymentList(): Promise<void> {
 
         await updatePaymentListInUpdateMap();
         await createPaymentList();
@@ -612,103 +613,164 @@ export default function EmployeeBookingManagement(): JSX.Element {
     }
 
     async function updatePaymentListInUpdateMap(): Promise<void> {
-    
+
         const { paymentDataMap, paymentDefaultDataMap, updateMap } = pageData;
-        for( let paymentId in paymentDataMap ) {
+        for (let paymentId in paymentDataMap) {
 
             const isPaymentId: boolean = paymentId in paymentDefaultDataMap;
             if (!isPaymentId) continue;
             const paymentData = paymentDataMap[paymentId];
-            await PaymentUtils.updatePayment( paymentId, paymentData );
-            delete updateMap[ paymentId ];
-            paymentDefaultDataMap[ paymentId ] = { ...paymentData };
+            await PaymentUtils.updatePayment(paymentId, paymentData);
+            delete updateMap[paymentId];
+            paymentDefaultDataMap[paymentId] = { ...paymentData };
 
         }
 
     }
 
-    useEffect( () => { loadPageData(); }, [] );
+    useEffect(() => { loadPageData(); }, []);
 
     const status = (
         pageData.bookingData.canceledDateTime ? "canceled"
-        : pageData.bookingData.finishedDateTime ? "finished"
-        : pageData.bookingData.activeDateTime ? "active"
-        : pageData.bookingData.reservedDateTime ? "reserved"
-        : "pending"
+            : pageData.bookingData.finishedDateTime ? "finished"
+                : pageData.bookingData.activeDateTime ? "active"
+                    : pageData.bookingData.reservedDateTime ? "reserved"
+                        : "pending"
     );
 
-    return <>
-        <LoadingScreen loading={ !pageData.loaded }/>
-        <PopupModal pageData={ pageData } reloadPageData={ reloadPageData } />
-        <EmployeeSidebar/>
-        <form onSubmit={submit} style={ { margin: "17.5%" } }>
-            <button type="button" onClick={ previousPage }>{ "<---" }</button>
-            <p>
-                Name: { PersonUtils.toString( pageData.accountData, "f mi l" ) }
-                <br/>
-                Email: { pageData.accountData.email }
-                <br/>
-                Contact Number: { pageData.accountData.contactNumber }
-                <br/>
-                Alternate Contact Number: { pageData.accountData.contactNumberAlternate ?? "N/A" }
-                <br/>
-                Booking ID: { bookingId }
-                <br/>
-                Booking Date: { pageData.date ? DateUtils.toString( pageData.date, "Mmmm dd, yyyy" ) : "" }
-                <br/>
-                { ( status === "reserved" ) ? "<light>" : "<dot>" }
-                Reserved At: {
-                    pageData.bookingData.reservedDateTime ? DateUtils.toString( pageData.bookingData.reservedDateTime, "Mmmm dd, yyyy - hh:mm a.m." )
-                    : "-"
-                }
-                <br/>
-                { ( status === "reserved" ) ? "<light>" : "<dot>" }
-                Active At: {
-                    pageData.bookingData.activeDateTime ? DateUtils.toString( pageData.bookingData.activeDateTime, "Mmmm dd, yyyy - hh:mm a.m." )
-                    : "-"
-                }
-                <br/>
-                { ( status === "finished" ) ? "<light>" : "<dot>" }
-                Finished At: {
-                    pageData.bookingData.finishedDateTime ? DateUtils.toString( pageData.bookingData.finishedDateTime, "Mmmm dd, yyyy - hh:mm a.m." )
-                    : "-"
-                }
-                <br/>
-                { ( status === "canceled" ) ? "<light>" : "<dot>" }
-                Canceled At: {
-                    pageData.bookingData.canceledDateTime ? DateUtils.toString( pageData.bookingData.canceledDateTime, "Mmmm dd, yyyy - hh:mm a.m." )
-                    : "-"
-                }
-            </p>
-            <DayPlanner dayPlannerMode="management" pageData={ dayPlannerPageData } show={ false }/>
-            {
-                (pageData.formIndex === 0) ? <EditServiceTransactions bookingId={ bookingId } pageData={pageData} reloadPageData={reloadPageData} updateBooking={ updateBookingEmployeeData } />
-                : (pageData.formIndex === 1) ? <EditPayments bookingId={ bookingId } pageData={pageData} reloadPageData={reloadPageData} updateBooking={ updateBookingPriceData }/>
-                : <button type="button" onClick={() => { pageData.formIndex--; reloadPageData(); }}>None, Go Back</button>
-            }
+    return (
+        <>
+            <LoadingScreen loading={!pageData.loaded} />
+            <PopupModal pageData={pageData} reloadPageData={reloadPageData} />
+            <EmployeeSidebar />
 
-            <button type="button" onClick={() => console.log(pageData)}>Log page data</button>
-        </form>
-    </>
+            <form onSubmit={submit} className="booking-form-layout">
+                <button onClick={() => navigate(-1)} className="service-back-arrow" aria-label="Back" style={{ background: "none", border: "none", padding: 0 }}><img src={BackButton} alt="Back" className="back-icon" /></button>
 
-    
+
+                <div className="booking-details">
+                    <div className="booking-meta">
+                        <div className="booking-row">
+                            <div className="booking-field">
+                                <span className="label">Name:</span>
+                                <span className="value">{PersonUtils.toString(pageData.accountData, "f mi l")}</span>
+                            </div>
+                            <div className="booking-field">
+                                <span className="label">Email:</span>
+                                <span className="value">{pageData.accountData.email}</span>
+                            </div>
+                            <div className="booking-field">
+                                <span className="label">Contact #:</span>
+                                <span className="value">{pageData.accountData.contactNumber}</span>
+                            </div>
+                            <div className="booking-field">
+                                <span className="label">Alt Contact #:</span>
+                                <span className="value">{pageData.accountData.contactNumberAlternate ?? "N/A"}</span>
+                            </div>
+                            <div className="booking-field">
+                                <span className="label">Booking ID:</span>
+                                <span className="value">{bookingId}</span>
+                            </div>
+                            <div className="booking-field">
+                                <span className="label">Booking Date:</span>
+                                <span className="value">
+                                    {pageData.date ? DateUtils.toString(pageData.date, "Mmmm dd, yyyy") : ""}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="booking-statuses">
+                            <div className="booking-field">
+                                <span className={`label status-dot ${status === "reserved" ? "active reserved" : "inactive"}`}>
+                                    Reserved At:
+                                </span>
+                                <span className="value">
+                                    {pageData.bookingData.reservedDateTime
+                                        ? DateUtils.toString(pageData.bookingData.reservedDateTime, "Mmmm dd, yyyy - hh:mm a.m.")
+                                        : "-"}
+                                </span>
+                            </div>
+                            <div className="booking-field">
+                                <span className={`label status-dot ${status === "active" ? "active active-status" : "inactive"}`}>
+                                    Active At:
+                                </span>
+                                <span className="value">
+                                    {pageData.bookingData.activeDateTime
+                                        ? DateUtils.toString(pageData.bookingData.activeDateTime, "Mmmm dd, yyyy - hh:mm a.m.")
+                                        : "-"}
+                                </span>
+                            </div>
+                            <div className="booking-field">
+                                <span className={`label status-dot ${status === "finished" ? "active finished" : "inactive"}`}>
+                                    Finished At:
+                                </span>
+                                <span className="value">
+                                    {pageData.bookingData.finishedDateTime
+                                        ? DateUtils.toString(pageData.bookingData.finishedDateTime, "Mmmm dd, yyyy - hh:mm a.m.")
+                                        : "-"}
+                                </span>
+                            </div>
+                            <div className="booking-field">
+                                <span className={`label status-dot ${status === "canceled" ? "active canceled" : "inactive"}`}>
+                                    Canceled At:
+                                </span>
+                                <span className="value">
+                                    {pageData.bookingData.canceledDateTime
+                                        ? DateUtils.toString(pageData.bookingData.canceledDateTime, "Mmmm dd, yyyy - hh:mm a.m.")
+                                        : "-"}
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <DayPlanner dayPlannerMode="management" pageData={dayPlannerPageData} show={false} />
+
+                {pageData.formIndex === 0 ? (
+                    <EditServiceTransactions
+                        bookingId={bookingId}
+                        pageData={pageData}
+                        reloadPageData={reloadPageData}
+                        updateBooking={updateBookingEmployeeData}
+                    />
+                ) : pageData.formIndex === 1 ? (
+                    <EditPayments
+                        bookingId={bookingId}
+                        pageData={pageData}
+                        reloadPageData={reloadPageData}
+                        updateBooking={updateBookingPriceData}
+                    />
+                ) : (
+                    <button type="button" onClick={() => { pageData.formIndex--; reloadPageData(); }}>
+                        None, Go Back
+                    </button>
+                )}
+
+                <button type="button" className="log-data" onClick={() => console.log(pageData)}>
+                    Log page data
+                </button>
+            </form>
+        </>
+    );
+
+
 
 }
 
-function EditServiceTransactions( { bookingId, pageData, reloadPageData, updateBooking }: {
+function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBooking }: {
     bookingId: documentId | undefined,
     pageData: EmployeeBookingManagementPageData,
     reloadPageData: () => void,
-    updateBooking: () => Promise< void > | void
-} ): JSX.Element {
+    updateBooking: () => Promise<void> | void
+}): JSX.Element {
 
-    async function checkFormValidity(): Promise< boolean > {
+    async function checkFormValidity(): Promise<boolean> {
 
         return true;
 
     }
 
-    async function handleChangeClientActive( clientId: string ): Promise< void > {
+    async function handleChangeClientActive(clientId: string): Promise<void> {
 
         pageData.clientIdActive = clientId;
         reloadPageData();
@@ -717,43 +779,43 @@ function EditServiceTransactions( { bookingId, pageData, reloadPageData, updateB
 
     function setActiveBooking(): void {
 
-        if( !bookingId ) return;
+        if (!bookingId) return;
         const
             { clientInfoMap, bookingData, bookingDefaultData, updateMap } = pageData,
             dateList: Date[] = []
-        ;
-        for( let clientId in clientInfoMap ) {
+            ;
+        for (let clientId in clientInfoMap) {
 
-            const { serviceTransactionDataMap } = clientInfoMap[ clientId ];
-            for( let serviceTransactionId in serviceTransactionDataMap ) {
+            const { serviceTransactionDataMap } = clientInfoMap[clientId];
+            for (let serviceTransactionId in serviceTransactionDataMap) {
 
                 const {
                     actualBookingDateTimeStart
-                } = serviceTransactionDataMap[ serviceTransactionId ];
-                if( !actualBookingDateTimeStart ) continue;
-                dateList.push( actualBookingDateTimeStart );
+                } = serviceTransactionDataMap[serviceTransactionId];
+                if (!actualBookingDateTimeStart) continue;
+                dateList.push(actualBookingDateTimeStart);
 
             }
 
         }
-        const minimum: Date | null = DateUtils.getMinimum( dateList ) || null;
+        const minimum: Date | null = DateUtils.getMinimum(dateList) || null;
         bookingData.activeDateTime = minimum;
         const
             dateDefault = bookingDefaultData.activeDateTime,
-            isDefault: boolean = ( dateDefault && minimum ) ? DateUtils.areSameByMinute(
+            isDefault: boolean = (dateDefault && minimum) ? DateUtils.areSameByMinute(
                 dateDefault, minimum
             ) : !minimum,
-            hasUpdateRecord: boolean = ( bookingId in updateMap )
-        ;
-        if( !isDefault ) {
+            hasUpdateRecord: boolean = (bookingId in updateMap)
+            ;
+        if (!isDefault) {
 
-            if( !hasUpdateRecord ) updateMap[ bookingId ] = {};
-            updateMap[ bookingId ].activeDateTime = true;
+            if (!hasUpdateRecord) updateMap[bookingId] = {};
+            updateMap[bookingId].activeDateTime = true;
 
-        } else if( hasUpdateRecord ) {
+        } else if (hasUpdateRecord) {
 
-            delete updateMap[ bookingId ].activeDateTime;
-            if( !ObjectUtils.hasKeys( updateMap[ bookingId ] ) ) delete updateMap[ bookingId ];
+            delete updateMap[bookingId].activeDateTime;
+            if (!ObjectUtils.hasKeys(updateMap[bookingId])) delete updateMap[bookingId];
 
         }
 
@@ -761,215 +823,260 @@ function EditServiceTransactions( { bookingId, pageData, reloadPageData, updateB
 
     function setFinishedBooking(): void {
 
-        if( !bookingId ) return;
+        if (!bookingId) return;
         const
             { clientInfoMap, bookingData, bookingDefaultData, updateMap } = pageData,
             dateList: Date[] = []
-        ;
+            ;
         let
             isFinished: boolean = true,
             maximum: Date | null = null
-        ;
-        for( let clientId in clientInfoMap ) {
+            ;
+        for (let clientId in clientInfoMap) {
 
-            const { serviceTransactionDataMap } = clientInfoMap[ clientId ];
-            for( let serviceTransactionId in serviceTransactionDataMap ) {
+            const { serviceTransactionDataMap } = clientInfoMap[clientId];
+            for (let serviceTransactionId in serviceTransactionDataMap) {
 
-                const { actualBookingDateTimeEnd } = serviceTransactionDataMap[ serviceTransactionId ];
-                if( !actualBookingDateTimeEnd ) {
+                const { actualBookingDateTimeEnd } = serviceTransactionDataMap[serviceTransactionId];
+                if (!actualBookingDateTimeEnd) {
 
                     isFinished = false;
                     break;
 
                 }
-                dateList.push( actualBookingDateTimeEnd );
+                dateList.push(actualBookingDateTimeEnd);
 
             }
-            if( !isFinished ) break;
+            if (!isFinished) break;
 
         }
-        maximum = isFinished ? ( DateUtils.getMaximum( dateList ) || null ) : null;
+        maximum = isFinished ? (DateUtils.getMaximum(dateList) || null) : null;
         bookingData.finishedDateTime = maximum;
         const
             dateDefault = bookingDefaultData.finishedDateTime,
-            isDefault: boolean = ( dateDefault && maximum ) ? DateUtils.areSameByMinute(
+            isDefault: boolean = (dateDefault && maximum) ? DateUtils.areSameByMinute(
                 dateDefault, maximum
             ) : !maximum,
-            hasUpdateRecord: boolean = ( bookingId in updateMap )
-        ;
-        if( !isDefault ) {
+            hasUpdateRecord: boolean = (bookingId in updateMap)
+            ;
+        if (!isDefault) {
 
-            if( !hasUpdateRecord ) updateMap[ bookingId ] = {};
-            updateMap[ bookingId ].finishedDateTime = true;
+            if (!hasUpdateRecord) updateMap[bookingId] = {};
+            updateMap[bookingId].finishedDateTime = true;
 
-        } else if( hasUpdateRecord ) {
+        } else if (hasUpdateRecord) {
 
-            delete updateMap[ bookingId ].finishedDateTime;
-            if( !ObjectUtils.hasKeys( updateMap[ bookingId ] ) ) delete updateMap[ bookingId ];
+            delete updateMap[bookingId].finishedDateTime;
+            if (!ObjectUtils.hasKeys(updateMap[bookingId])) delete updateMap[bookingId];
 
         }
 
     }
 
-    return <main className="employee-booking-management-main-content">
-        <section className="client-input">
-            <label className="client-selection">Select Client:</label>
-            <div className="clickable-bars" id="client-selection">
-                {
-                    Object.keys( pageData.clientDataMap ).map( clientId =>
+    return (
+        <main className="employee-booking-management-main-content">
+            <section className="client-input">
+                <label className="client-selection">Select Client:</label>
+                <div className="clickable-bars" id="client-selection">
+                    {Object.keys(pageData.clientDataMap).map((clientId) => (
                         <div
-                            className={ `client-item ${ ( clientId === pageData.clientIdActive ) ? 'active' : '' }` }
-                            data-client={ `client${ clientId }` }
-                            key={ clientId }
-                            onClick={ () => handleChangeClientActive( clientId ) }
+                            className={`client-item ${clientId === pageData.clientIdActive ? 'active' : ''}`}
+                            data-client={`client${clientId}`}
+                            key={clientId}
+                            onClick={() => handleChangeClientActive(clientId)}
                         >
-                            { pageData.clientDataMap[ clientId ].name }
+                            {pageData.clientDataMap[clientId].name}
                         </div>
-                    )
-                }
+                    ))}
+                </div>
+            </section>
+
+            <section className="service-scroll-container">
+                {pageData.clientIdActive &&
+                    Object.keys(pageData.clientInfoMap[pageData.clientIdActive].serviceTransactionDataMap).map(
+                        (serviceTransactionId) => {
+                            const {
+                                clientIdActive,
+                                clientInfoMap,
+                                date,
+                                employeeDataMap,
+                                packageDataMap,
+                                serviceDataMap,
+                                serviceTransactionDefaultDataMap,
+                                serviceTransactionEmployeeListKeyMap,
+                            } = pageData;
+
+                            if (!serviceTransactionEmployeeListKeyMap[serviceTransactionId]) return null;
+
+                            const { serviceTransactionDataMap } = clientInfoMap[clientIdActive];
+                            const serviceTransactionData = serviceTransactionDataMap[serviceTransactionId];
+                            const {
+                                service: { id: serviceId },
+                                actualBookingDateTimeEnd,
+                                actualBookingDateTimeStart,
+                                bookingDateTimeEnd,
+                                bookingDateTimeStart,
+                                employee,
+                            } = serviceTransactionData;
+
+                            const dateRange = new DateRange(bookingDateTimeStart, bookingDateTimeEnd);
+                            const packageId = serviceTransactionData.package?.id;
+                            const serviceTransactionDefaultData =
+                                serviceTransactionDefaultDataMap[serviceTransactionId];
+
+                            const serviceTransactionEmployeeDataMap = ObjectUtils.filter(
+                                employeeDataMap,
+                                (employeeId) =>
+                                    serviceTransactionEmployeeListKeyMap[serviceTransactionId].includes(employeeId)
+                            );
+
+                            const status =
+                                serviceTransactionData.status === 'canceled'
+                                    ? 'canceled'
+                                    : actualBookingDateTimeEnd
+                                        ? 'finished'
+                                        : actualBookingDateTimeStart
+                                            ? 'active'
+                                            : 'pending';
+
+                            const canceled = status === 'canceled';
+
+                            return (
+                                <div className={`service-card ${status}`} key={serviceTransactionId}>
+                                    <div className="service-card-header">
+                                        <h3 className="service-title">{serviceDataMap[serviceId].name}</h3>
+                                        <span className="service-promo">{packageId ? packageDataMap[packageId].name : ''}</span>
+                                        <span className="service-time">{dateRange.toString('h:mmAM-h:mmAM')}</span>
+                                    </div>
+
+                                    <div className="service-card-body">
+                                        <div className="form-group">
+                                            <label>Employee Assigned</label>
+                                            <FormEmployeeSelect
+                                                documentData={serviceTransactionData}
+                                                documentDefaultData={serviceTransactionDefaultData}
+                                                documentId={serviceTransactionId}
+                                                employeeDataMap={serviceTransactionEmployeeDataMap}
+                                                pageData={pageData}
+                                                keyName="employee"
+                                                readOnly={canceled}
+                                                required={true}
+                                                onChange={reloadPageData}
+                                            >
+                                                <option value="">Assign employee</option>
+                                            </FormEmployeeSelect>
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label>Actual Start Time</label>
+                                            <FormTimeInput
+                                                className={canceled ? 'na' : 'start'}
+                                                date={date}
+                                                documentData={serviceTransactionData}
+                                                documentDefaultData={serviceTransactionDefaultData}
+                                                documentId={serviceTransactionId}
+                                                pageData={pageData}
+                                                keyName="actualBookingDateTimeStart"
+                                                readOnly={canceled || !employee}
+                                                required={true}
+                                                onChange={() => {
+                                                    setActiveBooking();
+                                                    reloadPageData();
+                                                }}
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label>Actual End Time</label>
+                                            <FormTimeInput
+                                                className={canceled ? 'na' : 'end'}
+                                                date={date}
+                                                documentData={serviceTransactionData}
+                                                documentDefaultData={serviceTransactionDefaultData}
+                                                documentId={serviceTransactionId}
+                                                min={actualBookingDateTimeStart || undefined}
+                                                pageData={pageData}
+                                                keyName="actualBookingDateTimeEnd"
+                                                readOnly={canceled || !employee || !actualBookingDateTimeStart}
+                                                required={true}
+                                                onChange={() => {
+                                                    setFinishedBooking();
+                                                    reloadPageData();
+                                                }}
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label>Notes</label>
+                                            <FormTextArea
+                                                documentData={serviceTransactionData}
+                                                documentDefaultData={serviceTransactionDefaultData}
+                                                documentId={serviceTransactionId}
+                                                keyName="notes"
+                                                pageData={pageData}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="service-card-footer">
+                                        {status === 'canceled' ? (
+                                            <span className="status-text canceled">CANCELLED</span>
+                                        ) : status === 'finished' ? (
+                                            <span className="status-text finished">FINISHED</span>
+                                        ) : (
+                                            <FormMarkButton<serviceTransactionStatus>
+                                                confirmMessage="Would you like to cancel this service transaction?"
+                                                documentData={serviceTransactionData}
+                                                documentDefaultData={serviceTransactionDefaultData}
+                                                documentId={serviceTransactionId}
+                                                keyName="status"
+                                                noText="Back"
+                                                pageData={pageData}
+                                                value="canceled"
+                                                reloadPageData={reloadPageData}
+                                                yesText="Yes, Cancel This"
+                                                className="btn-cancel-booking"
+                                            >
+                                                CANCEL
+                                            </FormMarkButton>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        }
+                    )}
+            </section>
+
+            <div className="footer-actions">
+                <button className="btn cancel-all-booking" type="button">
+                    Cancel All
+                </button>
+                <button className="btn save-booking" type="button" onClick={updateBooking}>
+                    Save
+                </button>
+                <button className="btn proceed-booking" type="submit">
+                    Proceed to Payment
+                </button>
             </div>
-        </section>
-        <section className="service-scroll-container">{
-            pageData.clientIdActive ? Object.keys( pageData.clientInfoMap[ pageData.clientIdActive ].serviceTransactionDataMap ).map( serviceTransactionId => {
+        </main>
+    );
 
-                const
-                    {
-                        clientIdActive, clientInfoMap, date, employeeDataMap, packageDataMap,
-                        serviceDataMap, serviceTransactionDefaultDataMap,
-                        serviceTransactionEmployeeListKeyMap
-                    } = pageData
-                ;
-                if( !serviceTransactionEmployeeListKeyMap[ serviceTransactionId ] )
-                    return undefined;
-                const
-                    { serviceTransactionDataMap } = clientInfoMap[ clientIdActive ],
-                    serviceTransactionData = serviceTransactionDataMap[ serviceTransactionId ],
-                    {
-                        service: { id: serviceId },
-                        actualBookingDateTimeEnd, actualBookingDateTimeStart,
-                        bookingDateTimeEnd, bookingDateTimeStart, employee
-                    } = serviceTransactionData,
-                    dateRange: DateRange = new DateRange(
-                        bookingDateTimeStart, bookingDateTimeEnd
-                    ),
-                    packageId: string | undefined = serviceTransactionData.package?.id,
-                    serviceTransactionDefaultData =
-                        serviceTransactionDefaultDataMap[ serviceTransactionId ]
-                    ,
-                    serviceTransactionEmployeeDataMap: EmployeeDataMap = ObjectUtils.filter(
-                        employeeDataMap,
-                        employeeId =>
-                            serviceTransactionEmployeeListKeyMap
-                                [ serviceTransactionId ]
-                                .includes( employeeId )
-                    ),
-                    status = (
-                        ( serviceTransactionData.status === "canceled" ) ? "canceled"
-                        : actualBookingDateTimeEnd ? "finished"
-                        : actualBookingDateTimeStart ? "active"
-                        : "pending"
-                    ),
-                    canceled = ( status === "canceled" )
-                ;
-
-                return <div className={ `service-scroll-item ${ status }` } key={ serviceTransactionId }>
-                    <div className="service-name">{ serviceDataMap[ serviceId ].name }</div>
-                    { packageId ? packageDataMap[ packageId ].name : "" }<br/>
-                    Employee Assigned<br/>
-                    { dateRange.toString( "h:mmAM-h:mmAM" ) }<br/>
-                    <FormEmployeeSelect
-                        documentData={ serviceTransactionData }
-                        documentDefaultData={ serviceTransactionDefaultData }
-                        documentId={ serviceTransactionId }
-                        employeeDataMap={ serviceTransactionEmployeeDataMap }
-                        pageData={ pageData }
-                        keyName="employee"
-                        readOnly={ canceled }
-                        required={ true }
-                        onChange={ reloadPageData }
-                    >
-                        <option value="">Assign employee</option>
-                    </FormEmployeeSelect>
-                    <br/>
-                    Actual Start Time<br/>
-                    <FormTimeInput
-                        className={ canceled ? "na" : "start" }
-                        date={ date }
-                        documentData={ serviceTransactionData }
-                        documentDefaultData={ serviceTransactionDefaultData }
-                        documentId={ serviceTransactionId }
-                        pageData={ pageData }
-                        keyName="actualBookingDateTimeStart"
-                        readOnly={ canceled || !employee }
-                        required={ true }
-                        onChange={ () => { setActiveBooking(); reloadPageData() } }
-                    />
-                    <br/>
-                    Actual End Time<br/>
-                    <FormTimeInput
-                        className={ canceled ? "na" : "end" }
-                        date={ date }
-                        documentData={ serviceTransactionData }
-                        documentDefaultData={ serviceTransactionDefaultData }
-                        documentId={ serviceTransactionId }
-                        min={ actualBookingDateTimeStart ? actualBookingDateTimeStart : undefined }
-                        pageData={ pageData }
-                        keyName="actualBookingDateTimeEnd"
-                        readOnly={ canceled || !employee || !actualBookingDateTimeStart }
-                        required={ true }
-                        onChange={ () => { setFinishedBooking(); reloadPageData() } }
-                    />
-                    <br/>
-                    Notes<br/>
-                    <FormTextArea
-                        documentData={ serviceTransactionData }
-                        documentDefaultData={ serviceTransactionDefaultData }
-                        documentId={ serviceTransactionId }
-                        keyName="notes"
-                        pageData={ pageData }
-                    />
-                    {
-                        ( status === "canceled" ) ? `CANCELED`
-                        : ( status === "finished" ) ? `FINISHED`
-                        : <FormMarkButton< serviceTransactionStatus >
-                            confirmMessage="Would you like to cancel this service transaction?"
-                            documentData={ serviceTransactionData }
-                            documentDefaultData={ serviceTransactionDefaultData }
-                            documentId={ serviceTransactionId }
-                            keyName="status"
-                            noText="Back"
-                            pageData={ pageData }
-                            value={ "canceled" }
-                            reloadPageData={ reloadPageData }
-                            yesText="Yes, Cancel This"
-                        >CANCEL</FormMarkButton>
-                    }
-                </div>;
-
-            } )
-            : undefined
-        }</section>
-        <button type="button">Cancel All</button>
-        <button type="button" onClick={ updateBooking }>Save</button>
-        <button type="submit">Proceed to Payment</button>
-        <button type="button" onClick={ () => console.log( pageData ) }>Log page data</button>
-    </main>
 
 }
 
-function EditPayments( { bookingId, pageData, reloadPageData, updateBooking }: {
+function EditPayments({ bookingId, pageData, reloadPageData, updateBooking }: {
     bookingId: documentId | undefined,
     pageData: EmployeeBookingManagementPageData,
     reloadPageData: () => void,
-    updateBooking: () => Promise< void > | void
-} ): JSX.Element {
+    updateBooking: () => Promise<void> | void
+}): JSX.Element {
 
     async function addVoucher(): Promise<void> {
-    
+
         const
             { voucherTransactionDataMap, voucherTransactionIndex } = pageData,
             voucherTransactionId: string = getVoucherTransactionId(voucherTransactionIndex)
-        ;
+            ;
         voucherTransactionDataMap[voucherTransactionId] = {
             voucher: null as unknown as DocumentReference,
             booking: null as unknown as DocumentReference,
@@ -980,7 +1087,7 @@ function EditPayments( { bookingId, pageData, reloadPageData, updateBooking }: {
 
     }
 
-    async function checkFormValidity(): Promise< boolean > {
+    async function checkFormValidity(): Promise<boolean> {
 
         return true;
 
@@ -994,9 +1101,9 @@ function EditPayments( { bookingId, pageData, reloadPageData, updateBooking }: {
     }
 
     return <main className="employee-booking-management-main-content">
-        <BookingReceipt bookingReceiptMode="management" pageData={ pageData } showActualTime={ true } addVoucher={ addVoucher } deleteVoucherTransaction={ deleteVoucherTransaction } reloadPageData={ reloadPageData }/>
+        <BookingReceipt bookingReceiptMode="management" pageData={pageData} showActualTime={true} addVoucher={addVoucher} deleteVoucherTransaction={deleteVoucherTransaction} reloadPageData={reloadPageData} />
         <button type="submit">Finish</button>
-        <button type="button" onClick={ () => console.log( pageData ) }>Log page data</button>
+        <button type="button" onClick={() => console.log(pageData)}>Log page data</button>
     </main>
 
 }
