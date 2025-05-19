@@ -1271,7 +1271,11 @@ function Finished({ pageData, reloadPageData }: {
 
     async function nextPage(): Promise<void> {
 
-        navigate( `/` );
+        pageData.popupData = {
+            children: `Booking created!`,
+            popupMode: `yesOnly`,
+            yes: () => navigate( `/` )
+        };
 
     }
 
