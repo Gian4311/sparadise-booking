@@ -74,6 +74,7 @@ import VoucherUtils from "../firebase/VoucherUtils";
 
 import "../styles/FormTimeInput.scss"
 import "../styles/BookingManagement.css"
+import MoneyUtils from "../firebase/MoneyUtils";
 interface EmployeeBookingManagementPageData extends SpaRadisePageData {
 
     accountData: AccountData,
@@ -477,6 +478,21 @@ export default function EmployeeBookingManagement(): JSX.Element {
                 await updateBookingEmployeeData();
                 break;
             case 1:
+                const change = MoneyUtils.add(
+                    pageData.paymentTotal
+                    -pageData.initialPrice,
+                    pageData.voucherDiscount,
+                    pageData.discountTotal
+                );
+                if( change < 0 ) {
+
+                    pageData.popupData = {
+                        children: "There is too much payment.",
+                        popupMode: "yesOnly"
+                    }
+                    return;
+
+                }
                 await updateBookingPriceData();
                 pageData.popupData = {
                     children: "Booking done!",
