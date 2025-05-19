@@ -186,35 +186,35 @@ export default function AccountManagement(): JSX.Element {
                     <label htmlFor="service-main-content" className="service-management-location">Accounts - {pageData.accountName}</label>
                     <div className="service-form-section">
                         <div className="service-header">
-                            <button onClick={() => navigate(`/management/capacities/menu`)} className="service-back-arrow" aria-label="Back" style={{ background: "none", border: "none", padding: 0 }}><img src={BackButton} alt="Back" className="back-icon" /></button>
+                            <button onClick={() => navigate(-1)} className="service-back-arrow" aria-label="Back" style={{ background: "none", border: "none", padding: 0 }}><img src={BackButton} alt="Back" className="back-icon" /></button>
                             <h1>{pageData.accountName}</h1>
                         </div>
 
-                        <div className="account-form-row-group">
-                            <div className="account-form-row">
-                                <label htmlFor="account-sex">Sex</label>
+                        <div className="employee-form-row-group">
+                            <div className="employee-form-row">
+                                <label htmlFor="account-sex">Account Type</label>
                                 <FormSelect className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} name="account-sex" keyName="accountType" optionList={SpaRadiseEnv.ACCOUNT_TYPE_LIST} pageData={pageData} required={true}>
                                     <option value="" disabled>Select account type</option>
                                     <option value="customer">Customer</option>
                                     <option value="management">Manager</option>
                                 </FormSelect>
                             </div>
-                            <div className="account-form-row">
+                            <div className="employee-form-row">
                                 <label htmlFor="account-name">Last Name</label>
                                 <FormTinyTextInput className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="lastName" name="account-lastName" pageData={pageData} required={true} />
                             </div>
-                            <div className="account-form-row">
+                            <div className="employee-form-row">
                                 <label htmlFor="account-name">First Name</label>
                                 <FormTinyTextInput className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="firstName" name="account-firstName" pageData={pageData} required={true} />
                             </div>
-                            <div className="account-form-row">
+                            <div className="employee-form-row">
                                 <label htmlFor="account-middle-name">Middle Name</label>
                                 <FormTinyTextInput className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="middleName" name="account-middleName" pageData={pageData} />
                             </div>
                         </div>
 
-                        <div className="account-form-row-group">
-                            <div className="account-form-row">
+                        <div className="employee-form-row-group">
+                            <div className="employee-form-row">
                                 <label htmlFor="account-sex">Sex</label>
                                 <FormSelect className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} name="account-sex" keyName="sex" optionList={SpaRadiseEnv.SEX_LIST} pageData={pageData} required={true}>
                                     <option value="" disabled>Select sex</option>
@@ -223,22 +223,24 @@ export default function AccountManagement(): JSX.Element {
                                     <option value="others">Others</option>
                                 </FormSelect>
                             </div>
-                            <div className="account-form-row">
+                            <div className="employee-form-row">
                                 <label htmlFor="account-birthdate">Birthdate</label>
                                 <FormDateInput className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="birthDate" name="account-birthdate" pageData={pageData} required={true} />
                             </div>
                         </div>
 
-                        <div className="account-form-row-group">
-                            <div className="account-form-row">
+                        <div className="employee-gap-row"></div>
+
+                        <div className="employee-form-row-group">
+                            <div className="employee-form-row">
                                 <label htmlFor="account-email">Email</label>
                                 <FormEmailInput className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="email" name="account-email" pageData={pageData} required={true} />
                             </div>
-                            <div className="account-form-row">
+                            <div className="employee-form-row">
                                 <label htmlFor="account-contact-number">Contact Number</label>
                                 <FormContactNumberInput className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="contactNumber" name="account-contactNumber" pageData={pageData} required={true} />
                             </div>
-                            <div className="account-form-row">
+                            <div className="employee-form-row">
                                 <label htmlFor="account-alter-contact-number">Alternate Contact Number</label>
                                 <FormContactNumberInput className="account-input" documentData={pageData.accountDataEdit} documentDefaultData={pageData.accountDefaultData} documentId={documentId} keyName="contactNumberAlternate" name="account-contactNumber" pageData={pageData} />
                             </div>
@@ -246,9 +248,9 @@ export default function AccountManagement(): JSX.Element {
 
 
 
-                        <div className="service-form-actions">
-                            <button className="service-cancel-btn" type="button" onClick={cancelAccountForm}>Cancel</button>
-                            <button className="service-save-btn" type="submit">{isNewMode ? "Create" : "Save Changes"}</button>
+                        <div className="employee-form-actions">
+                            <button className="employee-cancel-btn" type="button" onClick={cancelAccountForm}>Cancel</button>
+                            <button className="employee-save-btn" type="submit">{isNewMode ? "Create" : "Save Changes"}</button>
                         </div>
                     </div>
                 </div>
