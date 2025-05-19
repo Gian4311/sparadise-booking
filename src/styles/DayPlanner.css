@@ -205,3 +205,11 @@ table.serviceTransactionManager .serviceTransactionManager-client{
   font-weight: bold;
   font-size: 2rem;
 }
+
+.management-edit-booking {
+  background-color: #552B59;
+  border-radius: 12px;
+  color: white;
+  width: 10%;
+  margin-top: 2%;
+}

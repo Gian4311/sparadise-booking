@@ -1,0 +1,325 @@
+/* Layout container */
+
+/* Client selection */
+.client-selection {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.clickable-bars {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.client-item {
+  padding: 0.5rem 1rem;
+  background: #e0e0e0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.client-item:hover {
+  background: #d2d2d2;
+}
+
+.client-item.active {
+  background: #6B009E;
+  color: white;
+  width: 50%;
+}
+
+.employee-booking-management-main-content{
+    align-items: center;
+}
+/* Service Cards */
+.service-scroll-container {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  scroll-snap-type: x mandatory;
+  width: 100%;
+}
+
+/* Optional: Snap scrolling effect for smoother feel */
+.service-card {
+  flex: 0 0 300px;
+  scroll-snap-align: start;
+  width: 40%;
+  color: white;
+}
+
+.service-card {
+  flex: 1 1 300px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card status colors */
+.service-card.pending {
+  background-color: #e6cfcf;
+}
+
+.service-card.active {
+  background-color: rgb(11, 100, 11);
+}
+
+.service-card.finished {
+  background-color: #41005f;
+}
+
+.service-card.canceled {
+  background-color: #810202;
+}
+
+/* Header */
+.service-card-header {
+  margin-bottom: 1rem;
+}
+
+.service-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.2rem;
+}
+
+.service-promo,
+.service-time {
+  display: block;
+  font-size: 0.9rem;
+  color: white;
+}
+
+/* Form styling */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+/* Buttons */
+.service-card-footer {
+  margin-top: auto;
+  text-align: center;
+}
+
+.status-text {
+  font-weight: bold;
+  padding: 0.4rem 1rem;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+.status-text.canceled {
+  color: white;
+  background-color: #810202;
+}
+
+.btn-cancel-booking{
+  color: white;
+  background-color: rgb(12, 70, 12);
+}
+
+.status-text.finished {
+  color: white;
+  background-color: #41005f;
+}
+
+/* Footer Buttons */
+.footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 0.8rem 1.4rem;
+  border-radius: 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.cancel-all-booking {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.cancel-all-booking:hover {
+  background-color: #b71c1c;
+}
+
+.save-booking {
+  background-color: #6B009E;
+  color: white;
+}
+
+.save-booking:hover {
+  background-color: #3f055a;
+}
+
+.proceed-booking{
+  background-color: #388e3c;
+  color: white;
+}
+
+.proceed-booking:hover {
+  background-color: #2e7d32;
+}
+
+.log-data {
+  background-color: #757575;
+  color: white;
+}
+
+.log-data:hover {
+  background-color: #616161;
+}
+
+/* Form components that should be styled by external component libraries can inherit styling here if needed */
+select,
+textarea,
+input {
+  border-radius: 10px;
+  padding: 0.4rem;
+  border: 1px solid #ccc;
+  width: 100%;
+  font-size: 1.3rem;
+}
+
+.booking-form-layout {
+  padding: 2rem;
+  background: #FDE9EE;
+  border-radius: 20px;
+  max-width: 60%;
+  min-width: 40%;
+  margin-left: 20.5%;
+  margin-top: 1.5%;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #555;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.booking-details {
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.booking-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.booking-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.booking-field {
+  flex: 1 1 300px;
+  display: flex;
+  flex-direction: column;
+  font-size: 1.4rem;
+}
+
+.booking-field .label {
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 0.25rem;
+}
+
+.booking-field .value {
+  font-weight: 400;
+  color: #222;
+}
+
+.booking-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  border-top: 1px dashed #ccc;
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.log-data {
+  background-color: #757575;
+  color: white;
+  padding: 0.8rem 1.4rem;
+  border-radius: 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  margin-top: 2rem;
+  transition: background 0.2s ease-in-out;
+}
+
+.log-data:hover {
+  background-color: #616161;
+}
+
+.status-dot::before {
+  content: '';
+  display: inline-block;
+  margin-right: 0.5rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  vertical-align: middle;
+  border: 2px solid currentColor;
+}
+
+.status-dot.inactive::before {
+  background-color: transparent;
+  color: #bbb;
+}
+
+.status-dot.active::before {
+  background-color: currentColor;
+  border-color: currentColor;
+}
+
+/* Specific colors per status */
+.status-dot.reserved {
+  color: #ff8d8d; /* amber */
+}
+
+.status-dot.active-status {
+  color: rgb(11, 100, 11); /* blue */
+}
+
+.status-dot.finished {
+  color: #41005f; /* green */
+}
+
+.status-dot.canceled {
+  color: #810202;
+; /* red */
+}
