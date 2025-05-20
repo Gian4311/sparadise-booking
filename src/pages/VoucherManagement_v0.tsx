@@ -33,6 +33,7 @@ import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import EmployeeSidebar from "../components/EmployeeSidebar";
 import BackButton from "../images/back button.png";
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
+import PopupModal from "../components/PopupModal";
 
 interface VoucherManagementPageData extends SpaRadisePageData {
 
@@ -446,6 +447,10 @@ export default function VoucherManagement(): JSX.Element {
             await createVoucher();
         else
             await updateVoucher();
+        pageData.popupData = {
+            children: `Success!`,
+            yes: () => navigate( `/management/vouchers/menu` )
+        }
 
     }
 
@@ -484,7 +489,7 @@ export default function VoucherManagement(): JSX.Element {
     useEffect(() => { loadPageData() }, []);
 
     return <>
-
+        <PopupModal pageData={pageData} reloadPageData={reloadPageData}/>
         <EmployeeSidebar pageData={pageData} reloadPageData={reloadPageData} />
         <form onSubmit={submit}>
             <div className="service-main-content">
