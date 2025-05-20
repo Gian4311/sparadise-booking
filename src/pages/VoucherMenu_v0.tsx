@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { VoucherDataMap } from "../firebase/SpaRadiseTypes";
+import { AccountData, VoucherDataMap } from "../firebase/SpaRadiseTypes";
 import VoucherUtils from "../firebase/VoucherUtils";
 import { SpaRadisePageData, PackageDataMap, ServiceDataMap } from "../firebase/SpaRadiseTypes";
 import { useNavigate } from "react-router-dom";
@@ -10,11 +10,13 @@ import {
 } from "react";
 import PackageUtils from "../firebase/PackageUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
+import StringUtils from "../utils/StringUtils";
 import "../styles/EmployeeServiceManagement.css";
 import "../styles/Sidebar.css";
 import EmployeeSidebar from "../components/EmployeeSidebar";
-
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
+import { documentId } from "firebase/firestore/lite";
+import LoadingScreen from "../components/LoadingScreen";
 
 type rowType = "package" | "service";
 type showMode = "all" | rowType;
@@ -22,6 +24,8 @@ type sortMode = "ascending" | "descending";
 
 interface VoucherMenuPageData extends SpaRadisePageData {
 
+    accountData: AccountData,
+    accountId?: documentId,
     voucherDataMap: VoucherDataMap,
     rowTypeMap: { [documentId: documentId]: rowType },
     packageDataMap: PackageDataMap,
@@ -33,6 +37,7 @@ export default function VoucherMenu(): JSX.Element {
 
     const
         [pageData, setPageData] = useState<VoucherMenuPageData>({
+            accountData: {} as unknown as AccountData,
             loaded: false,
             voucherDataMap: {},
             packageDataMap: {},
@@ -105,23 +110,8 @@ export default function VoucherMenu(): JSX.Element {
 
     return <>
         <div>
-            <EmployeeSidebar />
-            <div className="sidebar">
-                <div className="sidebar-logo">
-                    <img src={SpaRadiseLogo} alt="SpaRadise Logo" />
-                </div>
-                <ul className="sidebar-menu">
-                    <li><Link to="../management/dashboard" >Dashboard</Link></li>
-                    <li><Link to="../management/bookings/menu" >Bookings</Link></li>
-                    <li><Link to="../management/clients/menu" >Clients</Link></li>
-                    <li><Link to="/management/employees/menu" >Employees</Link></li>
-                    <li><Link to="../management/servicesAndPackages/menu">Services & Packages</Link></li>
-                    <li><Link to="../management/vouchers/menu" className="active"  >Vouchers</Link></li>
-                    <li><Link to="../management/roomsAndChairs/menu" >Rooms & Chairs</Link></li>
-                    <li><Link to="../management/commissions/menu" >Commissions</Link></li>
-                    <li><a href="#">Log Out</a></li>
-                </ul>
-            </div>
+            <EmployeeSidebar pageData={pageData} reloadPageData={reloadPageData} />
+            <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
 
             <div className="service-menu-main-content">
                 <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">Vouchers
@@ -129,15 +119,10 @@ export default function VoucherMenu(): JSX.Element {
                 <div className="service-menu-form-section">
 
                     <div className="controls">
-                        <input placeholder="Search services or packages" className="search" value={search} onChange={event => handleChangeSearch(event)} />
+                        <input placeholder="Search vouchers" className="search" value={search} onChange={event => handleChangeSearch(event)} />
                         <button className="filter-btn" type="button" value={sortMode} onClick={toggleSortMode}>{
                             (sortMode === "ascending") ? "A - Z" : "Z - A"
                         }</button>
-                        <select className="filter-btn" id="filter-select" value={showMode} onChange={event => handleChangeShowMode(event)}>
-                            <option value="">Show All</option>
-                            <option value="service">Services only</option>
-                            <option value="package">Packages only</option>
-                        </select>
                         <Link to="/management/vouchers/new"><button className="action-btn" type="button">+ Add new Voucher</button></Link>
                     </div>
                     <table className="services-table">
@@ -148,20 +133,42 @@ export default function VoucherMenu(): JSX.Element {
                             <th>Type</th>
                             <th>Amount</th>
                         </tr></thead>
-                        <tbody>                        {
+                        <tbody>
+                            {
+                                Object.keys(voucherDataMap)
+                                    .sort((voucherId1, voucherId2) =>
+                                        StringUtils.compare(
+                                            voucherDataMap[voucherId1].name,
+                                            voucherDataMap[voucherId2].name,
+                                            sortMode === "ascending"
+                                        )
+                                    )
+                                    .map((voucherId, index) => {
+                                        const voucherData = voucherDataMap[voucherId];
+                                        const { name, code, percentage, amount } = voucherData;
+                                        const count = (index + 1).toString();
+                                        const show = StringUtils.has(`${count}\t${name}`, search);
 
-                            voucherDataMap ? Object.keys(voucherDataMap).map((voucherId, index) => {
+                                        // Determine type symbol and value
+                                        const type = percentage != null ? "%" : amount != null ? "₱" : "—";
+                                        const value = percentage != null ? percentage : amount != null ? amount : "—";
 
-                                const voucherData = pageData.voucherDataMap[voucherId];
-                                return <Link key={index} to={"/management/vouchers/" + voucherId}>
-                                    <h1>{voucherData.name}</h1>
-                                </Link>
-
-                            }) : undefined
-
-                        }
-
+                                        return show ? (
+                                            <tr key={voucherId} onClick={() => navigate(`/management/vouchers/${voucherId}`)}>
+                                                <td>{count}</td>
+                                                <td>{name}</td>
+                                                <td>{code}</td>
+                                                <td>{type}</td>
+                                                <td>{value}</td>
+                                            </tr>
+                                        ) : null;
+                                    })
+                            }
                         </tbody>
+
+
+
+
                     </table>
                 </div>
 

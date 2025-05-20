@@ -3,7 +3,9 @@ import NumberRange from "../utils/NumberRange";
 export default class SpaRadiseEnv {
 
     public static ACCOUNT_COLLECTION = "accounts";
+    public static ACCOUNT_TYPE_LIST = [ "management", "customer" ];
     public static BOOKING_COLLECTION = "bookings";
+    public static CAPACITY_COLLECTION = "capacities";
     public static CLIENT_COLLECTION = "clients";
     public static CONTACT_NUMBER_REGEX =
         `(^09[0-9]{9}$)`
@@ -15,6 +17,7 @@ export default class SpaRadiseEnv {
     ;
     public static DATE_REGEX = /^[0-9]{4}-(0[1-9]|1[0-2])-[0-3][0-9]$/;
     public static DATE_TIME_REGEX = /^[0-9]{4}-(0[1-9]|1[0-2])-[0-3][0-9]T[0-2][0-9]:[0-6][0-9]$/;
+    public static DISCOUNT_COLLECTION = "discounts";
     public static EMPLOYEE_COLLECTION = "employees";
     public static EMPLOYEE_LEAVE_COLLECTION = "employeeLeaves";
     public static EMPLOYEE_LEAVE_STATUS_LIST = [ "approved", "canceled", "pending" ];
@@ -26,6 +29,7 @@ export default class SpaRadiseEnv {
     public static PACKAGE_COLLECTION = "packages";
     public static PACKAGE_MAINTENANCE_COLLECTION = "packageMaintenances";
     public static PACKAGE_SERVICE_COLLECTION = "packageServices";
+    public static PAYMENT_COLLECTION = "payments";
     public static REGION_LIST: region[] = [
         "NCR", "I", "II", "III", "IV-A", "IV-B", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII",
         "XIII", "CAR", "BARMM"
@@ -40,7 +44,7 @@ export default class SpaRadiseEnv {
     ];
     public static SERVICE_TRANSACTION_COLLECTION = "serviceTransactions";
     public static SERVICE_TRANSACTION_STATUS_LIST: serviceTransactionStatus[] = [
-        "canceled", "uncanceled"
+        "serviceActive", "serviceCanceled", "serviceWaived"
     ];
     public static SERVICE_TYPE_LIST: serviceType[] = [
         "body", "browsAndLashes", "facial", "handsAndFeet", "health", "wax"
@@ -49,6 +53,7 @@ export default class SpaRadiseEnv {
     public static VOUCHER_COLLECTION = "vouchers";
     public static VOUCHER_PACKAGE_COLLECTION = "voucherPackages";
     public static VOUCHER_SERVICE_COLLECTION = "voucherServices";
+    public static VOUCHER_TRANSACTION_COLLECTION = "voucherTransactions";
     public static ZIP_CODE_REGEX = `^[0-9]{4}$`;
 
     public static isRoomType( string: roomType ): boolean {

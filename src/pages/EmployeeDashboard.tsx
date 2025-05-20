@@ -1,17 +1,94 @@
-import React from "react";
+import {
+    AccountData,
+    SpaRadisePageData
+  } from "../firebase/SpaRadiseTypes";
+import React, { useEffect, useState } from "react";
 import "../styles/Dashboard.css";
-
 import Sidebar from "../components/EmployeeSidebar";
+import EmployeeUtils from "../firebase/EmployeeUtils";
+import JobUtils from "../firebase/JobUtils";
+import { EmployeeDataMap, JobDataMap } from "../firebase/SpaRadiseTypes";
+import PersonUtils from "../utils/PersonUtils";
+import PackageUtils from "../firebase/PackageUtils";
+import ServiceUtils from "../firebase/ServiceUtils";
+
+import LoadingScreen
+    from "../components/LoadingScreen";
+import { Link } from "react-router-dom";
+
+interface EmployeeDisplay {
+    name: string;
+    job: string;
+}
+
+interface EmployeeDashboardPageData extends SpaRadisePageData {
+
+    accountData: AccountData,
+    accountId?: documentId
+
+}
 
 const Dashboard: React.FC = () => {
-    return (
 
+    const
+        [ pageData, setPageData ] = useState< EmployeeDashboardPageData >( {
+            accountData: {
+                lastName: null as unknown as string,
+                firstName: null as unknown as string,
+                middleName: null,
+                sex: null as unknown as sex,
+                birthDate: null as unknown as Date,
+                email: null as unknown as string,
+                contactNumber: null as unknown as string,
+                contactNumberAlternate: null,
+                accountType: null as unknown as accountType
+            },
+            loaded: true,
+            updateMap: {}
+        } ),
+        [employeeList, setEmployeeList] = useState<EmployeeDisplay[]>([])
+    ;
 
-        <div
+    function reloadPageData(): void {
 
-        ><div>       <Sidebar></Sidebar> </div> <div className="dashboard-container">
+        setPageData( { ...pageData } );
+  
+    }
 
+    useEffect(() => {
+        async function loadEmployees(): Promise<void> {
+            const employeeDataMap: EmployeeDataMap = await EmployeeUtils.getEmployeeDataMapAll();
+            const jobDataMap: JobDataMap = await JobUtils.getJobDataMapAll();
 
+            const sortedEmployeeIds = Object.keys(employeeDataMap).sort((a, b) =>
+                PersonUtils.toString(employeeDataMap[a], "f mi l").localeCompare(
+                    PersonUtils.toString(employeeDataMap[b], "f mi l")
+                )
+            );
+
+            const firstFive = sortedEmployeeIds.slice(0, 5).map((id) => {
+                const employee = employeeDataMap[id];
+                const job = jobDataMap[employee.job.id]?.name ?? "Unknown";
+
+                return {
+                    name: PersonUtils.toString(employee, "f mi l"),
+                    job: job
+                };
+            });
+
+            setEmployeeList(firstFive);
+        }
+
+        loadEmployees();
+    }, []);
+
+    return <>
+        {/* <LoadingScreen loading={ pageD}></LoadingScreen> */}
+        <div>
+            <div>
+                <Sidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
+            </div>
+            <div className="dashboard-container">
                 <main className="dashboard-main-content" id="main-content-area">
                     <h1 className="dashboard-title">Dashboard</h1>
 
@@ -50,17 +127,28 @@ const Dashboard: React.FC = () => {
 
                     <section className="dashboard-grid-section" id="grid-section">
                         <div className="dashboard-card" id="employees-card">
-                            <div className="dashboard-card-header">
-                                <span className="card-title">Employees</span>
-                                <span className="card-arrow">&rarr;</span>
-                            </div>
+                            <Link to="/management/employees/menu">
+                                <div className="dashboard-card-header">
+                                    <span className="card-title">Employees</span>
+                                    <span className="card-arrow">&rarr;</span>
+                                </div>
+                            </Link>
                             <table className="dashboard-table" id="employees-table">
                                 <thead>
                                     <tr><th>#</th><th>Name</th><th>Job</th></tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>1</td><td>Apostol, Gian Tristian G.</td><td>Nail Technician</td></tr>
-                                    <tr><td>2</td><td>Cabangbang, R-Man Rey S.</td><td>Eyelash Technician</td></tr>
+                                    {employeeList.map((emp, index) => (
+                                        <tr key={index}>
+                                            <td>{index + 1}</td>
+                                            <td>{emp.name}</td>
+                                            <td>{emp.job}</td>
+                                        </tr>
+                                    ))}
+                                    <tr>
+                                        <td></td>
+                                        <td>...</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -72,7 +160,7 @@ const Dashboard: React.FC = () => {
                             </div>
                             <table className="dashboard-table" id="clients-table">
                                 <thead>
-                                <tr><th>#</th><th>Name</th><th>Email</th></tr>
+                                    <tr><th>#</th><th>Name</th><th>Email</th></tr>
                                 </thead>
                                 <tbody>
                                     <tr><td>1</td><td>Cruz, Tom</td><td>tomcruz@gmail.com</td></tr>
@@ -113,28 +201,28 @@ const Dashboard: React.FC = () => {
                             </table>
                         </div>
 
-                        <div className="dashboard-card" id="vouchers-card">
+                        <div className="dashboard-card" id="rooms-chairs-card">
                             <div className="dashboard-card-header">
                                 <span className="card-title">Rooms & Chairs</span>
                                 <span className="card-arrow">&rarr;</span>
                             </div>
-                            <table className="dashboard-table" id="vouchers-table">
+                            <table className="dashboard-table" id="rooms-chairs-table">
                                 <thead>
                                     <tr><th>#</th><th>Name</th></tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>1</td><td>Christmas Promo Voucher</td></tr>
-                                    <tr><td>2</td><td>New Year's Day 2025 Massage Voucher</td></tr>
+                                    <tr><td>1</td><td>Room 1</td></tr>
+                                    <tr><td>2</td><td>Room 2</td></tr>
                                 </tbody>
                             </table>
                         </div>
 
-                        <div className="dashboard-card" id="vouchers-card">
+                        <div className="dashboard-card" id="commissions-card">
                             <div className="dashboard-card-header">
                                 <span className="card-title">Commissions</span>
                                 <span className="card-arrow">&rarr;</span>
                             </div>
-                            <table className="dashboard-table" id="vouchers-table">
+                            <table className="dashboard-table" id="commissions-table">
                                 <thead>
                                     <tr><th>#</th><th>Name</th></tr>
                                 </thead>
@@ -148,7 +236,7 @@ const Dashboard: React.FC = () => {
                 </main>
             </div>
         </div>
-    );
+       </>;
 };
 
 export default Dashboard;

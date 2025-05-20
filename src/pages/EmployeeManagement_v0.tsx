@@ -1,6 +1,7 @@
 
 import { DocumentReference } from "firebase/firestore/lite";
 import {
+    AccountData,
     EmployeeData,
     JobData,
     JobDataMap,
@@ -39,6 +40,8 @@ import EmployeeSidebar from "../components/EmployeeSidebar";
 
 interface EmployeeManagementPageData extends SpaRadisePageData {
 
+    accountData: AccountData,
+    accountId?: documentId,
     employeeData: EmployeeData,
     employeeDefaultData: EmployeeData,
     employeeDocumentReference?: DocumentReference,
@@ -53,6 +56,7 @@ export default function EmployeeManagement(): JSX.Element {
 
     const
         [pageData, setPageData] = useState<EmployeeManagementPageData>({
+            accountData: {} as unknown as AccountData,
             employeeData: {
                 lastName: null as unknown as string,
                 firstName: null as unknown as string,
@@ -162,7 +166,7 @@ export default function EmployeeManagement(): JSX.Element {
         );
         pageData.employeeData = await EmployeeUtils.getEmployeeData(documentId);
         pageData.employeeDefaultData = { ...pageData.employeeData };
-        pageData.employeeName = PersonUtils.format(pageData.employeeDefaultData, "f mi l");
+        pageData.employeeName = PersonUtils.toString(pageData.employeeDefaultData, "f mi l");
 
     }
 
@@ -192,6 +196,7 @@ export default function EmployeeManagement(): JSX.Element {
 
     }
 
+    
     async function updateEmployee(): Promise<void> {
 
         if (!isEditMode || !documentId) return;
@@ -201,12 +206,11 @@ export default function EmployeeManagement(): JSX.Element {
 
             await EmployeeUtils.updateEmployee(documentId, employeeData);
             pageData.employeeDefaultData = { ...pageData.employeeData };
-            pageData.employeeName = PersonUtils.format(pageData.employeeDefaultData, "f mi l");
+            pageData.employeeName = PersonUtils.toString(pageData.employeeDefaultData, "f mi l");
 
         }
         delete updateMap[documentId];
         reloadPageData();
-        alert(`Updated!`); // note: remove later
 
     }
 
@@ -214,15 +218,13 @@ export default function EmployeeManagement(): JSX.Element {
 
     return <>
         <PopupModal pageData={pageData} reloadPageData={reloadPageData} />
-        <EmployeeSidebar />
+        <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
         <form onSubmit={submit}>
             <div className="employee-main-content">
-                <label htmlFor="employee-main-content" className="employee-management-location">Employees - {PersonUtils.format(pageData.employeeDefaultData, "f mi l")}</label>
+                <label htmlFor="employee-main-content" className="employee-management-location">Employees - {PersonUtils.toString(pageData.employeeDefaultData, "f mi l")}</label>
                 <div className="employee-form-section">
                     <div className="employee-header">
-                        <a href="javascript:history.back()" className="service-back-arrow" aria-label="Back">
-                            <img src={BackButton} alt="Back" className="back-icon" />
-                        </a>
+                        <button onClick={() => navigate(-1)} className="service-back-arrow" aria-label="Back" style={{ background: "none", border: "none", padding: 0 }}><img src={BackButton} alt="Back" className="back-icon" /></button>
                         <h1>{pageData.employeeName}</h1>
                     </div>
                     <div className="employee-form-row-group">

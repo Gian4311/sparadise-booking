@@ -3,7 +3,6 @@ body {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    color: #fff;
   }
   
 * {
@@ -119,5 +118,14 @@ body {
   .accordion-content tr:hover {
     background-color: #eed0d2;
     cursor: pointer;
+  }
+  
+  .accordion-content {
+    display: none;
+    padding: 10px;
+  }
+  
+  .accordion-item .accordion-content {
+    display: block;
   }
   

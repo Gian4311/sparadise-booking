@@ -25,6 +25,36 @@ export default class DateRange {
 
     }
 
+    public addEnd( timeData: TimeData ): DateRange {
+
+        const end = DateUtils.addTime( this.end, timeData );
+        return new DateRange( this.start, end );
+
+    }
+
+    public addStart( timeData: TimeData ): DateRange {
+
+        const start = DateUtils.addTime( this.start, timeData );
+        return new DateRange( start, this.end );
+
+    }
+
+    public addTime( timeData: TimeData ): DateRange {
+
+        const
+            start = DateUtils.addTime( this.start, timeData ),
+            end = DateUtils.addTime( this.end, timeData )
+        ;
+        return new DateRange( start, end );
+
+    }
+
+    public getDifferenceMin(): number {
+
+        return ( this.end.getTime() - this.start.getTime() ) / 60000;
+
+    }
+
     public getEnd(): Date {
 
         return this.end;

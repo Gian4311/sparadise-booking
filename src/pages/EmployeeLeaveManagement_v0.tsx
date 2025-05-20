@@ -2,6 +2,7 @@ import DateRange from "../utils/DateRange";
 import DateUtils from "../utils/DateUtils";
 import { DocumentReference } from "firebase/firestore/lite";
 import {
+    AccountData,
     EmployeeData,
     EmployeeDataMap,
     EmployeeLeaveData,
@@ -42,6 +43,8 @@ import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 
 interface EmployeeLeaveManagementPageData extends SpaRadisePageData {
 
+    accountData: AccountData,
+    accountId?: documentId,
     employeeDataMap: EmployeeDataMap,
     employeeLeaveData: EmployeeLeaveData,
     employeeLeaveDefaultData: EmployeeLeaveData,
@@ -55,6 +58,17 @@ export default function EmployeeLeaveManagement(): JSX.Element {
 
     const
         [ pageData, setPageData ] = useState< EmployeeLeaveManagementPageData >( {
+            accountData: {
+                lastName: null as unknown as string,
+                firstName: null as unknown as string,
+                middleName: null,
+                sex: null as unknown as sex,
+                birthDate: null as unknown as Date,
+                email: null as unknown as string,
+                contactNumber: null as unknown as string,
+                contactNumberAlternate: null,
+                accountType: null as unknown as accountType
+            },
             employeeDataMap: {},
             employeeLeaveData: {
                 employee: null as unknown as DocumentReference,
@@ -206,7 +220,7 @@ export default function EmployeeLeaveManagement(): JSX.Element {
     return <>
         <PopupModal pageData={ pageData } reloadPageData={ reloadPageData } />
         <form onSubmit={submit}>
-            <EmployeeSidebar/>
+            <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
             <nav className="navbar">
                 <div className="clientIndex-Logo">
                     <img src="../images/SpaRadise Logo.png" alt="SpaRadise Logo"/>
@@ -224,11 +238,11 @@ export default function EmployeeLeaveManagement(): JSX.Element {
             </nav>
             
             <div className="employee-main-content">
-                <label htmlFor="employee-main-content" className="employee-management-location">EmployeeLeaves - Name</label>
+                <label htmlFor="employee-main-content" className="employee-management-location">EmployeeLeaves - { pageData.employeeLeaveData.employee ? PersonUtils.toString( pageData.employeeDataMap[ pageData.employeeLeaveData.employee.id ], "f mi l" ) : `` }</label>
                 <div className="employee-form-section">
 
                     <label>Employee: </label>
-                    <FormEntitySelect< EmployeeData > collectionName={ SpaRadiseEnv.EMPLOYEE_COLLECTION } documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="employee" optionDataMap={ pageData.employeeDataMap } pageData={pageData} readOnly={ canceled } required={true} getDocumentName={ employeeData => PersonUtils.format( employeeData, "f mi l" ) }>
+                    <FormEntitySelect< EmployeeData > collectionName={ SpaRadiseEnv.EMPLOYEE_COLLECTION } documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="employee" optionDataMap={ pageData.employeeDataMap } pageData={pageData} readOnly={ canceled } required={true} getDocumentName={ employeeData => PersonUtils.toString( employeeData, "f mi l" ) }>
                         <option value="" disabled>Select employee</option>
                     </FormEntitySelect>
                     <label>From Date Time: </label>
@@ -298,12 +312,6 @@ export default function EmployeeLeaveManagement(): JSX.Element {
                 </div>
             </div>
         </form >
-        {
-            IS_DEV_MODE ? <button style={{ float: "right" }
-            } type="button" onClick={() => console.log(pageData)
-            }> Log page data</button >
-                : undefined
-        }
     </>
 
 }

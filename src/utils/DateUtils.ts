@@ -1,16 +1,3 @@
-interface TimeData {
-
-    yr?: number,
-    mon?: number,
-    week?: number,
-    day?: number,
-    hr?: number,
-    min?: number,
-    sec?: number,
-    ms?: number
-
-}
-
 export default class DateUtils {
 
     public static addTime( date: Date, timeData: TimeData ): Date {
@@ -72,9 +59,46 @@ export default class DateUtils {
 
     }
 
+    public static compare( date1: Date, date2: Date, ascending: boolean = true ): number {
+
+        const sign: number = ascending ? 1 : -1;
+        return sign * ( ( date1 > date2 ) ? 1 : -1 );
+
+    }
+
+    public static getMaximum( dateList: Date[] ): Date | undefined {
+
+        const { length } = dateList;
+        if( length === 0 ) return undefined;
+        let maximum: Date = dateList[ 0 ];
+        for( let index: number = 1; index < length; index++ ) {
+
+            const date: Date = dateList[ index ];
+            if( date > maximum ) maximum = date;
+
+        }
+        return maximum;
+
+    }
+
     public static getMinDiff( date1: Date, date2: Date ): number {
 
         return ( date1.getTime() - date2.getTime() ) / 60000;
+
+    }
+
+    public static getMinimum( dateList: Date[] ): Date | undefined {
+
+        const { length } = dateList;
+        if( length === 0 ) return undefined;
+        let minimum: Date = dateList[ 0 ];
+        for( let index: number = 1; index < length; index++ ) {
+
+            const date: Date = dateList[ index ];
+            if( date < minimum ) minimum = date;
+
+        }
+        return minimum;
 
     }
 
@@ -92,6 +116,12 @@ export default class DateUtils {
         let yrAge: number = yr1 - yr2;
         if( ( mon1 < mon2 ) || ( mon1 === mon2 && day1 < day2 ) ) yrAge--;
         return yrAge;
+
+    }
+
+    public static isSunday( date: Date ): boolean {
+
+        return ( date.getDay() === 0 );
 
     }
 
@@ -155,7 +185,7 @@ export default class DateUtils {
 
         let
             yr: string, mon: string, day: string, hr: string, min: string,
-            hrValue: number, meridiem: string
+            hrValue: number, minValue: number, meridiem: string
         ;
         switch( format ) {
 
@@ -164,6 +194,14 @@ export default class DateUtils {
                 day = date.getDate().toString().padStart( 2, "0" );
                 yr = date.getFullYear().toString();
                 return `${ day } ${ mon } ${ yr }`;
+
+            case "h AM":
+                hrValue = date.getHours();
+                hr = ( ( hrValue + 11 ) % 12 + 1 ).toString();
+                minValue = date.getMinutes();
+                min = minValue.toString();
+                meridiem = `${ hrValue < 12 ? `A` : `P` }M`;
+                return `${ hr }${ minValue ? `:${ min }a` : `` } ${ meridiem }`;
 
             case "hhmm":
                 hr = date.getHours().toString().padStart( 2, "0" );
@@ -233,6 +271,21 @@ export default class DateUtils {
                 return `${ yr }-${ mon }-${ day }T${ hr }:${ min }`;
 
         }
+
+    }
+
+    public static toTimeData( date: Date ): TimeData {
+
+        return {
+            yr: date.getFullYear(),
+            mon: date.getMonth(),
+            // set week
+            day: date.getDate(),
+            hr: date.getHours(),
+            min: date.getMinutes(),
+            sec: date.getSeconds(),
+            ms: date.getMilliseconds()
+        };
 
     }
 

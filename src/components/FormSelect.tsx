@@ -72,15 +72,15 @@ export default function FormSelect(
             isDefault: boolean = ( documentDefaultData[ keyName ] === parsedValue ),
             hasUpdateRecord: boolean = ( documentId in updateMap )
         ;
-        if( isDefault ) {
-
-            if( hasUpdateRecord ) delete updateMap[ documentId ][ keyName ];
-            if( !ObjectUtils.hasKeys( updateMap[ documentId ] ) ) delete updateMap[ documentId ];
-
-        } else {
+        if( !isDefault ) {
 
             if( !hasUpdateRecord ) updateMap[ documentId ] = {};
             updateMap[ documentId ][ keyName ] = true;
+
+        } else if( hasUpdateRecord ) {
+
+            delete updateMap[ documentId ][ keyName ];
+            if( !ObjectUtils.hasKeys( updateMap[ documentId ] ) ) delete updateMap[ documentId ];
 
         }
 
@@ -104,10 +104,9 @@ export default function FormSelect(
         return (
             isTrue ? true
             : isFalse ? false
-            : isNull ? null
+            : ( isNull || isEmpty ) ? null
             : isDateTime ? date
             : isNumber ? +unparsedValue
-            : isEmpty ? null
             : unparsedValue
         );
 

@@ -53,6 +53,7 @@ export default function FormDateTime30MinStepInput(
 
     async function handleChange( date: Date ): Promise< void > {
 
+        if( readOnly ) return;
         const
             unparsedValueNew: string = DateUtils.toString( adjustToMinMax( date ), DATETIME_FORMAT ),
             parsedValue: main | null = await parseValue( unparsedValueNew ),
@@ -97,15 +98,15 @@ export default function FormDateTime30MinStepInput(
             ) : !parsedValue,
             hasUpdateRecord: boolean = ( documentId in updateMap )
         ;
-        if( isDefault ) {
-
-            if( hasUpdateRecord ) delete updateMap[ documentId ][ keyName ];
-            if( !ObjectUtils.hasKeys( updateMap[ documentId ] ) ) delete updateMap[ documentId ];
-
-        } else {
+        if( !isDefault ) {
 
             if( !hasUpdateRecord ) updateMap[ documentId ] = {};
             updateMap[ documentId ][ keyName ] = true;
+
+        } else if( hasUpdateRecord ) {
+
+            delete updateMap[ documentId ][ keyName ];
+            if( !ObjectUtils.hasKeys( updateMap[ documentId ] ) ) delete updateMap[ documentId ];
 
         }
 

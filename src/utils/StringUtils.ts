@@ -13,11 +13,11 @@ export default class StringUtils {
             if( string in array1 )
                 stringCountMap[ string ]++;
             else
-                stringCountMap[ string ] = 0;
+                stringCountMap[ string ] = 1;
 
         };
         for( let string of array1 )
-            if( stringCountMap[ string ] ) {
+            if( stringCountMap[ string ] > 0 ) {
 
                 array.push( string );
                 stringCountMap[ string ]--;

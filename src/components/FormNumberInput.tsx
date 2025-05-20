@@ -36,12 +36,14 @@ export default function FormNumberInput(
     }
 ): JSX.Element {
 
-    const [ unparsedValue, setUnparsedValue ] = useState< string >( "" );
+    const
+        [ unparsedValue, setUnparsedValue ] = useState< string >( "" )
+    ;
 
     async function handleChange( event: ChangeEvent< HTMLInputElement > ): Promise< void > {
 
         const
-            unparsedValue: string = event.target.value,
+            { selectionStart, value: unparsedValue } = event.target,
             parsedValue: main | null = await parseValue( unparsedValue ),
             old = documentData[ keyName ] as main | null
         ;
@@ -61,15 +63,15 @@ export default function FormNumberInput(
             isDefault: boolean = ( documentDefaultData[ keyName ] === parsedValue ),
             hasUpdateRecord: boolean = ( documentId in updateMap )
         ;
-        if( isDefault ) {
-
-            if( hasUpdateRecord ) delete updateMap[ documentId ][ keyName ];
-            if( !ObjectUtils.hasKeys( updateMap[ documentId ] ) ) delete updateMap[ documentId ];
-
-        } else {
+        if( !isDefault ) {
 
             if( !hasUpdateRecord ) updateMap[ documentId ] = {};
             updateMap[ documentId ][ keyName ] = true;
+
+        } else if( hasUpdateRecord ) {
+
+            delete updateMap[ documentId ][ keyName ];
+            if( !ObjectUtils.hasKeys( updateMap[ documentId ] ) ) delete updateMap[ documentId ];
 
         }
 
@@ -92,8 +94,12 @@ export default function FormNumberInput(
         if( !documentData ) return;
         if( documentData[ keyName ] === undefined )
             throw new Error( `Key name "${ keyName }" does not exist.` );
-        const parsedValue: main = documentData[ keyName ] as main;
-        setUnparsedValue( await unparseValue( parsedValue ) );
+        if( documentData[ keyName ] ) {
+
+            const parsedValue: main = documentData[ keyName ] as main;
+            setUnparsedValue( await unparseValue( parsedValue ) );
+
+        }
 
     } )() }, [ pageData ] );
 

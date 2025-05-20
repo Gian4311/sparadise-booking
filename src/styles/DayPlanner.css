@@ -1,0 +1,217 @@
+/* Container to fit everything on-screen */
+.planner-container {
+  max-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 10px solid white;
+  margin-top: 2%;
+  border-radius: 15px;
+}
+
+/* Base table styling */
+table.dayPlanner {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  font-family: sans-serif;
+}
+
+
+/* Timestamp column – shrunk to fit */
+table.dayPlanner td.time-mark {
+  width: 60px;
+  min-width: 48px;
+  max-width: 48px;
+  height: 40px;
+  text-align: right;
+  padding: 0.4em 0.3em;
+  font-size: 0.85rem;
+  color: #333;
+  background: #fafafa;
+  vertical-align: top;
+  white-space: nowrap;
+
+}
+
+/* Time slots */
+table.dayPlanner td.time-slot {
+  height: 40px;
+  padding: 0;
+  vertical-align: top;
+  position: relative;
+  transition: background 0.2s;
+}
+
+/* Hover effect */
+table.dayPlanner td.time-slot {
+  position: relative;
+  overflow: hidden;
+}
+
+table.dayPlanner td.time-slot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0); /* start transparent */
+  transition: background 0.2s;
+  pointer-events: none;
+}
+
+table.dayPlanner td.time-slot:hover::before {
+  background: rgba(0, 0, 0, 0.2); /* black tint on hover */
+  /* Adjust the opacity (0.1–0.3) to your taste */
+}
+
+table.dayPlanner td.time-slot:hover {
+  cursor: pointer;
+}
+
+
+/* Service states */
+
+table.dayPlanner td.active {
+  background: #2a9d8f;
+  color: white;
+}
+table.dayPlanner td.finished {
+  background: #41005f;
+  color: white;
+  padding: 10px;
+}
+table.dayPlanner td.canceled {
+  background: #e63946;
+  color: white;
+}
+table.dayPlanner td.move {
+  background: #95559b;
+  color: rgb(255, 255, 255);
+  border: 0px;
+  padding: 10px;
+  height: 40px;
+}
+table.dayPlanner td.booking-selected {
+  color: white;
+  background-color: #95559b;
+}
+
+table.dayPlanner td.reserved {
+  background: #552B59;
+  color: #fff;
+  border: 0px;
+  padding: 10px;
+  height: 40px;
+}
+
+/* Add button */
+table.dayPlanner td.addition div {
+  display: inline-block;
+  line-height: 1.4em;
+  font-size: 1.4em;
+  font-weight: bold;
+  color: green;
+  text-align: center;
+}
+
+table.dayPlanner td.addition{
+    background-color: rgb(133, 228, 133);
+    padding: 5px;
+    border: 0px;
+}
+
+table.dayPlanner td.addition {
+    text-align: center;
+}
+
+.timeSlot-service{
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+/* Not available */
+table.dayPlanner td.not-available {
+  color: black;
+  text-align: center;
+  font-size: 1rem;
+  padding: 0.5em;
+  background-color: rgb(189, 189, 189);
+}
+
+.rooms-label{
+  background-color: #552B59;
+  padding:1%;
+  color: white;
+  font-size: 1.2rem;
+}
+
+/* Room/chair info */
+table.dayPlanner td.room-info {
+  background-color: rgb(189, 189, 189);
+  color: black;
+  font-size: 13px;
+  padding: 0.5em;
+}
+
+/* Buttons in serviceTransactionManager */
+
+.serviceTransactionManager{
+  margin-top: 10px;
+}
+
+
+/* On keyboard focus */
+table.serviceTransactionManager button.inactive:hover {
+  background-color: #552B59;
+  color: white;
+  outline: none;
+}
+
+table.serviceTransactionManager button.active {
+  background-color: #D8271A;
+  color: white;
+}
+
+table.serviceTransactionManager button.active:active {
+  background-color: #b41d12;
+  color: white;
+}
+
+table.serviceTransactionManager button.selecting {
+  background-color: #552B59; /* Amber-500 */
+  color: white;
+}
+
+table.serviceTransactionManager button.selecting:hover {
+  background-color: #431647; /* Amber-600 */
+}
+
+table.serviceTransactionManager button{
+  margin-right: 10px;
+}
+
+
+table.serviceTransactionManager .serviceTransactionManager-client{
+  color: black;
+  font-size: 1.3rem;
+}
+
+.booking-management-date-input input{
+
+  font-size: 1.5rem;
+  padding: 10px;
+  border-radius: 5px;
+
+
+}
+
+.booking-management-date-input label {
+  margin-right: 10px;
+  font-weight: bold;
+  font-size: 2rem;
+}
+
+.management-edit-booking {
+  background-color: #552B59;
+  border-radius: 12px;
+  color: white;
+  width: 10%;
+  margin-top: 2%;
+}

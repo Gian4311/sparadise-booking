@@ -9,7 +9,8 @@ export interface AccountData extends SpaRadiseDocumentData {
     birthDate: Date,
     email: string,
     contactNumber: string,
-    contactNumberAlternate: string | null
+    contactNumberAlternate: string | null,
+    accountType: accountType
 
 }
 
@@ -35,6 +36,20 @@ export interface BookingDataMap extends SpaRadiseDataMap< BookingData > {
 
 }
 
+export interface CapacityData extends SpaRadiseDocumentData {
+
+    roomCount: number,
+    chairCount: number,
+    datetime: Date
+
+}
+
+export interface CapacityDataMap extends SpaRadiseDataMap< CapacityData > {
+
+    [ capacityId: string ]: CapacityData
+
+}
+
 export interface ClientData extends SpaRadiseDocumentData {
 
     booking: DocumentReference,
@@ -47,6 +62,22 @@ export interface ClientData extends SpaRadiseDocumentData {
 export interface ClientDataMap extends SpaRadiseDataMap< ClientData > {
 
     [ clientId: string ]: ClientData
+
+}
+
+export interface DiscountData extends SpaRadiseDocumentData {
+
+    booking: DocumentReference,
+    discountType: string | null,
+    amount: number | null,
+    percentage: number | null,
+    status: discountStatus
+
+}
+
+export interface DiscountDataMap extends SpaRadiseDataMap< DiscountData > {
+
+    [ discountId: string | number ]: DiscountData
 
 }
 
@@ -164,6 +195,21 @@ export interface PackageServiceDataMap extends SpaRadiseDataMap< PackageServiceD
 
 }
 
+export interface PaymentData extends SpaRadiseDocumentData {
+
+    booking: DocumentReference,
+    amount: number,
+    gcashReference: string | null,
+    status: paymentStatus
+
+}
+
+export interface PaymentDataMap extends SpaRadiseDataMap< PaymentData > {
+
+    [ paymentId: string | number ]: PaymentData
+
+}
+
 export interface ServiceData extends SpaRadiseDocumentData {
 
     name: string,
@@ -197,25 +243,40 @@ export interface ServiceMaintenanceDataMap extends SpaRadiseDataMap< ServiceMain
 
 }
 
+export interface ServiceTransactionAvailabilityKeyMap {
+
+    [ serviceTransactionId: documentId ]: {
+
+        [ timeSlotId: string ]: boolean
+
+    }
+
+}
+
 export interface ServiceTransactionData extends SpaRadiseDocumentData {
 
     client: DocumentReference,
     service: DocumentReference,
     package: DocumentReference | null,
-    canceled: boolean,
-    free: boolean,
     bookingDateTimeStart: Date,
     bookingDateTimeEnd: Date,
     actualBookingDateTimeStart: Date | null,
     actualBookingDateTimeEnd: Date | null,
     employee: DocumentReference | null,
-    notes: string | null
+    notes: string | null,
+    status: serviceTransactionStatus
 
 }
 
 export interface ServiceTransactionDataMap extends SpaRadiseDataMap< ServiceTransactionData > {
 
-    [ serviceTransactionId: string | number ]: ServiceTransactionData
+    [ serviceTransactionId: string ]: ServiceTransactionData
+
+}
+
+export interface ServiceTransactionEmployeeListKeyMap {
+
+    [ serviceTransactionId: string ]: documentId[]
 
 }
 
@@ -294,5 +355,25 @@ export interface VoucherServiceData extends SpaRadiseDocumentData {
 export interface VoucherServiceDataMap extends SpaRadiseDataMap< VoucherServiceData > {
 
     [ voucherServiceId: string | number ]: VoucherServiceData
+
+}
+
+export interface VoucherTransactionApplicationMap {
+
+    [ voucherTransactionId: documentId ]: documentId | undefined
+
+}
+
+export interface VoucherTransactionData extends SpaRadiseDocumentData {
+
+    voucher: DocumentReference,
+    booking: DocumentReference,
+    status: voucherTransactionStatus
+
+}
+
+export interface VoucherTransactionDataMap extends SpaRadiseDataMap< VoucherTransactionData > {
+
+    [ voucherTransactioneId: string ]: VoucherTransactionData
 
 }

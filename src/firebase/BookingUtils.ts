@@ -10,7 +10,8 @@ import {
     QueryDocumentSnapshot,
     query,
     updateDoc,
-    WithFieldValue
+    WithFieldValue,
+    where
 } from "firebase/firestore/lite";
 import {
     BookingData,
@@ -21,12 +22,12 @@ import SpaRadiseFirestore from "./SpaRadiseFirestore";
 
 export default class BookingUtils {
 
-    public static async checkBookingData( accountData: BookingData ): Promise< boolean > {
+    public static async checkBookingData( bookingData: BookingData ): Promise< boolean > {
     
         const
             {
                 name, description, packageType, roomType, ageLimit, durationMin
-            } = accountData
+            } = bookingData
         ;
 
         try {
@@ -36,15 +37,15 @@ export default class BookingUtils {
             // if( !StringUtils.isTinyText( name ) ) throw new Error( "Name must be tinytext." );
             // if( description === null ) throw new Error( "Description is empty." );
             // if( !StringUtils.isTinyText( description ) ) throw new Error( "Description must be text" );
-            // if( !SpaRadiseEnv.isBookingType( accountData.packageType ) ) throw new Error( "Invalid package type." );
-            // if( !SpaRadiseEnv.isRoomType( accountData.roomType ) ) throw new Error( "Invalid room type." );
-            // if( !NumberUtils.isNaturalNumber( accountData.ageLimit ) ) throw new Error( "Age limit must be a natural number." );
-            // if( accountData.ageLimit < MIN_AGE_LIMIT ) throw new Error( `Age limit must be ${ MIN_AGE_LIMIT }+` );
-            // if( !NumberUtils.isNaturalNumber( accountData.durationMin ) ) throw "Duration (min) must be a natural number.";
+            // if( !SpaRadiseEnv.isBookingType( bookingData.packageType ) ) throw new Error( "Invalid package type." );
+            // if( !SpaRadiseEnv.isRoomType( bookingData.roomType ) ) throw new Error( "Invalid room type." );
+            // if( !NumberUtils.isNaturalNumber( bookingData.ageLimit ) ) throw new Error( "Age limit must be a natural number." );
+            // if( bookingData.ageLimit < MIN_AGE_LIMIT ) throw new Error( `Age limit must be ${ MIN_AGE_LIMIT }+` );
+            // if( !NumberUtils.isNaturalNumber( bookingData.durationMin ) ) throw "Duration (min) must be a natural number.";
 
-            // if( !NumberUtils.isDivisible( accountData.durationMin, MIN_DENOMINATION ) ) throw "Duration (min) must be in increments of 30."
+            // if( !NumberUtils.isDivisible( bookingData.durationMin, MIN_DENOMINATION ) ) throw "Duration (min) must be in increments of 30."
             // PACKAGE_DURATION_MIN_RANGE.checkInRange( durationMin, "Duration (min)" )
-            // if( accountData.durationMin === 0 ) 
+            // if( bookingData.durationMin === 0 ) 
             // note: check if in range
 
         } catch( error ) {
@@ -54,27 +55,27 @@ export default class BookingUtils {
         }
         return true;
         // return (
-        //     StringUtils.isTinyText( accountData.name )
-        //     && StringUtils.isText( accountData.description )
-        //     && SpaRadiseFirestore.PACKAGE_TYPE_LIST.includes( accountData.packageType )
-        //     && SpaRadiseFirestore.ROOM_TYPE_LIST.includes( accountData.roomType )
-        //     && NumberUtils.isNaturalNumber( accountData.ageLimit )
-        //     && accountData.ageLimit >= SpaRadiseEnv.MINIMUM_AGE_LIMIT
-        //     && NumberUtils.isNaturalNumber( accountData.durationMin )
-        //     && accountData.durationMin % SpaRadiseEnv.MIN_DENOMINATION == 0
+        //     StringUtils.isTinyText( bookingData.name )
+        //     && StringUtils.isText( bookingData.description )
+        //     && SpaRadiseFirestore.PACKAGE_TYPE_LIST.includes( bookingData.packageType )
+        //     && SpaRadiseFirestore.ROOM_TYPE_LIST.includes( bookingData.roomType )
+        //     && NumberUtils.isNaturalNumber( bookingData.ageLimit )
+        //     && bookingData.ageLimit >= SpaRadiseEnv.MINIMUM_AGE_LIMIT
+        //     && NumberUtils.isNaturalNumber( bookingData.durationMin )
+        //     && bookingData.durationMin % SpaRadiseEnv.MIN_DENOMINATION == 0
 
         // );
 
     }
 
-    public static async createBooking( accountData: BookingData ): Promise< DocumentReference > {
+    public static async createBooking( bookingData: BookingData ): Promise< DocumentReference > {
     
-        await BookingUtils.checkBookingData( accountData );
+        await BookingUtils.checkBookingData( bookingData );
         const
-            accountCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
-                SpaRadiseEnv.ACCOUNT_COLLECTION
+            bookingCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
+                SpaRadiseEnv.BOOKING_COLLECTION
             ),
-            documentReference = await addDoc( accountCollection, accountData )
+            documentReference = await addDoc( bookingCollection, bookingData )
         ;
         return documentReference;
 
@@ -86,7 +87,7 @@ export default class BookingUtils {
 
         // note: check for dependent entities
         const documentReference: DocumentReference = SpaRadiseFirestore.getDocumentReference(
-            by, SpaRadiseEnv.ACCOUNT_COLLECTION
+            by, SpaRadiseEnv.BOOKING_COLLECTION
         );
         try {
 
@@ -107,7 +108,7 @@ export default class BookingUtils {
     ): Promise< BookingData > {
 
         const snapshot: DocumentSnapshot = await SpaRadiseFirestore.getDocumentSnapshot(
-            by, SpaRadiseEnv.ACCOUNT_COLLECTION
+            by, SpaRadiseEnv.BOOKING_COLLECTION
         );
         if( !snapshot.exists() ) throw new Error( "Error in getting snapshot!" );
         const data = snapshot.data();
@@ -121,37 +122,62 @@ export default class BookingUtils {
 
     }
 
-    public static async getBookingListAll(): Promise< BookingDataMap > {
+    public static async getBookingDataMapAll(): Promise< BookingDataMap > {
     
         const
-            accountCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
-                SpaRadiseEnv.ACCOUNT_COLLECTION
+            bookingCollection: CollectionReference = SpaRadiseFirestore.getCollectionReference(
+                SpaRadiseEnv.BOOKING_COLLECTION
             ),
-            accountQuery = query(
-                accountCollection,
-                orderBy( "name" )
-            ),
-            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( accountQuery ) ).docs,
-            accountDataMap: BookingDataMap = {}
+            bookingQuery = query( bookingCollection ),
+            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( bookingQuery ) ).docs,
+            bookingDataMap: BookingDataMap = {}
         ;
         for( let snapshot of snapshotList )
-            accountDataMap[ snapshot.id ] = await BookingUtils.getBookingData( snapshot );
-        return accountDataMap;
+            bookingDataMap[ snapshot.id ] = await BookingUtils.getBookingData( snapshot );
+        return bookingDataMap;
+
+    }
+
+    public static async getBookingDataMapByAccount(
+        by: documentId | DocumentReference | DocumentSnapshot
+    ): Promise< BookingDataMap > {
+    
+        const
+            bookingCollection: CollectionReference =
+                SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.BOOKING_COLLECTION )
+            ,
+            accountReference: DocumentReference = SpaRadiseFirestore.getDocumentReference(
+                by, SpaRadiseEnv.ACCOUNT_COLLECTION
+            ),
+            bookingQuery = query(
+                bookingCollection,
+                where( "account", "==", accountReference )
+            ),
+            snapshotList: QueryDocumentSnapshot[] =
+                ( await getDocs( bookingQuery ) ).docs
+            ,
+            bookingDataMap: BookingDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            bookingDataMap[ snapshot.id ] =
+                await BookingUtils.getBookingData( snapshot )
+            ;
+        return bookingDataMap;
 
     }
 
     public static async updateBooking(
         by: documentId | DocumentReference | DocumentSnapshot,
-        accountData: BookingData
+        bookingData: BookingData
     ): Promise< boolean > {
 
-        await BookingUtils.checkBookingData( accountData );
+        await BookingUtils.checkBookingData( bookingData );
         const documentReference: DocumentReference = SpaRadiseFirestore.getDocumentReference(
-            by, SpaRadiseEnv.ACCOUNT_COLLECTION
+            by, SpaRadiseEnv.BOOKING_COLLECTION
         );
         try {
 
-            await updateDoc( documentReference, accountData as WithFieldValue< DocumentData > );
+            await updateDoc( documentReference, bookingData as WithFieldValue< DocumentData > );
             return true;
 
         } catch( error ) {

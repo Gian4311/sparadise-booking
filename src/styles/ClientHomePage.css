@@ -35,12 +35,14 @@ html {
 }
 
 .client-home-link {
+    background: none;
     text-decoration: none;
     color: white;
     font-weight: 500;
     font-size: 120%;
     transition: color 0.3s ease;
     margin: 2%;
+    padding: 0;
 }
 
 .client-home-link:hover {
@@ -153,6 +155,7 @@ html {
 
 .services-section {
     padding: 2rem;
+    color: black;
     background-color: #F8E0E1;
 }
 
@@ -216,6 +219,7 @@ html {
     background-color: #F8E0E1;
     padding: 2rem;
     text-align: center;
+    color: black;
 }
 
 .contact-section p {

@@ -1,4 +1,3 @@
-import DataMapUtils from "../firebase/SpaRadiseDataMapUtils";
 import DateUtils from "../utils/DateUtils";
 import { DocumentReference } from "firebase/firestore/lite";
 import FormDateInput from "../components/FormDateInput";
@@ -7,6 +6,7 @@ import {
     useEffect,
     useState
 } from "react";
+import { useNavigate } from "react-router-dom";
 import FormMoneyInput from "../components/FormMoneyInput";
 import FormNaturalNumberInput from "../components/FormNaturalNumberInput";
 import FormPercentageInput from "../components/FormPercentageInput";
@@ -16,6 +16,7 @@ import FormTinyTextInput from "../components/FormTinyTextInput";
 import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
 import {
+    AccountData,
     ServiceData,
     ServiceMaintenanceData,
     ServiceMaintenanceDataMap,
@@ -23,18 +24,22 @@ import {
 } from "../firebase/SpaRadiseTypes";
 import ServiceMaintenanceUtils from "../firebase/ServiceMaintenanceUtils";
 import ServiceUtils from "../firebase/ServiceUtils";
+import SpaRadiseDataMapUtils from "../firebase/SpaRadiseDataMapUtils";
+import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import SpaRadiseFirestore from "../firebase/SpaRadiseFirestore";
 import { useParams } from "react-router-dom";
-import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import { Link } from "react-router-dom";
 import "../styles/EmployeeServiceManagement.css";
 import "../styles/Sidebar.css";
 import EmployeeSidebar from "../components/EmployeeSidebar";
 import BackButton from "../images/back button.png";
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
+import QuickPopup from "../components/quickPopupMessage";
 
 interface ServiceManagementPageData extends SpaRadisePageData {
 
+    accountData: AccountData,
+    accountId?: documentId,
     serviceDefaultData: ServiceData,
     serviceData: ServiceData,
     serviceDocumentReference?: DocumentReference,
@@ -53,6 +58,7 @@ export default function ServiceManagement(): JSX.Element {
 
     const
         [pageData, setPageData] = useState<ServiceManagementPageData>({
+            accountData: {} as unknown as AccountData,
             loaded: false,
             serviceData: {
                 name: null as unknown as string,
@@ -60,7 +66,7 @@ export default function ServiceManagement(): JSX.Element {
                 serviceType: null as unknown as serviceType,
                 roomType: null as unknown as roomType,
                 ageLimit: null as unknown as number,
-                durationMin: null as unknown as ( 30 | 60 )
+                durationMin: null as unknown as (30 | 60)
             },
             serviceDefaultData: {} as ServiceData,
             serviceMaintenanceDataMap: {},
@@ -73,8 +79,13 @@ export default function ServiceManagement(): JSX.Element {
         }),
         documentId: string | undefined = useParams().id,
         isNewMode: boolean = (documentId === "new"),
-        isEditMode: boolean = (documentId !== undefined && !isNewMode)
+        isEditMode: boolean = (documentId !== undefined && !isNewMode),
+        navigate = useNavigate()
+
         ;
+
+
+    const [quickPopupMessage, setQuickPopupMessage] = useState("");
 
     async function addServiceMaintenance(): Promise<void> {
 
@@ -115,7 +126,7 @@ export default function ServiceManagement(): JSX.Element {
 
     async function cancelServiceForm(): Promise<void> {
 
-        window.open(`/management/services/menu`, `_self`);
+        navigate(`/management/servicesAndPackages/menu`);
 
     }
 
@@ -140,32 +151,34 @@ export default function ServiceManagement(): JSX.Element {
     }
 
     async function createService(): Promise<void> {
-
         if (!isNewMode || !documentId) return;
         await checkFormValidity();
+
+        pageData.loaded = false;
+        reloadPageData();
         const documentReference: DocumentReference = await ServiceUtils.createService(
             pageData.serviceData
         );
+
         pageData.serviceDocumentReference = documentReference;
         await updateServiceMaintenanceList();
         delete pageData.updateMap["new"];
-        alert(`Created!`); // note: remove later
-        window.open(`/management/services/${documentReference.id}`, `_self`);
-
+        navigate(`/management/services/${documentReference.id}`);
     }
+
 
     async function createServiceMaintenanceList(): Promise<void> {
 
         const {
             serviceDocumentReference,
             serviceMaintenanceDataMap,
-            serviceMaintenanceDefaultDataMap,
-            serviceMaintenanceDateKeyMap
+            serviceMaintenanceDateKeyMap,
+            serviceMaintenanceDefaultDataMap
         } = pageData;
         if (!serviceDocumentReference) return;
         for (let serviceMaintenanceId in serviceMaintenanceDataMap) {
 
-            const isNew: boolean = NumberUtils.isNumeric(serviceMaintenanceId);
+            const isNew: boolean = !( serviceMaintenanceId in serviceMaintenanceDefaultDataMap );
             if (!isNew) continue;
             const serviceMaintenanceData = serviceMaintenanceDataMap[serviceMaintenanceId];
             serviceMaintenanceData.service = serviceDocumentReference;
@@ -181,7 +194,7 @@ export default function ServiceManagement(): JSX.Element {
             serviceMaintenanceDateKeyMap[dateKey] = serviceMaintenanceIdNew;
 
         }
-        pageData.serviceMaintenanceDefaultDataMap = DataMapUtils.clone(serviceMaintenanceDataMap);
+        pageData.serviceMaintenanceDefaultDataMap = SpaRadiseDataMapUtils.clone(serviceMaintenanceDataMap);
 
     }
 
@@ -193,8 +206,7 @@ export default function ServiceManagement(): JSX.Element {
             await deleteServiceMaintenance(serviceMaintenanceId);
         await updateServiceMaintenanceList();
         await ServiceUtils.deleteService(documentId);
-        alert(`Deleted!`); // note: remove later
-        window.open(`/management/services/menu`, `_self`);
+        navigate(`/management/services/menu`);
 
     }
 
@@ -287,7 +299,6 @@ export default function ServiceManagement(): JSX.Element {
         pageData.serviceDefaultData = { ...pageData.serviceData };
         await loadServiceMaintenanceList();
 
-
     }
 
     async function loadServiceMaintenanceList(): Promise<void> {
@@ -297,7 +308,7 @@ export default function ServiceManagement(): JSX.Element {
             await ServiceMaintenanceUtils.getServiceMaintenanceDataMapByService(documentId)
             ;
         const { serviceMaintenanceDataMap, serviceMaintenanceDateKeyMap } = pageData;
-        pageData.serviceMaintenanceDefaultDataMap = DataMapUtils.clone(serviceMaintenanceDataMap);
+        pageData.serviceMaintenanceDefaultDataMap = SpaRadiseDataMapUtils.clone(serviceMaintenanceDataMap);
         for (let serviceMaintenanceId in serviceMaintenanceDataMap) {
 
             const dateKey: string = getDateKey(
@@ -333,24 +344,24 @@ export default function ServiceManagement(): JSX.Element {
 
     }
 
-    async function updateService(): Promise<void> {
 
+    async function updateService(): Promise<void> {
         if (!isEditMode || !documentId) return;
         await checkFormValidity();
         const { serviceData, updateMap } = pageData;
-        if (documentId in updateMap) {
 
+        if (documentId in updateMap) {
             await ServiceUtils.updateService(documentId, serviceData);
             pageData.serviceDefaultData = { ...pageData.serviceData };
             pageData.serviceName = serviceData.name;
-
         }
+
         delete updateMap[documentId];
         await updateServiceMaintenanceList();
         reloadPageData();
-        alert(`Updated!`); // note: remove later
-
+        setQuickPopupMessage("Successfully Updated");
     }
+
 
     async function updateServiceMaintenanceList(): Promise<void> {
 
@@ -396,18 +407,17 @@ export default function ServiceManagement(): JSX.Element {
 
     return <>
 
+        <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
         <form onSubmit={submit}>
             <div className="servman-container">
-                <EmployeeSidebar />
                 <div className="service-main-content">
                     <label htmlFor="service-main-content" className="service-management-location">Services & Packages - {pageData.serviceName}</label>
                     <div className="service-form-section">
                         <div className="service-header">
-                            <a href="#" className="service-back-arrow" aria-label="Back">
-                                <img src={BackButton} alt="Back" className="back-icon" />
-                            </a>
+                            <button onClick={() => navigate(-1)} className="service-back-arrow" aria-label="Back" style={{ background: "none", border: "none", padding: 0 }}><img src={BackButton} alt="Back" className="back-icon" /></button>
                             <h1>{pageData.serviceName}</h1>
                         </div>
+
                         <div>
                             <div className="service-form-row-group">
                                 <div className="service-form-row">
@@ -447,7 +457,7 @@ export default function ServiceManagement(): JSX.Element {
                             <div className="service-form-row-group">
                                 <div className="service-form-row">
                                     <label htmlFor="service-duration">Duration (minutes)</label>
-                                    <FormSelect documentData={pageData.serviceData} documentDefaultData={pageData.serviceDefaultData} documentId={documentId} keyName="durationMin" name="service-duration" optionList={ SpaRadiseEnv.SERVICE_DURATION_LIST } pageData={pageData} required={true}>
+                                    <FormSelect documentData={pageData.serviceData} documentDefaultData={pageData.serviceDefaultData} documentId={documentId} keyName="durationMin" name="service-duration" optionList={SpaRadiseEnv.SERVICE_DURATION_LIST} pageData={pageData} required={true}>
                                         <option value="" disabled>Select duration</option>
                                         <option value="30">30</option>
                                         <option value="60">60</option>
@@ -532,16 +542,25 @@ export default function ServiceManagement(): JSX.Element {
                             }
                             <button className="service-cancel-btn" type="button" onClick={cancelServiceForm}>Cancel</button>
                             <button className="service-save-btn" type="submit">{isNewMode ? "Create" : "Save Changes"}</button>
+                            {
+                                IS_DEV_MODE ? <button style={{}} type="button" onClick={() => console.log(pageData)}>Log page data</button>
+                                    : undefined
+                            }
                         </div>
                     </div>
                 </div>
             </div>
+
+
+
         </form>
 
-        {
-            IS_DEV_MODE ? <button style={{ float: "right" }} type="button" onClick={() => console.log(pageData)}>Log page data</button>
-                : undefined
-        }
+        {quickPopupMessage && (
+            <QuickPopup
+                message={quickPopupMessage}
+                clearPopup={() => setQuickPopupMessage("")}
+            />
+        )}
     </>
 
 }

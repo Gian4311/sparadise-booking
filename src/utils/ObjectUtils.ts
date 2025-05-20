@@ -6,6 +6,22 @@ interface ObjectParam< V > {
 
 export default class ObjectUtils {
 
+    public static clear< V >( object: ObjectParam< V > ): ObjectParam< V > {
+
+        for( let keyName in object ) delete object[ keyName ];
+        return object;
+
+    }
+
+    public static fill< T >(
+        object1: ObjectParam< T >, object2: ObjectParam< T >
+    ): ObjectParam< T > {
+
+        for( let keyName in object2 ) object1[ keyName ] = object2[ keyName ];
+        return object1;
+
+    }
+
     public static filter< V >(
         object: ObjectParam< V >,
         filter: ( keyName: string, value: V, object: ObjectParam< V > ) => boolean
@@ -16,6 +32,12 @@ export default class ObjectUtils {
             if( filter( keyName, object[ keyName ], object ) )
                 newObject[ keyName ] = object[ keyName ];
         return newObject;
+
+    }
+
+    public static getFirstKeyName< V >( object: ObjectParam< V > ): string | undefined {
+
+        for( let keyName in object ) return keyName;
 
     }
 

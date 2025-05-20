@@ -4,20 +4,26 @@ import {
     useState
 } from "react";
 import DateUtils from "../utils/DateUtils";
-import { NewBookingPageData } from "../pages/NewBooking_v0";
+import { SpaRadisePageData } from "../firebase/SpaRadiseTypes";
 
 type main = Date;
 
 const DATE_FORMAT = "yyyy-mm-dd";
 
-export default function NewBookingDateInput(
+interface BookingManagementPageData extends SpaRadisePageData {
+
+    date: Date
+
+}
+
+export default function BookingDateInput(
     {
         className, name, pageData, placeholder, readOnly, required = true,
         onChange, reloadPageData, validate
     }: {
         className?: string,
         name?: string,
-        pageData: NewBookingPageData,
+        pageData: BookingManagementPageData,
         placeholder?: string,
         readOnly?: boolean,
         required?: boolean,
@@ -31,15 +37,30 @@ export default function NewBookingDateInput(
 
     async function handleChange( event: ChangeEvent< HTMLInputElement > ): Promise< void > {
 
+        pageData.loaded = false;
+        reloadPageData();
         const
             unparsedValueNew: string = event.target.value,
             parsedValue: main = await parseValue( unparsedValueNew ),
             old = await parseValue( unparsedValue )
         ;
+        if( parsedValue instanceof Date && DateUtils.isSunday( parsedValue ) ) {
+
+            pageData.popupData = {
+                children: `Booking cannot be on a Sunday.`,
+                popupMode: `yesOnly`,
+                yesText: `OK`
+            };
+            pageData.loaded = true;
+            reloadPageData();
+            return;
+
+        }
         if( validate ) if( !( await validate( parsedValue, unparsedValueNew, old ) ) ) return;
         setUnparsedValue( unparsedValueNew );
         pageData.date = parsedValue ?? ( null as unknown as Date );
         if( onChange ) await onChange( parsedValue, unparsedValueNew, old );
+        pageData.loaded = true;
         reloadPageData();
 
     }
