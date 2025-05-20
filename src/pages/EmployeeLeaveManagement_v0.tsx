@@ -241,10 +241,12 @@ export default function EmployeeLeaveManagement(): JSX.Element {
                 <label htmlFor="employee-main-content" className="employee-management-location">EmployeeLeaves - { pageData.employeeLeaveData.employee ? PersonUtils.toString( pageData.employeeDataMap[ pageData.employeeLeaveData.employee.id ], "f mi l" ) : `` }</label>
                 <div className="employee-form-section">
 
+                    <div className="employee-form-row-group">
                     <label>Employee: </label>
                     <FormEntitySelect< EmployeeData > collectionName={ SpaRadiseEnv.EMPLOYEE_COLLECTION } documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="employee" optionDataMap={ pageData.employeeDataMap } pageData={pageData} readOnly={ canceled } required={true} getDocumentName={ employeeData => PersonUtils.toString( employeeData, "f mi l" ) }>
                         <option value="" disabled>Select employee</option>
-                    </FormEntitySelect>
+                    </FormEntitySelect> </div>
+                    <div className="employee-form-row-group">
                     <label>From Date Time: </label>
                     <FormDateTime30MinStepInput documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="dateTimeStart" pageData={pageData} readOnly={ canceled } required={true} onChange={ reloadPageData }/>
                     <label>To Date Time: </label>
@@ -252,7 +254,7 @@ export default function EmployeeLeaveManagement(): JSX.Element {
                         documentData={pageData.employeeLeaveData} documentDefaultData={pageData.employeeLeaveDefaultData} documentId={documentId} keyName="dateTimeEnd"
                         min={ pageData.employeeLeaveData.dateTimeStart ? DateUtils.addTime( pageData.employeeLeaveData.dateTimeStart, { min: 30 } ) : undefined }
                         pageData={pageData} readOnly={ canceled } required={true}
-                    />
+                    /> </div>
                     <label>Reason: </label>
                     <FormTextArea documentData={ pageData.employeeLeaveData } documentDefaultData={ pageData.employeeLeaveDefaultData } documentId={documentId} keyName="reason" pageData={ pageData } readOnly={ canceled } required={ true }/>
                     {
