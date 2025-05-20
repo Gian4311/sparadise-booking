@@ -153,6 +153,12 @@ export default function AccountManagement(): JSX.Element {
             await createAccount();
         else
             await updateAccount();
+        pageData.popupData= {
+            children: `Success!`,
+            yes: () => navigate(`/management/accounts/menu`)
+        }
+
+        loadPageData();
 
     }
 
