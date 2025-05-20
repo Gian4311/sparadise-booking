@@ -1205,74 +1205,82 @@ export default function DayPlanner({
     return <>
         {
             isNewBookingMode ? <>
-                <table className="serviceTransactionManager"><tbody>{
-                    Object.keys(clientServiceTransactionAddedMap).sort(
-                        (clientId1, clientId2) => {
-
-                            const
-                                { clientDataMap } = pageData,
-                                { name: name1 } = clientDataMap[clientId1],
-                                { name: name2 } = clientDataMap[clientId2]
-                                ;
-                            return StringUtils.compare(name1, name2);
-
+                <table className="serviceTransactionManager">
+                    <tbody>
+                        {
+                            ObjectUtils.keyLength(clientServiceTransactionAddedMap) === 0 ? <tr><td>Loading...</td></tr>
+                            : undefined
                         }
-                    ).map(clientId => {
+                        {
+                            Object.keys(clientServiceTransactionAddedMap).sort(
+                                (clientId1, clientId2) => {
 
-                        return <tr key={clientId}>
-                            <td className="serviceTransactionManager-client">
-                                {pageData.clientDataMap[clientId].name}
-                            </td>
-                            <td>{
-                                Object.keys(clientServiceTransactionAddedMap[clientId])
-                                    .sort((id1, id2) => {
-                                        const { serviceDataMap, serviceTransactionToAddDataMap } = pageData;
+                                    const
+                                        { clientDataMap } = pageData,
+                                        { name: name1 } = clientDataMap[clientId1],
+                                        { name: name2 } = clientDataMap[clientId2]
+                                        ;
+                                    return StringUtils.compare(name1, name2);
 
-                                        const service1 = serviceTransactionToAddDataMap[id1].service;
-                                        const service2 = serviceTransactionToAddDataMap[id2].service;
+                                }
+                            ).map(clientId => {
 
-                                        const name1 = serviceDataMap[service1.id].name;
-                                        const name2 = serviceDataMap[service2.id].name;
+                                return <tr key={clientId}>
+                                    <td className="serviceTransactionManager-client">
+                                        {pageData.clientDataMap[clientId].name}
+                                    </td>
+                                    <td>{
+                                        Object.keys(clientServiceTransactionAddedMap[clientId])
+                                            .sort((id1, id2) => {
+                                                const { serviceDataMap, serviceTransactionToAddDataMap } = pageData;
 
-                                        return StringUtils.compare(name1, name2);
-                                    })
-                                    .map(serviceTransactionId => {
-                                        const { serviceDataMap, serviceTransactionToAddDataMap } = pageData;
-                                        const serviceTransactionData = serviceTransactionToAddDataMap[serviceTransactionId];
-                                        const serviceId = serviceTransactionData.service.id;
-                                        const serviceName = serviceDataMap[serviceId].name;
+                                                const service1 = serviceTransactionToAddDataMap[id1].service;
+                                                const service2 = serviceTransactionToAddDataMap[id2].service;
 
-                                        const added = hasServiceTransaction(serviceTransactionData, serviceTransactionId);
-                                        const isSelecting = serviceTransactionId === serviceTransactionIdActive;
+                                                const name1 = serviceDataMap[service1.id].name;
+                                                const name2 = serviceDataMap[service2.id].name;
 
-                                        const className = added
-                                            ? "active"
-                                            : isSelecting
-                                                ? "inactive selecting"
-                                                : "inactive";
+                                                return StringUtils.compare(name1, name2);
+                                            })
+                                            .map(serviceTransactionId => {
+                                                const { serviceDataMap, serviceTransactionToAddDataMap } = pageData;
+                                                const serviceTransactionData = serviceTransactionToAddDataMap[serviceTransactionId];
+                                                const serviceId = serviceTransactionData.service.id;
+                                                const serviceName = serviceDataMap[serviceId].name;
 
-                                        const handleClick = () =>
-                                            added
-                                                ? handleDeleteServiceTransaction(serviceTransactionId)
-                                                : handleChangeServiceTransactionIdActive(serviceTransactionId);
+                                                const added = hasServiceTransaction(serviceTransactionData, serviceTransactionId);
+                                                const isSelecting = serviceTransactionId === serviceTransactionIdActive;
 
-                                        return (
-                                            <button
-                                                key={serviceTransactionId}
-                                                className={className}
-                                                type="button"
-                                                onClick={handleClick}
-                                            >
-                                                {serviceName} {added ? "×" : "+"}
-                                            </button>
-                                        );
-                                    })
-                            }
-                            </td>
-                        </tr>;
+                                                const className = added
+                                                    ? "active"
+                                                    : isSelecting
+                                                        ? "inactive selecting"
+                                                        : "inactive";
 
-                    })
-                }</tbody></table>
+                                                const handleClick = () =>
+                                                    added
+                                                        ? handleDeleteServiceTransaction(serviceTransactionId)
+                                                        : handleChangeServiceTransactionIdActive(serviceTransactionId);
+
+                                                return (
+                                                    <button
+                                                        key={serviceTransactionId}
+                                                        className={className}
+                                                        type="button"
+                                                        onClick={handleClick}
+                                                    >
+                                                        {serviceName} {added ? "×" : "+"}
+                                                    </button>
+                                                );
+                                            })
+                                    }
+                                    </td>
+                                </tr>;
+
+                            })
+                        }
+                    </tbody>
+                </table>
             </> : <>
                 <button className="management-edit-booking" type="button" onClick={openBooking}>Edit</button>
             </>

@@ -673,8 +673,6 @@ export default function NewBooking(): JSX.Element {
                                     // other form indexes
                                     : <button type="button" onClick={() => { pageData.formIndex--; reloadPageData(); }}>None, Go Back</button>
             }
-
-            <button type="button" onClick={() => console.log(pageData)}>Log page data</button>
         </form>
     </>
 
@@ -1362,7 +1360,7 @@ function Finished({ pageData, reloadPageData }: {
             <div className="confirmation-message">Confirm Booking</div>
             <section className="last-action-buttons">
                 <button className="back-btn-confirm" type="button" onClick={previousPage}>Back</button>
-                <button className={checkFormValidity() === true ? `proceed-btn` : `back-btn`}  type="submit" onClick={nextPage}>Complete Booking</button>
+                <button className={checkFormValidity() === true ? `proceed-btn` : `back-btn`}  type="submit">Complete Booking</button>
             </section>
         </main>
     </>;
