@@ -80,7 +80,7 @@
 
 /* Card status colors */
 .service-card.pending {
-  background-color: #e6cfcf;
+  background-color: #ba8181;
 }
 
 .service-card.active {
@@ -150,7 +150,7 @@
 
 .btn-cancel-booking{
   color: white;
-  background-color: rgb(12, 70, 12);
+  background-color: rgba(0, 0, 0, .4);
 }
 
 .status-text.finished {
