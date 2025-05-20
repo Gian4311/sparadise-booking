@@ -119,7 +119,7 @@ export default function ClientNavBar( { pageData, reloadPageData }: {
                 </div>
 
                 <div className="client-home-nav-right">
-                    <img src={NotificationSymbol} alt="Notifications" className="client-home-icon" />
+                    {/* <img src={NotificationSymbol} alt="Notifications" className="client-home-icon" /> */}
                 </div>
             </nav>
         </div>);
