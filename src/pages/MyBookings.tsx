@@ -170,7 +170,7 @@ export default function MyBookings(): JSX.Element {
                         <button className="filter-btn" type="button" value={sortMode} onClick={toggleSortMode}>{
                             (sortMode === "ascending") ? "A - Z" : "Z - A"
                         }</button>
-                        <Link to="/management/bookings/new"><button className="action-btn" type="button">+ Add new</button></Link>
+                        <Link to={ `/${ pageData.accountId }/bookings/new` }><button className="action-btn" type="button">+ Add new</button></Link>
                     </div>
                     <table className="services-table">
                         <thead><tr>
@@ -232,12 +232,13 @@ export default function MyBookings(): JSX.Element {
                                         : bookingData.reservedDateTime ? "Reserved"
                                         : "Pending"
                                     ),
+                                    
                                     show: boolean = StringUtils.has(
                                         `${count}\t${status}`
                                         , search
                                     )
                                 ;
-                                return show ? <tr key={documentId} onClick={() => navigate(`/management/bookings/${documentId}`)}>
+                                return show ? <tr key={documentId} onClick={() => navigate(`/${ pageData.accountId }/bookings/${documentId}`)}>
                                     <td>{count}</td>
                                     <td>{
                                         Object.keys( serviceCountMap ).sort( ( serviceId1, serviceId2 ) => StringUtils.compare(

@@ -629,6 +629,7 @@ export default function NewBooking(): JSX.Element {
 
         event.preventDefault();
         await createBooking();
+        navigate( `/` );
 
     }
 
@@ -782,6 +783,8 @@ function ChooseClients({ pageData, reloadPageData }: {
         navigate("/");
 
     }
+
+    loadClientIdActive();
 
     return <>
         <main className="booking-container">
