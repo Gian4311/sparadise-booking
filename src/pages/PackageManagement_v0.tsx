@@ -36,6 +36,7 @@ import "../styles/Sidebar.css";
 import EmployeeSidebar from "../components/EmployeeSidebar";
 import BackButton from "../images/back button.png";
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
+import PopupModal from "../components/PopupModal";
 
 interface PackageManagementPageData extends SpaRadisePageData {
 
@@ -484,6 +485,10 @@ export default function PackageManagement(): JSX.Element {
             await createPackage();
         else
             await updatePackage();
+        pageData.popupData = {
+            children: `Success!`,
+            yes: () => navigate( `/management/servicesAndPackages/menu` )
+        }
 
     }
 
@@ -557,6 +562,7 @@ export default function PackageManagement(): JSX.Element {
 
     return <>
         <form onSubmit={submit}>
+            <PopupModal pageData={pageData} reloadPageData={reloadPageData}/>
             <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
             <div className="service-main-content">
                 <label htmlFor="service-main-content" className="service-management-location">Services & Packages - {pageData.packageName}</label>

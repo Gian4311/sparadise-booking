@@ -25,6 +25,7 @@ import SpaRadiseEnv from "../firebase/SpaRadiseEnv";
 import EmployeeSidebar from "../components/EmployeeSidebar";
 import "../styles/EmployeeEmployeeManagement.css";
 import BackButton from "../images/back button.png";
+import PopupModal from "../components/PopupModal";
 
 interface JobManagementPageData extends SpaRadisePageData {
 
@@ -274,6 +275,10 @@ export default function JobManagement(): JSX.Element {
             await createJob();
         else
             await updateJob();
+        pageData.popupData = {
+            children: `Success!`,
+            yes: () => navigate( `/management/jobs/menu` )
+        }
 
     }
 
@@ -304,6 +309,7 @@ export default function JobManagement(): JSX.Element {
     useEffect(() => { loadPageData(); }, []);
 
     return <>
+        <PopupModal pageData={pageData} reloadPageData={reloadPageData} />
         <EmployeeSidebar pageData={pageData} reloadPageData={reloadPageData} />
         {/* <EmployeeSidebar/> */}
         <form onSubmit={submit}>

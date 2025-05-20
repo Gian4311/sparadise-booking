@@ -196,6 +196,10 @@ export default function EmployeeLeaveManagement(): JSX.Element {
             await createEmployeeLeave();
         else
             await updateEmployeeLeave();
+        pageData.popupData = {
+            children: `Success!`,
+            yes: () => navigate( `/management/employeeLeaves/menu` )
+        }
 
     }
 

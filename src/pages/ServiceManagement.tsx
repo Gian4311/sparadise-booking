@@ -35,6 +35,7 @@ import EmployeeSidebar from "../components/EmployeeSidebar";
 import BackButton from "../images/back button.png";
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 import QuickPopup from "../components/quickPopupMessage";
+import PopupModal from "../components/PopupModal";
 
 interface ServiceManagementPageData extends SpaRadisePageData {
 
@@ -341,6 +342,10 @@ export default function ServiceManagement(): JSX.Element {
             await createService();
         else
             await updateService();
+        pageData.popupData = {
+            children: `Success!`,
+            yes: () => navigate( `/management/servicesAndPackages/menu` )
+        }
 
     }
 
@@ -406,7 +411,7 @@ export default function ServiceManagement(): JSX.Element {
     useEffect(() => { loadPageData(); }, []);
 
     return <>
-
+        <PopupModal pageData={pageData} reloadPageData={reloadPageData}/>
         <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
         <form onSubmit={submit}>
             <div className="servman-container">

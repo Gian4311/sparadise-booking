@@ -546,8 +546,7 @@ export default function VoucherManagement(): JSX.Element {
                                                     {service.description}</div>
 
                                                 {
-                                                    !(serviceId in pageData.voucherServiceIncludedMap) ||
-                                                        packageServiceId in pageData.voucherServiceIncludedMap ? (
+                                                    !(serviceId in pageData.voucherServiceIncludedMap) ? (
                                                         <button className="add-btn" type="button" onClick={() => addVoucherService(serviceId)}>Add</button>
                                                     ) : (
                                                         <button className="remove-btn" type="button" onClick={() => deleteVoucherService(serviceId)}>Remove</button>
@@ -578,8 +577,7 @@ export default function VoucherManagement(): JSX.Element {
                                                     {packages.description}</div>
 
                                                 {
-                                                    !(packageId in pageData.voucherPackageIncludedMap) ||
-                                                        packageServiceId in pageData.voucherPackageIncludedMap ? (
+                                                    !(packageId in pageData.voucherPackageIncludedMap) ? (
                                                         <button className="add-btn" type="button" onClick={() => addVoucherPackage(packageId)}>Add</button>
                                                     ) : (
                                                         <button className="remove-btn" type="button" onClick={() => deleteVoucherPackage(packageId)}>Remove</button>
