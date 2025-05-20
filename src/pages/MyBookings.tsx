@@ -171,7 +171,7 @@ export default function MyBookings(): JSX.Element {
                         <button className="filter-btn" type="button" value={sortMode} onClick={toggleSortMode}>{
                             (sortMode === "ascending") ? "A - Z" : "Z - A"
                         }</button>
-                        <Link to={ `/${ pageData.accountId }/bookings/new` }><button className="action-btn" type="button">+ Add new</button></Link>
+                        <Link to={ `/clients/${ pageData.accountId }/bookings/new` }><button className="action-btn" type="button">+ Add new</button></Link>
                     </div>
                     <table className="services-table">
                         <thead><tr>
@@ -257,7 +257,7 @@ export default function MyBookings(): JSX.Element {
                                     <td>{ pageData.bookingDateMap[ documentId ] ? DateUtils.toString( pageData.bookingDateMap[ documentId ], "Mmmm dd, yyyy - hh:mm a.m." ) : `-` }</td>
                                     <td>{ status }</td>
                                     <td>{
-                                        status !== "Canceled" ? <button className="employee-cancel-btn" type="button" onClick={ () => cancelBooking( documentId ) }>Cancel</button>
+                                        status !== "Canceled" ? <button className="employee-cancel-btn-booking" type="button" onClick={ () => cancelBooking( documentId ) }>Cancel</button>
                                         : undefined
                                     }</td>
                                 </tr> : undefined;

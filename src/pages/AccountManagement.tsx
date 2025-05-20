@@ -193,7 +193,7 @@ export default function AccountManagement(): JSX.Element {
                     <div className="service-form-section">
                         <div className="service-header">
                             <button onClick={() => navigate(-1)} className="service-back-arrow" aria-label="Back" style={{ background: "none", border: "none", padding: 0 }}><img src={BackButton} alt="Back" className="back-icon" /></button>
-                            <h1>{pageData.accountName}</h1>
+                            <h1>{isNewMode ? "Create New Account" : pageData.accountName}</h1>
                         </div>
 
                         <div className="employee-form-row-group">
