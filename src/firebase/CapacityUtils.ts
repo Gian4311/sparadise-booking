@@ -149,6 +149,28 @@ export default class CapacityUtils {
 
     }
 
+    public static async getCapacityDataMapByDate(
+        date: Date
+    ): Promise< CapacityDataMap > {
+        
+        const
+            capacityCollection: CollectionReference =
+                SpaRadiseFirestore.getCollectionReference( SpaRadiseEnv.CAPACITY_COLLECTION )
+            ,
+            capacityQuery = query(
+                capacityCollection,
+                where( "datetime", "<=", DateUtils.toCeilByDay( date ) ),
+                orderBy( "datetime", "desc" )
+            ),
+            snapshotList: QueryDocumentSnapshot[] = ( await getDocs( capacityQuery ) ).docs,
+            capacityDataMap: CapacityDataMap = {}
+        ;
+        for( let snapshot of snapshotList )
+            capacityDataMap[ snapshot.id ] = await CapacityUtils.getCapacityData( snapshot );
+        return capacityDataMap;
+
+    }
+
     public static async updateCapacity(
         by: documentId | DocumentReference | DocumentSnapshot,
         capacityData: CapacityData

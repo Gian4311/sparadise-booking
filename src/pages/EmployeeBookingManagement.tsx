@@ -2,6 +2,7 @@ import {
     AccountData,
     BookingData,
     BookingDataMap,
+    CapacityDataMap,
     ClientDataMap,
     DiscountDataMap,
     EmployeeDataMap,
@@ -75,6 +76,7 @@ import VoucherUtils from "../firebase/VoucherUtils";
 import "../styles/FormTimeInput.scss"
 import "../styles/BookingManagement.css"
 import MoneyUtils from "../firebase/MoneyUtils";
+import CapacityUtils from "../firebase/CapacityUtils";
 interface EmployeeBookingManagementPageData extends SpaRadisePageData {
 
     accountData: AccountData,
@@ -82,6 +84,7 @@ interface EmployeeBookingManagementPageData extends SpaRadisePageData {
     bookingDefaultData: BookingData,
     bookingDataMap: BookingDataMap,
     bookingDocumentReference?: DocumentReference,
+    capacityDataMap: CapacityDataMap,
     clientDataMap: ClientDataMap,
     clientDefaultDataMap: ClientDataMap,
     clientIdActive: documentId,
@@ -151,6 +154,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
             },
             bookingDefaultData: {} as BookingData,
             bookingDataMap: {},
+            capacityDataMap: {},
             clientDataMap: {},
             clientDefaultDataMap: {},
             clientIdActive: null as unknown as string,
@@ -344,6 +348,7 @@ export default function EmployeeBookingManagement(): JSX.Element {
         await loadServiceTransactionData();
         await loadVoucherData();
         await loadVoucherDataOfDayData();
+        pageData.capacityDataMap = await CapacityUtils.getCapacityDataMapByDate( pageData.date );
         pageData.loaded = true;
         reloadPageData();
 

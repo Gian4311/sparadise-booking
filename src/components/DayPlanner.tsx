@@ -3,6 +3,8 @@ import DateRange from "../utils/DateRange";
 import DateUtils from "../utils/DateUtils";
 import {
     BookingDataMap,
+    CapacityData,
+    CapacityDataMap,
     ClientData,
     ClientDataMap,
     EmployeeData,
@@ -52,6 +54,7 @@ interface CalendarRowDataMap {
 interface DayPlannerPageData extends SpaRadisePageData {
 
     bookingDataMap: BookingDataMap,
+    capacityDataMap: CapacityDataMap,
     clientDataMap: ClientDataMap,
     date: Date,
     employeeDataMap: EmployeeDataMap,
@@ -883,17 +886,28 @@ export default function DayPlanner({
 
     async function loadCapacityData(): Promise<void> {
 
+        const { capacityDataMap } = pageData;
         for (let timeSlotId in calendarRowDataMap) {
 
             const
                 calendarRow = calendarRowDataMap[timeSlotId],
                 [ hr, min ] = timeSlotId.replace(`-`, `:`).split(`:`).map(value => +value),
-                date = DateUtils.setTime( pageData.date, { hr, min } ),
-                capacityData = await CapacityUtils.getCapacityDataByDate( date )
+                date = DateUtils.setTime( pageData.date, { hr, min } )
             ;
-            if( !capacityData ) return;
-            calendarRow.chairs = capacityData.chairCount;
-            calendarRow.rooms = capacityData.roomCount;
+            let least: Date | undefined = undefined, capacityDataLeast: CapacityData | undefined = undefined;
+            for( let capacityId in capacityDataMap ) {
+
+                const capacityData = capacityDataMap[ capacityId ];
+                const { datetime } = capacityData;
+                if( datetime > date ) continue;
+                if(
+                    !least || ( least && datetime < least )
+                ) { least = datetime; capacityDataLeast = capacityData }
+
+            }
+            if( !capacityDataLeast ) return;
+            calendarRow.chairs = capacityDataLeast.chairCount;
+            calendarRow.rooms = capacityDataLeast.roomCount;
 
         }
 

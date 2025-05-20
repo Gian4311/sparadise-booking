@@ -2,6 +2,7 @@ import {
     AccountData,
     BookingData,
     BookingDataMap,
+    CapacityDataMap,
     ClientData,
     ClientDataMap,
     DiscountDataMap,
@@ -83,6 +84,7 @@ import LoadingScreen from "../components/LoadingScreen";
 import "../styles/NewBooking_v0.css"
 import DateRange from "../utils/DateRange";
 import NewBookingEmailInput from "../components/NewBookingEmailInput";
+import CapacityUtils from "../firebase/CapacityUtils";
 
 export interface NewBookingPageData extends SpaRadisePageData {
 
@@ -90,6 +92,7 @@ export interface NewBookingPageData extends SpaRadisePageData {
     bookingData: BookingData,
     bookingDefaultData: BookingData,
     bookingDocumentReference?: DocumentReference,
+    capacityDataMap: CapacityDataMap,
     clientDataMap: ClientDataMap,
     clientDefaultDataMap: ClientDataMap,
     clientIndex: number,
@@ -166,6 +169,7 @@ export default function NewBooking(): JSX.Element {
                 finishedDateTime: null,
                 canceledDateTime: null
             },
+            capacityDataMap: {},
             clientDataMap: {},
             clientDefaultDataMap: {},
             clientIndex: 0,
@@ -384,6 +388,7 @@ export default function NewBooking(): JSX.Element {
             )
             ;
         await loadVoucherDataOfDayData();
+        pageData.capacityDataMap = await CapacityUtils.getCapacityDataMapByDate( date );
 
     }
 

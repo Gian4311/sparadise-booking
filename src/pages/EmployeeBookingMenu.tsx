@@ -2,6 +2,7 @@ import BookingDateInput from "../components/BookingDateInput";
 import {
     AccountData,
     BookingDataMap,
+    CapacityDataMap,
     ClientDataMap,
     EmployeeDataMap,
     EmployeeLeaveDataMap,
@@ -39,12 +40,14 @@ import { useParams } from "react-router-dom";
 import "../styles/BookingCalendar.scss";
 import "../styles/EmployeeBookingMenu.scss";
 import "../styles/EmployeeServiceMenu.css";
+import CapacityUtils from "../firebase/CapacityUtils";
 
 interface EmployeeBookingMenuPageData extends SpaRadisePageData {
 
     accountData: AccountData,
     bookingDataMap: BookingDataMap,
     bookingIdActive: string | undefined,
+    capacityDataMap: CapacityDataMap,
     clientDataMap: ClientDataMap,
     date: Date,
     employeeDataMap: EmployeeDataMap,
@@ -67,6 +70,7 @@ export default function EmployeeBookingMenu(): JSX.Element {
             accountData: {} as AccountData,
             bookingDataMap: {},
             bookingIdActive: undefined,
+            capacityDataMap: {},
             clientDataMap: {},
             date: dateParam ? new Date(dateParam) : new Date(),
             employeeDataMap: {},
@@ -96,6 +100,7 @@ export default function EmployeeBookingMenu(): JSX.Element {
         pageData.serviceTransactionOfDayDataMap =
             await ServiceTransactionUtils.getServiceTransactionDataMapByDay(pageData.date, false)
             ;
+        pageData.capacityDataMap = await CapacityUtils.getCapacityDataMapByDate( pageData.date );
 
     }
 
