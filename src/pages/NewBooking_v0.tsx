@@ -271,8 +271,12 @@ export default function NewBooking(): JSX.Element {
         await updateServiceTransactionList();
         await updateVoucherTransactionList();
         delete pageData.updateMap["new"];
-        alert(`Created!`); // note: remove later
-        navigate(`/`);
+        pageData.popupData = {
+            children: `Booking reserved!`,
+            popupMode: "yesOnly",
+            yes: () => navigate(`/`)
+        };
+        reloadPageData();
 
     }
 
