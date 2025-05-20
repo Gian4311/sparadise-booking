@@ -1056,7 +1056,7 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
                                                 pageData={pageData}
                                                 keyName="employee"
                                                 readOnly={!isEditable || canceled}
-                                                required={true}
+                                                required={!canceled}
                                                 onChange={reloadPageData}
                                             >
                                                 <option value="">Assign employee</option>
@@ -1074,7 +1074,7 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
                                                 pageData={pageData}
                                                 keyName="actualBookingDateTimeStart"
                                                 readOnly={!isEditable || canceled || !employee}
-                                                required={true}
+                                                required={!canceled}
                                                 onChange={() => {
                                                     setActiveBooking();
                                                     reloadPageData();
@@ -1094,7 +1094,7 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
                                                 pageData={pageData}
                                                 keyName="actualBookingDateTimeEnd"
                                                 readOnly={!isEditable || canceled || !employee || !actualBookingDateTimeStart}
-                                                required={true}
+                                                required={!canceled}
                                                 onChange={() => {
                                                     setFinishedBooking();
                                                     reloadPageData();
