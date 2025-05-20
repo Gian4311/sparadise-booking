@@ -123,6 +123,7 @@ export default function ServicePackageMenu(): JSX.Element {
 
     function validateActiveServiceOrPackage(keyName: string): boolean {
 
+        if( !maintenanceDataMap[keyName] ) return false;
         return (maintenanceDataMap[keyName].status === "active");
 
     }
