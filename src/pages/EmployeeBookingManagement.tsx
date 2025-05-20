@@ -492,9 +492,19 @@ export default function EmployeeBookingManagement(): JSX.Element {
                 if( change < 0 ) {
 
                     pageData.popupData = {
+                        children: "There is not enough payment.",
+                        popupMode: "yesOnly"
+                    }
+                    reloadPageData();
+                    return;
+
+                } else if ( change > 0 ) {
+
+                    pageData.popupData = {
                         children: "There is too much payment.",
                         popupMode: "yesOnly"
                     }
+                    reloadPageData();
                     return;
 
                 }
@@ -881,14 +891,13 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
             for (let serviceTransactionId in serviceTransactionDataMap) {
 
                 const { status } = serviceTransactionDataMap[serviceTransactionId];
-                isCanceled = ( status === "serviceCanceled" || status === "serviceWaived" );
+                isCanceled = status === "serviceActive";
 
             }
             if (!isCanceled) break;
 
         }
-        if( !isCanceled ) return;
-        bookingData.canceledDateTime = new Date();
+        bookingData.canceledDateTime = isCanceled ? new Date() : null as unknown as Date;
         const
             dateDefault = bookingDefaultData.canceledDateTime,
             isDefault: boolean = dateDefault ? DateUtils.areSameByMinute(
@@ -1129,9 +1138,13 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
                                                 noText="Back"
                                                 pageData={pageData}
                                                 value="serviceWaived"
-                                                reloadPageData={reloadPageData}
+                                                reloadPageData={ reloadPageData }
                                                 yesText="Yes, Waive This"
                                                 className="btn-waive-booking"
+                                                onClick={() => {
+                                                    setFinishedBooking();
+                                                    setCanceledBooking();
+                                                }}
                                             >
                                                 WAIVE
                                             </FormMarkButton>
@@ -1147,9 +1160,13 @@ function EditServiceTransactions({ bookingId, pageData, reloadPageData, updateBo
                                                 noText="Back"
                                                 pageData={pageData}
                                                 value="serviceCanceled"
-                                                reloadPageData={reloadPageData}
+                                                reloadPageData={ reloadPageData }
                                                 yesText="Yes, Cancel This"
                                                 className="btn-cancel-booking"
+                                                onClick={() => {
+                                                    setFinishedBooking();
+                                                    setCanceledBooking();
+                                                }}
                                             >
                                                 CANCEL
                                             </FormMarkButton>

@@ -12,7 +12,7 @@ export default function FormMarkButton< T extends main >(
     {
         children, className, confirmMessage, documentData, documentDefaultData, documentId, keyName,
         name = keyName.toString(), noText = "Cancel", pageData, value, yesText = "Yes",
-        no, reloadPageData, validate, yes
+        no, onClick, reloadPageData, validate, yes
     }: {
         children: JSX.Element | JSX.Element[] | string,
         className?: string,
@@ -27,6 +27,7 @@ export default function FormMarkButton< T extends main >(
         value: T,
         yesText?: string,
         no?( parsedValue: main | null, unparsedValue: string, old: main | null ): void | Promise< void >,
+        onClick?(): void | Promise< void >,
         reloadPageData: () => void,
         validate?( parsedValue: main | null, unparsedValue: string, old: main | null ): boolean | Promise< boolean >,
         yes?( parsedValue: main | null, unparsedValue: string, old: main | null ): void | Promise< void >
@@ -76,6 +77,7 @@ export default function FormMarkButton< T extends main >(
             old = documentData[ keyName ] as main | null
         ;
         if( no ) await no( parsedValue, unparsedValue, old );
+        if( onClick ) await onClick();
 
     }
 
@@ -90,6 +92,7 @@ export default function FormMarkButton< T extends main >(
         documentData[ keyName ] = parsedValue;
         await handleDefault( parsedValue );
         if( yes ) await yes( parsedValue, unparsedValue, old );
+        if( onClick ) await onClick();
 
     }
 
