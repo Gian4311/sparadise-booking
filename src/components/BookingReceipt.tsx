@@ -622,7 +622,7 @@ export default function BookingReceipt( {
                     {
                         bookingReceiptMode !== "newBooking" ? <tr className="voucher-discount">
                             <td></td>
-                            <td colSpan={ showActualTime ? 3 : 2 }>Discounts</td>
+                            <td colSpan={ showActualTime ? 3 : 2 }>Discounts/Refunds</td>
                             <td>-₱{ NumberUtils.toString( pageData.discountTotal, "n.00" ) }</td>
                         </tr> : undefined
                     }
@@ -760,7 +760,7 @@ export default function BookingReceipt( {
         </section>
         {
             ( bookingReceiptMode === "management" ) ? <>
-                <h2 className="voucher-input-label">Discounts:</h2>
+                <h2 className="voucher-input-label">Discounts/Refunds:</h2>
                 <section className="form-section booking-summary-section">
                     <section className="booking-summary-tables">
                         <table>

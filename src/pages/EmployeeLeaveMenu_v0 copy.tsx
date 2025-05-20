@@ -16,6 +16,7 @@ import EmployeeLeaveUtils from "../firebase/EmployeeLeaveUtils";
 import EmployeeUtils from "../firebase/EmployeeUtils";
 import FormDateInput from "../components/FormDateInput";
 import {
+    ChangeEvent,
     FormEvent,
     useEffect,
     useState
@@ -36,6 +37,11 @@ import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
 import SideBar from "../components/EmployeeSidebar";
+import EmployeeSidebar from "../components/EmployeeSidebar";
+import LoadingScreen from "../components/LoadingScreen";
+import StringUtils from "../utils/StringUtils";
+
+type sortMode = "ascending" | "descending";
 
 interface EmployeeLeaveMenuPageData extends SpaRadisePageData {
 
@@ -58,13 +64,26 @@ export default function EmployeeLeaveMenu(): JSX.Element {
             updateMap: {}
         }),
         employeeId: string | undefined = useParams().employeeId,
-        { employeeDataMap, employeeLeaveDataMap } = pageData
-        ;
+        { employeeDataMap, employeeLeaveDataMap } = pageData,
+        [search, setSearch] = useState<string>(""),
+        [ sortMode, setSortMode] = useState<sortMode>("ascending"),
+        navigate = useNavigate()
+    ;
+    
+    function handleChangeSearch(event: ChangeEvent<HTMLInputElement>): void {
+        
+        const { value } = event.target;
+        setSearch(value);
+
+    }
 
     async function loadPageData(): Promise<void> {
-
+        
+        pageData.loaded = false;
+        reloadPageData();
         pageData.employeeDataMap = await EmployeeUtils.getEmployeeDataMapAll();
         pageData.employeeLeaveDataMap = await EmployeeLeaveUtils.getEmployeeLeaveDataMapAll();
+        console.log( pageData.employeeLeaveDataMap )
         pageData.loaded = true;
         reloadPageData();
 
@@ -76,42 +95,78 @@ export default function EmployeeLeaveMenu(): JSX.Element {
 
     }
 
+    function toggleSortMode(): void {
+
+        const newSortMode: sortMode = (sortMode === "ascending") ? "descending" : "ascending";
+        setSortMode(newSortMode);
+
+    }
+
     useEffect(() => { loadPageData(); }, []);
 
     return <>
-
-            <SideBar pageData={ pageData } reloadPageData={ reloadPageData }/>
-
-            <Link to="/management/employeeLeaves">
-                <h1>New</h1>
-            </Link>
+        <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
+        <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
+        <div>
+            
             <div className="service-menu-main-content">
+                <label htmlFor="service-menu-main-content" className="service-menu-main-content-location">Leaves</label>
                 <div className="service-menu-form-section">
-            Employee search to add later: {employeeId ?? "None"}
-            {
+                    <div className="service-stats">
+                        <div className="service-stat">{ObjectUtils.keyLength( employeeLeaveDataMap )}<br></br><span>Total Leaves</span></div>
+                    </div>
+                    <div className="controls">
+                        <input placeholder="Search employeeLeaves" className="search" value={search} onChange={event => handleChangeSearch(event)} />
+                        <button className="filter-btn" type="button" value={sortMode} onClick={toggleSortMode}>{
+                            (sortMode === "ascending") ? "New to Old" : "Old to New"
+                        }</button>
+                        <Link to="/management/employeeLeaves/new"><button className="action-btn" type="button">+ Add new</button></Link>
+                    </div>
+                    <table className="services-table">
+                        <thead><tr>
+                            <th>#</th>
+                            <th>Status</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Reason</th>
+                        </tr></thead>
+                        <tbody>{
+                            Object.keys( employeeLeaveDataMap ).sort((documentId1, documentId2) => {
+                            
+                                const
+                                    date1 = pageData.employeeLeaveDataMap[ documentId1 ].dateTimeStart,
+                                    date2 = pageData.employeeLeaveDataMap[ documentId2 ].dateTimeStart
+                                ;
+                                if( !date1 ) return -1;
+                                if( !date2 ) return 1;
+                                return DateUtils.compare( date1, date2 );
 
-                employeeLeaveDataMap ? Object.keys(employeeLeaveDataMap).map((employeeLeaveId, index) => {
+                            }).map((documentId, index) => {
 
-                    const
-                        {
-                            employee: { id: employeeId },
-                            dateTimeStart, dateTimeEnd, reason
-                        } = employeeLeaveDataMap[employeeLeaveId]
-                        ;
-                    return <Link key={index} to={"/management/employeeLeaves/" + employeeLeaveId}>
-                        <div>
-                            {PersonUtils.toString(employeeDataMap[employeeId], "f mi l")}
-                            {` | `}
-                            {DateUtils.toString(dateTimeStart, "Mmmm dd, yyyy - hh:mm")}
-                            {` | `}
-                            {DateUtils.toString(dateTimeEnd, "Mmmm dd, yyyy - hh:mm")}
-                            {` | `}
-                            {reason}
-                        </div>
-                    </Link>
-            }) : undefined
+                                const
+                                    count: string = (index + 1).toString(),
+                                    { dateTimeEnd, dateTimeStart, reason, status } = employeeLeaveDataMap[documentId],
+                                    startStr = DateUtils.toString( dateTimeStart, "Mmmm dd, yyyy - hh:mm a.m." ),
+                                    endStr = DateUtils.toString( dateTimeEnd, "Mmmm dd, yyyy - hh:mm a.m." ),
+                                    show: boolean = StringUtils.has(
+                                        `${count}\t${startStr}\t${endStr}\t${reason}`
+                                        , search
+                                    )
+                                ;
+                                return show ? <tr key={documentId} onClick={() => navigate(`/management/employeeLeaves/${documentId}`)}>
+                                    <td>{count}</td>
+                                    <td>{ status === "approved" ? "Approved" : status === "canceled" ? "Canceled" : "Pending" }</td>
+                                    <td>{ startStr }</td>
+                                    <td>{ endStr }</td>
+                                    <td>{ reason }</td>
+                                </tr> : undefined;
 
-        }</div></div>
+                            })
+                        }</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </>;
 
 }

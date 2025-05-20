@@ -112,7 +112,7 @@ export default function EmployeeSidebar( { pageData, reloadPageData }: {
                     <NavLink 
                         to="/management/employees/menu" 
                         className={({ isActive }) =>
-                            window.location.pathname.startsWith("/management/employee") ? "active" : ""
+                            window.location.pathname.startsWith("/management/employees") ? "active" : ""
                         }
                     >
                         Employees

@@ -238,7 +238,7 @@ export default function EmployeeLeaveManagement(): JSX.Element {
             </nav>
             
             <div className="employee-main-content">
-                <label htmlFor="employee-main-content" className="employee-management-location">EmployeeLeaves - Name</label>
+                <label htmlFor="employee-main-content" className="employee-management-location">EmployeeLeaves - { pageData.employeeLeaveData.employee ? PersonUtils.toString( pageData.employeeDataMap[ pageData.employeeLeaveData.employee.id ], "f mi l" ) : `` }</label>
                 <div className="employee-form-section">
 
                     <label>Employee: </label>
@@ -312,12 +312,6 @@ export default function EmployeeLeaveManagement(): JSX.Element {
                 </div>
             </div>
         </form >
-        {
-            IS_DEV_MODE ? <button style={{ float: "right" }
-            } type="button" onClick={() => console.log(pageData)
-            }> Log page data</button >
-                : undefined
-        }
     </>
 
 }
