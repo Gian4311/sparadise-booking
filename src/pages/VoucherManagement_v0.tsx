@@ -452,6 +452,8 @@ export default function VoucherManagement(): JSX.Element {
             yes: () => navigate( `/management/vouchers/menu` )
         }
 
+        reloadPageData();
+
     }
 
     async function updateVoucher(): Promise<void> {

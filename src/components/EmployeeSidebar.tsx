@@ -85,10 +85,10 @@ export default function EmployeeSidebar( { pageData, reloadPageData }: {
             <ul className="sidebar-menu">
                 <li>
                     <NavLink 
-                        to="/management/dashboard" 
+                        to="/management/bookings/menu" 
                         className={({ isActive }) => isActive ? "active" : ""}
                     >
-                        Dashboard
+                        Bookings
                     </NavLink>
                 </li>
                 <li>
@@ -98,14 +98,6 @@ export default function EmployeeSidebar( { pageData, reloadPageData }: {
                             (window.location.pathname.startsWith("/management/accounts"))  ? "active" : ""
                         }                    >
                         Accounts
-                    </NavLink>
-                </li>
-                <li>
-                    <NavLink 
-                        to="/management/bookings/menu" 
-                        className={({ isActive }) => isActive ? "active" : ""}
-                    >
-                        Bookings
                     </NavLink>
                 </li>
                 <li>
