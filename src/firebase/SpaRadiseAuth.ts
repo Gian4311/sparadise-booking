@@ -76,7 +76,9 @@ export default class SpaRadiseAuth {
 
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
+        try {
         await signInWithPopup( SpaRadiseAuth.getAuth(), provider );
+        } catch( error ) {}
     
     }
 
