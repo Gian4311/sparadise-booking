@@ -170,7 +170,7 @@ export default function MyBookings(): JSX.Element {
                         <button className="filter-btn" type="button" value={sortMode} onClick={toggleSortMode}>{
                             (sortMode === "ascending") ? "A - Z" : "Z - A"
                         }</button>
-                        <Link to={ `/${ pageData.accountId }/bookings/new` }><button className="action-btn" type="button">+ Add new</button></Link>
+                        <Link to={ `/clients/${ pageData.accountId }/bookings/new` }><button className="action-btn" type="button">+ Add new</button></Link>
                     </div>
                     <table className="services-table">
                         <thead><tr>
@@ -238,7 +238,7 @@ export default function MyBookings(): JSX.Element {
                                         , search
                                     )
                                 ;
-                                return show ? <tr key={documentId} onClick={() => navigate(`/${ pageData.accountId }/bookings/${documentId}`)}>
+                                return show ? <tr key={documentId}>
                                     <td>{count}</td>
                                     <td>{
                                         Object.keys( serviceCountMap ).sort( ( serviceId1, serviceId2 ) => StringUtils.compare(
@@ -253,7 +253,8 @@ export default function MyBookings(): JSX.Element {
                                     }</td>
                                     <td>{ pageData.bookingDateMap[ documentId ] ? DateUtils.toString( pageData.bookingDateMap[ documentId ], "Mmmm dd, yyyy - hh:mm a.m." ) : `-` }</td>
                                     <td>{ status }</td>
-                                    <td><button className="employee-cancel-btn" type="button" onClick={ () => cancelBooking( documentId ) }>Cancel</button></td>
+                                    <td></td>
+                                    <td><button className="employee-cancel-btn-booking" type="button" onClick={ () => cancelBooking( documentId ) }>Cancel</button></td>
                                 </tr> : undefined;
 
                             })

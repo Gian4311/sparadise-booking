@@ -14,6 +14,11 @@ body {
     min-height: 100vh;
 }
 
+.employee-cancel-btn-booking{
+    background-color: rgb(155, 3, 3);
+    color: white;
+}
+
 .service-menu-main-content {
     margin-left: 17.5%;
     background-color: #FDF9FE;
