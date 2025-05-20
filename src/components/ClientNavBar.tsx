@@ -106,7 +106,7 @@ export default function ClientNavBar( { pageData, reloadPageData }: {
                     {
                         !pageData.accountId ? undefined
                         : ( pageData.accountData.accountType === "customer" ) ? <a href="/bookingList" className="client-home-link">Bookings</a>
-                        : <Link to={ `/management/dashboard` } className="client-home-link">Manage</Link>
+                        : <Link to={ `/management/bookings/menu` } className="client-home-link">Manage</Link>
                     }
                     {
                         pageData.accountId ? <Link to={ `/clients/${ pageData.accountId }/account` } className="client-home-link">Account</Link>
