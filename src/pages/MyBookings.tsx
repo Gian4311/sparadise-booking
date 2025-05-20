@@ -18,6 +18,7 @@ import ServiceUtils from "../firebase/ServiceUtils";
 import DateUtils from "../utils/DateUtils";
 import ClientNavBar from "../components/ClientNavBar";
 import PersonUtils from "../utils/PersonUtils";
+import ClientBookingList from "./ClientBookingList";
 
 type sortMode = "ascending" | "descending";
 
@@ -233,28 +234,27 @@ export default function MyBookings(): JSX.Element {
                                         : bookingData.reservedDateTime ? "Reserved"
                                         : "Pending"
                                     ),
+                                    clientList = Object.keys( clientDataMap ).map( clientId => clientDataMap[ clientId ] ? clientDataMap[ clientId ].name : "" ).sort().join( `, ` ),
+                                    serviceList = Object.keys( serviceCountMap ).sort( ( serviceId1, serviceId2 ) => StringUtils.compare(
+                                        pageData.serviceDataMap[ serviceId1 ].name,
+                                        pageData.serviceDataMap[ serviceId2 ].name
+                                    ) ).map( serviceId => {
+
+                                        const count = serviceCountMap[ serviceId ];
+                                        return pageData.serviceDataMap[ serviceId ].name + ( count > 1 ? ` × ` + count : `` );
+
+                                    } ).join( `, ` ),
+                                    dateStr = pageData.bookingDateMap[ documentId ] ? DateUtils.toString( pageData.bookingDateMap[ documentId ], "Mmmm dd, yyyy - hh:mm a.m." ) : `-`,
                                     show: boolean = StringUtils.has(
-                                        `${count}\t${status}`
+                                        `${count}\t${clientList}\t${status}\t${serviceList}\t${dateStr}`
                                         , search
                                     )
                                 ;
                                 return show ? <tr key={documentId}>
                                     <td>{count}</td>
-                                    <td>{
-                                        Object.keys( clientDataMap ).map( clientId => clientDataMap[ clientId ] ? clientDataMap[ clientId ].name : "" ).sort().join( `, ` )
-                                    }</td>
-                                    <td>{
-                                        Object.keys( serviceCountMap ).sort( ( serviceId1, serviceId2 ) => StringUtils.compare(
-                                            pageData.serviceDataMap[ serviceId1 ].name,
-                                            pageData.serviceDataMap[ serviceId2 ].name
-                                        ) ).map( serviceId => {
-
-                                            const count = serviceCountMap[ serviceId ];
-                                            return pageData.serviceDataMap[ serviceId ].name + ( count > 1 ? ` × ` + count : `` );
-
-                                        } ).join( `, ` )
-                                    }</td>
-                                    <td>{ pageData.bookingDateMap[ documentId ] ? DateUtils.toString( pageData.bookingDateMap[ documentId ], "Mmmm dd, yyyy - hh:mm a.m." ) : `-` }</td>
+                                    <td>{ clientList }</td>
+                                    <td>{ serviceList }</td>
+                                    <td>{ dateStr }</td>
                                     <td>{ status }</td>
                                     <td>{
                                         status !== "Canceled" ? <button className="employee-cancel-btn-booking" type="button" onClick={ () => cancelBooking( documentId ) }>Cancel</button>
