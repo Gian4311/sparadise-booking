@@ -142,7 +142,7 @@ export default class ServiceTransactionUtils {
         const
             serviceTransactionQuery = query(
                 serviceTransactionCollection,
-                where( "service", "in", clientReferenceList )
+                where( "client", "in", clientReferenceList )
             ),
             snapshotList: QueryDocumentSnapshot[] =
                 ( await getDocs( serviceTransactionQuery ) ).docs
