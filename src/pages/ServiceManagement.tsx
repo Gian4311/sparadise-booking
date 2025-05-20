@@ -15,6 +15,7 @@ import FormTextArea from "../components/FormTextArea";
 import FormTinyTextInput from "../components/FormTinyTextInput";
 import NumberUtils from "../utils/NumberUtils";
 import ObjectUtils from "../utils/ObjectUtils";
+import LoadingScreen from "../components/LoadingScreen";
 import {
     AccountData,
     ServiceData,
@@ -36,6 +37,7 @@ import BackButton from "../images/back button.png";
 import SpaRadiseLogo from "../images/SpaRadise Logo.png";
 import QuickPopup from "../components/quickPopupMessage";
 import PopupModal from "../components/PopupModal";
+import { reload } from "firebase/auth";
 
 interface ServiceManagementPageData extends SpaRadisePageData {
 
@@ -179,7 +181,7 @@ export default function ServiceManagement(): JSX.Element {
         if (!serviceDocumentReference) return;
         for (let serviceMaintenanceId in serviceMaintenanceDataMap) {
 
-            const isNew: boolean = !( serviceMaintenanceId in serviceMaintenanceDefaultDataMap );
+            const isNew: boolean = !(serviceMaintenanceId in serviceMaintenanceDefaultDataMap);
             if (!isNew) continue;
             const serviceMaintenanceData = serviceMaintenanceDataMap[serviceMaintenanceId];
             serviceMaintenanceData.service = serviceDocumentReference;
@@ -344,8 +346,10 @@ export default function ServiceManagement(): JSX.Element {
             await updateService();
         pageData.popupData = {
             children: `Success!`,
-            yes: () => navigate( `/management/servicesAndPackages/menu` )
+            yes: () => navigate(`/management/servicesAndPackages/menu`)
         }
+
+        reloadPageData();
 
     }
 
@@ -411,8 +415,10 @@ export default function ServiceManagement(): JSX.Element {
     useEffect(() => { loadPageData(); }, []);
 
     return <>
-        <PopupModal pageData={pageData} reloadPageData={reloadPageData}/>
-        <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
+        <PopupModal pageData={pageData} reloadPageData={reloadPageData} />
+
+        <LoadingScreen loading={!pageData.loaded}></LoadingScreen>
+        <EmployeeSidebar pageData={pageData} reloadPageData={reloadPageData} />
         <form onSubmit={submit}>
             <div className="servman-container">
                 <div className="service-main-content">
@@ -541,16 +547,8 @@ export default function ServiceManagement(): JSX.Element {
                         </table>
 
                         <div className="service-form-actions">
-                            {
-                                isEditMode ? <button className="service-delete-btn" type="button" onClick={deleteService}>Delete</button>
-                                    : undefined
-                            }
                             <button className="service-cancel-btn" type="button" onClick={cancelServiceForm}>Cancel</button>
                             <button className="service-save-btn" type="submit">{isNewMode ? "Create" : "Save Changes"}</button>
-                            {
-                                IS_DEV_MODE ? <button style={{}} type="button" onClick={() => console.log(pageData)}>Log page data</button>
-                                    : undefined
-                            }
                         </div>
                     </div>
                 </div>
@@ -560,12 +558,6 @@ export default function ServiceManagement(): JSX.Element {
 
         </form>
 
-        {quickPopupMessage && (
-            <QuickPopup
-                message={quickPopupMessage}
-                clearPopup={() => setQuickPopupMessage("")}
-            />
-        )}
     </>
 
 }

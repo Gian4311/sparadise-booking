@@ -199,6 +199,8 @@ export default function EmployeeLeaveManagement(): JSX.Element {
             yes: () => navigate(`/management/employeeLeaves/menu`)
         }
 
+        reloadPageData();
+
     }
 
     async function updateEmployeeLeave(): Promise<void> {
@@ -213,7 +215,6 @@ export default function EmployeeLeaveManagement(): JSX.Element {
         }
         delete updateMap[documentId];
         reloadPageData();
-        alert(`Updated!`); // note: remove later
 
     }
 
@@ -228,7 +229,7 @@ export default function EmployeeLeaveManagement(): JSX.Element {
                 <label htmlFor="employee-main-content" className="employee-management-location">Employee Leaves - {pageData.employeeLeaveData.employee ? PersonUtils.toString(pageData.employeeDataMap[pageData.employeeLeaveData.employee.id], "f mi l") : ``}</label>
                 <div className="service-header">
                     <button onClick={() => navigate(-1)} className="service-back-arrow" aria-label="Back" style={{ background: "none", border: "none", padding: 0 }}><img src={BackButton} alt="Back" className="back-icon" /></button>
-                <h1>{pageData.employeeLeaveData.employee ? PersonUtils.toString(pageData.employeeDataMap[pageData.employeeLeaveData.employee.id], "f mi l") : ``}</h1></div>
+                    <h1>{pageData.employeeLeaveData.employee ? PersonUtils.toString(pageData.employeeDataMap[pageData.employeeLeaveData.employee.id], "f mi l") : ``}</h1></div>
                 <div className="employee-form-section">
 
                     <div className="employee-form-row-group">
@@ -297,15 +298,10 @@ export default function EmployeeLeaveManagement(): JSX.Element {
                     <FormDateInput documentData={ pageData.employeeLeaveData } documentDefaultData={ pageData.employeeLeaveDefaultData } documentId={documentId} keyName="unemploymentDate" pageData={ pageData } readOnly={ isActive } required={ !isActive }/>
                     <label>Unemployment Reason</label>
                     <FormTextArea documentData={ pageData.employeeLeaveData } documentDefaultData={ pageData.employeeLeaveDefaultData } documentId={documentId} keyName="unemploymentReason" pageData={ pageData } readOnly={ isActive }/> */}
-                </div>
-                <div className="employee-form-actions">
-                    {
-                        isEditMode ? <button className="employee-delete-btn" type="button" onClick={deleteEmployeeLeave}>Delete</button>
-                            : undefined
-
-                    }
-                    <button className="employee-cancel-btn" type="button" onClick={() => navigate(`/management/employees/menu`)}>Cancel</button>
-                    <button className="employee-save-btn" type="submit">{isNewMode ? "Create" : "Save Changes"}</button>
+                    <div className="employee-form-actions">
+                        <button className="employee-cancel-btn" type="button" onClick={() => navigate(`/management/employees/menu`)}>Cancel</button>
+                        <button className="employee-save-btn" type="submit">{isNewMode ? "Create" : "Save Changes"}</button>
+                    </div>
                 </div>
             </div>
         </form >

@@ -96,7 +96,7 @@ export default function AccountManagement(): JSX.Element {
 
     async function createAccount(): Promise<void> {
         if (!isNewMode || !documentId) return;
-        if( !( await checkFormValidity() ) ) return;
+        if (!(await checkFormValidity())) return;
 
         pageData.loaded = false;
         const documentReference: DocumentReference = await AccountUtils.createAccount(
@@ -107,7 +107,7 @@ export default function AccountManagement(): JSX.Element {
         delete pageData.updateMap["new"];
         reloadPageData();
         navigate(`/management/capacities/${documentReference.id}`);
-        
+
     }
 
     async function deleteAccount(): Promise<void> {
@@ -135,7 +135,7 @@ export default function AccountManagement(): JSX.Element {
             documentId, SpaRadiseEnv.SERVICE_COLLECTION
         );
         pageData.accountDataEdit = await AccountUtils.getAccountData(documentId);
-        pageData.accountName = PersonUtils.toString( pageData.accountDataEdit, "f mi l" );
+        pageData.accountName = PersonUtils.toString(pageData.accountDataEdit, "f mi l");
         pageData.accountDefaultData = { ...pageData.accountDataEdit };
 
     }
@@ -153,12 +153,12 @@ export default function AccountManagement(): JSX.Element {
             await createAccount();
         else
             await updateAccount();
-        pageData.popupData= {
+        pageData.popupData = {
             children: `Success!`,
             yes: () => navigate(`/management/accounts/menu`)
         }
 
-        loadPageData();
+        reloadPageData();
 
     }
 
@@ -167,13 +167,13 @@ export default function AccountManagement(): JSX.Element {
         if (!isEditMode || !documentId) return;
         pageData.loaded = false;
         reloadPageData();
-        if( !( await checkFormValidity() ) ) return;
+        if (!(await checkFormValidity())) return;
         const { accountDataEdit, updateMap } = pageData;
 
         if (documentId in updateMap) {
             await AccountUtils.updateAccount(documentId, accountDataEdit);
             pageData.accountDefaultData = { ...pageData.accountDataEdit };
-            pageData.accountName = PersonUtils.toString( pageData.accountDataEdit, "f mi l" );
+            pageData.accountName = PersonUtils.toString(pageData.accountDataEdit, "f mi l");
         }
 
         delete updateMap[documentId];
@@ -184,8 +184,8 @@ export default function AccountManagement(): JSX.Element {
     useEffect(() => { loadPageData(); }, []);
 
     return <>
-        <PopupModal pageData={ pageData } reloadPageData={ reloadPageData }/>
-        <EmployeeSidebar pageData={ pageData } reloadPageData={ reloadPageData }/>
+        <PopupModal pageData={pageData} reloadPageData={reloadPageData} />
+        <EmployeeSidebar pageData={pageData} reloadPageData={reloadPageData} />
         <form onSubmit={submit}>
             <div className="servman-container">
                 <div className="service-main-content">

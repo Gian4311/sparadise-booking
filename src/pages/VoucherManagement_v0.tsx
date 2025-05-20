@@ -596,7 +596,6 @@ export default function VoucherManagement(): JSX.Element {
                     </div>
 
                     <div className="service-form-actions">
-                        <button className="service-delete-btn" type="button" onClick={deleteVoucher}>Delete</button>
                         <button className="service-cancel-btn" type="button">Cancel</button>
                         <button className="service-save-btn" type="submit">Submit</button>
                     </div>

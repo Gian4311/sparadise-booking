@@ -8,6 +8,10 @@
   border-radius: 15px;
 }
 
+.management-edit-booking:hover{
+  background-color: #3d1641;
+}
+
 /* Base table styling */
 table.dayPlanner {
   width: 100%;
@@ -212,6 +216,6 @@ table.serviceTransactionManager .serviceTransactionManager-client{
   background-color: #552B59;
   border-radius: 12px;
   color: white;
-  width: 10%;
+  width: 15%;
   margin-top: 2%;
 }

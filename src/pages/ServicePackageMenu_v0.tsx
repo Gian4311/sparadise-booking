@@ -216,7 +216,6 @@ export default function ServicePackageMenu(): JSX.Element {
                                 })
                             }</tbody>
                         </table>
-                        <button type="button" onClick={() => console.log(pageData)}>Log Page Data</button>
                     </div>
                 </div>
         </div>

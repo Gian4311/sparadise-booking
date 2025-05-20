@@ -193,6 +193,12 @@ export default function EmployeeManagement(): JSX.Element {
             await createEmployee();
         else
             await updateEmployee();
+       pageData.popupData = {
+        children: `Success!`,
+        yes: () => navigate(`/management/employees/menu`)
+       } 
+
+       reloadPageData();
 
     }
 

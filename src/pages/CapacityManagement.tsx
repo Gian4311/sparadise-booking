@@ -162,6 +162,12 @@ export default function CapacityManagement(): JSX.Element {
             await createCapacity();
         else
             await updateCapacity();
+        pageData.popupData = {
+            children: `Success!`,
+            yes: () => navigate(`/management/capacities/menu`)
+        }
+
+        reloadPageData();
 
     }
 
@@ -192,7 +198,7 @@ export default function CapacityManagement(): JSX.Element {
         <form onSubmit={submit}>
             <div className="servman-container">
                 <div className="service-main-content">
-                    <label htmlFor="service-main-content" className="service-management-location">Capacitys & Packages - {pageData.capacityName}</label>
+                    <label htmlFor="service-main-content" className="service-management-location">Rooms & Chairs - {pageData.capacityName}</label>
                     <div className="service-form-section">
                         <div className="service-header">
                             <button onClick={() => navigate(`/management/capacities/menu`)} className="service-back-arrow" aria-label="Back" style={{ background: "none", border: "none", padding: 0 }}><img src={BackButton} alt="Back" className="back-icon" /></button>
@@ -218,10 +224,7 @@ export default function CapacityManagement(): JSX.Element {
                             </div>
                         </div>
                         <div className="service-form-actions">
-                            {
-                                isEditMode ? <button className="service-delete-btn" type="button" onClick={deleteCapacity}>Delete</button>
-                                    : undefined
-                            }
+
                             <button className="service-cancel-btn" type="button" onClick={cancelCapacityForm}>Cancel</button>
                             <button className="service-save-btn" type="submit">{isNewMode ? "Create" : "Save Changes"}</button>
                         </div>

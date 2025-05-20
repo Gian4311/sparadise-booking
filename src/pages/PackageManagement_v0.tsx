@@ -490,6 +490,8 @@ export default function PackageManagement(): JSX.Element {
             yes: () => navigate( `/management/servicesAndPackages/menu` )
         }
 
+        reloadPageData();
+
     }
 
     async function updatePackage(): Promise<void> {
@@ -681,8 +683,7 @@ export default function PackageManagement(): JSX.Element {
                     </table>
 
                     <div className="service-form-actions">
-                        <button type="button" onClick={() => console.log(pageData)}>Log page data</button>
-                        <button className="service-delete-btn" type="button" onClick={deletePackage}>Delete</button>
+                            <button className="service-cancel-btn" type="button" onClick={cancelPackageForm}>Cancel</button>
                         <button className="service-save-btn" type="submit">Submit</button>
                     </div>
                 </div>
