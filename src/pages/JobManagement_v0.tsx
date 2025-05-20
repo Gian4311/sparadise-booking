@@ -132,7 +132,6 @@ export default function JobManagement(): JSX.Element {
         pageData.jobDocumentReference = documentReference;
         await updateJobServiceList();
         delete pageData.updateMap["new"];
-        alert(`Created!`); // note: remove later
         navigate(`/management/jobs/${documentReference.id}`);
 
     }
@@ -279,6 +278,8 @@ export default function JobManagement(): JSX.Element {
             children: `Success!`,
             yes: () => navigate( `/management/jobs/menu` )
         }
+
+        reloadPageData();
 
     }
 

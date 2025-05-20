@@ -111,7 +111,6 @@ export default function EmployeeManagement(): JSX.Element {
             pageData.employeeData
         );
         pageData.employeeDocumentReference = documentReference;
-        alert(`Created!`); // note: remove later
         navigate(`/management/employees/${documentReference.id}`);
 
     }
