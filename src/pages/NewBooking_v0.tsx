@@ -916,11 +916,9 @@ function ChooseServices({ pageData, handleChangeDate, reloadPageData }: {
             return "SpaRadise is closed on Sundays";
 
         for (let clientId in clientDataMap) {
-            const { name, birthDate } = clientDataMap[clientId];
-            if (!name) return "Please input client names";
-            if (!birthDate) return "Please input client birth dates";
-            if (DateUtils.getYearAge(birthDate) < MIN_AGE_LIMIT)
-                return `The age limit is ${MIN_AGE_LIMIT}`;
+            const { serviceTransactionDataMap } = clientInfoMap[ clientId ]
+            if( ObjectUtils.keyLength( serviceTransactionDataMap ) === 0 )
+                return `All clients must have reserved services.`;
         }
 
         return true;
