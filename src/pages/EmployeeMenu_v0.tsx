@@ -152,7 +152,7 @@ export default function EmployeeMenu(): JSX.Element {
                                             count: string = (index + 1).toString(),
                                             { hireDate, job: { id: jobId } } = employeeDataMap[documentId],
                                             name: string = PersonUtils.toString(employeeDataMap[documentId], "f mi l"),
-                                            jobName = jobDataMap[jobId] ? jobDataMap[jobId] : "",
+                                            jobName = jobDataMap[jobId] ? jobDataMap[jobId].name : "",
                                             hireDateText = DateUtils.toString(hireDate, "dd Mmmm yyyy"),
                                             show: boolean = (
                                                 StringUtils.has(
