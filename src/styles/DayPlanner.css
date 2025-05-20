@@ -89,7 +89,7 @@ table.dayPlanner td.move {
   padding: 10px;
   height: 40px;
 }
-table.dayPlanner td.booking-selected {
+table.dayPlanner td.time-slot.booking-selected {
   color: white;
   background-color: #95559b;
 }
