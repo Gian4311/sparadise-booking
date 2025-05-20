@@ -178,7 +178,6 @@ export default function EmployeeBookingMenu(): JSX.Element {
                 <div className="booking-management-date-input">
                     <label className="booking-management-date-input-label">Select date:</label> <BookingDateInput pageData={pageData} onChange={handleChangeDate} reloadPageData={reloadPageData} /></div>
                 <DayPlanner dayPlannerMode="management" pageData={dayPlannerPageData} />
-                <button onClick={() => console.log(pageData)}>Log page data</button>
             </div>
         </div>
         <main className="employee-booking-management-main-content">

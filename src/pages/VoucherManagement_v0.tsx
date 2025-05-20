@@ -561,7 +561,7 @@ export default function VoucherManagement(): JSX.Element {
                             </div>
                         </div>
                     </div>
-                    <div className="section-label"> Select Services:
+                    <div className="section-label"> Select Packages:
                         <div id="services-list">
                             <div className="service-scroll-container">
                                 {
